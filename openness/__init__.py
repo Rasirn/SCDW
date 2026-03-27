@@ -48,10 +48,12 @@ from .tia_blocks import (
     create_global_db,
     import_lad_xml_block,
     build_global_db_scl,
+    delete_block,
 )
 
 from .tia_lad_builder import (
     LadContact,
+    LadBox,
     LadOutput,
     LadBranch,
     LadNetwork,
@@ -99,6 +101,7 @@ __all__ = [
     "build_global_db_scl",
     # tia_lad_builder
     "LadContact",
+    "LadBox",
     "LadOutput",
     "LadBranch",
     "LadNetwork",

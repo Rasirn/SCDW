@@ -239,3 +239,21 @@ def import_lad_xml_block(
     file_info = FileInfo(xml_path)
     plc_software.BlockGroup.Blocks.Import(file_info, ImportOptions.Override)
     return xml_path
+
+
+def delete_block(plc_software, block_name: str) -> bool:
+    """
+    删除 PLC 中的指定程序块。
+
+    Args:
+        plc_software: PLC Software 对象
+        block_name: 块名称
+
+    Returns:
+        True=删除成功, False=未找到
+    """
+    for block in plc_software.BlockGroup.Blocks:
+        if str(block.Name) == block_name:
+            block.Delete()
+            return True
+    return False
