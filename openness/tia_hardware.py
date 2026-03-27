@@ -64,6 +64,22 @@ def _normalize_path(path) -> List[PathSegment]:
 
 
 # ── 设备查找 / 定位 ───────────────────────────────────────────────────────────
+def _find_rack(device) -> Any:
+    """
+    在设备的直接子 DeviceItem 中查找 Rack 容器（TypeIdentifier 含 'Rack'）。
+    找不到时回退返回第一个子项；子项为空时返回 device 本身。
+    """
+    children = _list_items(device)
+    for child in children:
+        ti = net_to_python(_safe_attr(child, "TypeIdentifier", ""))
+        if ti and "rack" in ti.lower():
+            return child
+    # 回退：没有明确 Rack 标识时用第一个子项
+    if children:
+        return children[0]
+    return device
+
+
 def find_device(project, device_name: str):
     """按名称在项目顶层 Devices 中查找设备，未找到则抛出 RuntimeError。"""
     try:
@@ -159,6 +175,42 @@ def add_plc_device(
     return device, plc_software
 
 
+# 已知模块版本候选表：订货号前缀 → 常见版本列表（按优先级排序）
+_KNOWN_VERSIONS: Dict[str, List[str]] = {
+    "6ES7 241-1CH32-0XB0": ["V2.1", "V2.2", "V2.0"],
+    "6ES7 223-1PL30-0XB0": ["V1.0", "V2.0"],
+    "6ES7 222-1BF32-0XB0": ["V1.0", "V2.0"],
+    "6ES7 221-1BF32-0XB0": ["V1.0", "V2.0"],
+    "6ES7 231-4HF32-0XB0": ["V2.0", "V2.1"],
+    "6ES7 234-4HE32-0XB0": ["V2.0", "V2.1"],
+}
+
+
+def _probe_order_number(container, order_number: str, slot_number: int, module_name: str) -> str:
+    """
+    若订货号不含版本号，自动尝试已知版本候选，返回第一个 CanPlugNew=True 的完整订货号。
+    所有候选均失败时返回原始订货号（由 PlugNew 最终报错）。
+    """
+    # 已含版本号则直接返回
+    if "/V" in order_number:
+        return order_number
+
+    # 提取裸订货号部分（去掉 OrderNumber: 前缀）
+    bare = order_number.replace("OrderNumber:", "").strip()
+    versions = _KNOWN_VERSIONS.get(bare, [])
+
+    for ver in versions:
+        candidate = f"OrderNumber:{bare}/{ver}"
+        try:
+            result = container.CanPlugNew(candidate, module_name, slot_number)
+            if result:
+                return candidate
+        except Exception:
+            continue
+
+    return order_number
+
+
 def add_module_to_rack(
     project,
     device_name: str,
@@ -173,24 +225,34 @@ def add_module_to_rack(
     Args:
         project: TIA Project 对象
         device_name: 顶层设备名称
-        module_type_id: 模块订货号 / TypeIdentifier
-        slot_number: 目标槽位编号
+        module_type_id: 模块订货号 / TypeIdentifier，可不带版本号（会自动探测）
+        slot_number: 目标槽位编号。
+            S7-1200 右侧扩展 SM：2~9；左侧通信 CM：101/102/103
         module_name: 模块的显示名称
-        rack_item_path: 容器路径（索引或名称列表），默认为顶层 Device
+        rack_item_path: 容器路径（索引或名称列表）。
+            默认为 None，此时自动定位设备下的 Rack 容器（推荐）。
+            显式传入 [] 可强制使用顶层 Device。
 
     Returns:
         新创建模块的描述字典
     """
-    container = resolve_device_item(project, device_name, rack_item_path)
+    if rack_item_path is None:
+        container = _find_rack(find_device(project, device_name))
+    else:
+        container = resolve_device_item(project, device_name, rack_item_path)
+
+    # 自动补全版本号
+    resolved_type_id = _probe_order_number(container, module_type_id, slot_number, module_name)
+
     try:
-        can_plug = container.CanPlugNew(module_type_id, module_name, slot_number)
+        can_plug = container.CanPlugNew(resolved_type_id, module_name, slot_number)
         if can_plug is False:
             raise RuntimeError(
-                f"容器 {describe_item(container)} 不允许在槽位 {slot_number} 插入 {module_type_id}"
+                f"容器 {describe_item(container)} 不允许在槽位 {slot_number} 插入 {resolved_type_id}"
             )
     except AttributeError:
         pass
-    created = container.PlugNew(module_type_id, module_name, slot_number)
+    created = container.PlugNew(resolved_type_id, module_name, slot_number)
     return describe_item(created)
 
 

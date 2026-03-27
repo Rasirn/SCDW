@@ -83,12 +83,27 @@ class DBBlockSpec:
 
 
 @dataclass
+class FunctionLogicSpec:
+    """
+    程序功能逻辑规格：每条对应 xlsx 中一个功能区块的名称与逻辑描述。
+    描述文本用于指导 Agent 生成对应的 LAD/SCL 程序块。
+    关联 DB 块名称记录在 db_block_name，供 Agent 在 LAD 中引用 DB 变量。
+    """
+
+    function_name: str       # 功能名称，如 "风机输出功能"
+    description: str         # 逻辑描述文本，Agent 根据此生成 LAD 梯级
+    db_block_name: str = "" # 关联的 DB 块名称（与 DBBlockSpec.function_name 一致）
+    block_index: int = 0     # 建议的 LAD 块编号（从 200 起，避免与 DB 编号 100+ 冲突）
+
+
+@dataclass
 class PLCProjectSpec:
     """完整的 PLC 项目规格，由 xlsx 解析得到。"""
 
     hardware: List[HardwareDevice] = field(default_factory=list)
     io_tags: List[IOTag] = field(default_factory=list)
     db_blocks: List[DBBlockSpec] = field(default_factory=list)
+    logic_functions: List[FunctionLogicSpec] = field(default_factory=list)  # 各功能的 LAD 逻辑描述
 
 
 # ── 内部辅助 ──────────────────────────────────────────────────────────────────
@@ -406,6 +421,26 @@ def _parse_db_blocks(rows: List[List[Any]]) -> List[DBBlockSpec]:
     return db_blocks
 
 
+def _build_logic_functions(db_blocks: "List[DBBlockSpec]") -> "List[FunctionLogicSpec]":
+    """
+    从已解析的 DB 块列表中提取程序功能逻辑规格。
+    每个含描述的 DB 块生成一条 FunctionLogicSpec。
+    block_index 从 200 开始，避免与 DB 编号（100+）冲突。
+    """
+    result: List[FunctionLogicSpec] = []
+    for i, db in enumerate(db_blocks):
+        if db.description:
+            result.append(
+                FunctionLogicSpec(
+                    function_name=db.function_name,
+                    description=db.description,
+                    db_block_name=db.function_name,
+                    block_index=200 + i,
+                )
+            )
+    return result
+
+
 # ── 公共入口 ──────────────────────────────────────────────────────────────────
 def read_plc_project_xlsx(filepath: str, sheet_name: str = "Sheet1") -> PLCProjectSpec:
     """
@@ -443,8 +478,9 @@ def read_plc_project_xlsx(filepath: str, sheet_name: str = "Sheet1") -> PLCProje
     hardware = _parse_hardware(all_rows[hardware_start:io_start] if io_start else all_rows[hardware_start:])
     io_tags = _parse_io_tags(all_rows[io_start:db_start] if db_start else all_rows[io_start:]) if io_start is not None else []
     db_blocks = _parse_db_blocks(all_rows[db_start:]) if db_start is not None else []
+    logic_functions = _build_logic_functions(db_blocks)
 
-    return PLCProjectSpec(hardware=hardware, io_tags=io_tags, db_blocks=db_blocks)
+    return PLCProjectSpec(hardware=hardware, io_tags=io_tags, db_blocks=db_blocks, logic_functions=logic_functions)
 
 
 def _find_hardware_section_start(rows: List[List[Any]]) -> int:

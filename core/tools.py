@@ -271,10 +271,13 @@ def register_mcp_tools(mcp) -> None:
         add_module_to_rack,
         create_tag_table_with_tags,
         TagSpec,
-        create_global_db,
+        create_global_db as _openness_create_global_db,
         import_scl_block,
+        import_lad_xml_block,
         build_global_db_scl,
         DBVariable,
+        build_lad_xml,
+        lad_networks_from_json,
         compile_plc,
     )
     from data.xlsx_reader import read_plc_project_xlsx
@@ -381,10 +384,13 @@ def register_mcp_tools(mcp) -> None:
     @mcp.tool(
         name="add_hardware_module",
         description=(
-            "向已有 PLC 设备的机架中插入 I/O 模块或通讯模块（调用 PlugNew 接口）。"
-            "module_type_id 格式同订货号，如 OrderNumber:6ES7 223-1PL30-0XB0/V1.0。"
-            "slot_number 为目标槽位编号，需与实际硬件组态一致。"
-            "rack_item_path 可选，用于多级机架定位（JSON 数组，如 [0,1]），默认为顶层设备。"
+            "向已有 PLC 设备的机架中插入 I/O 模块或通讯模块（调用 PlugNew 接口）。\n"
+            "module_type_id 格式：OrderNumber:6ES7 XXXXXX-XXXX-XXXX，版本号可省略（会自动探测）。\n"
+            "【S7-1200 槽位规则 - 必须严格遵守】\n"
+            "  - CPU 固定占用槽位 1\n"
+            "  - CM 通信模块（CM 1241 等）：左侧扩展槽，槽位必须为 101、102 或 103\n"
+            "  - SM 信号模块（数字量/模拟量 I/O）：右侧扩展槽，槽位为 2、3、4 ... 最多到 9\n"
+            "rack_item_path 可选，用于多级机架定位（JSON 数组，如 [0,1]），留空则自动定位。"
         ),
     )
     def add_hardware_module(
@@ -464,10 +470,12 @@ def register_mcp_tools(mcp) -> None:
     @mcp.tool(
         name="create_global_db",
         description=(
-            "在指定 PLC 设备下创建全局数据块（Global DB）。"
+            "在指定 PLC 设备下创建全局数据块（Global DB，非优化访问，偏移量可见）。\n"
             "variables_json 为 JSON 数组，每项格式：\n"
-            '  {"name":"变量名","data_type":"Bool","initial_value":"","comment":"注释"}\n'
-            "data_type 支持 S7 所有基础类型及复合类型，如 IEC_TIMER、Array[0..15] of Bool 等。"
+            '  {"name":"变量名","data_type":"Bool","offset":"0.0","initial_value":"","comment":"注释"}\n'
+            "offset 为 xlsx 中的字节偏移量（如 0.0、2.0），仅写入 SCL 注释，不影响编译器分配地址。\n"
+            "data_type 支持 S7 所有基础类型及复合类型，如 IEC_TIMER、Array[0..15] of Bool 等。\n"
+            "复合类型（IEC_TIMER 等）会自动加双引号，且不允许设置初始值。"
         ),
     )
     def create_global_db(
@@ -489,6 +497,7 @@ def register_mcp_tools(mcp) -> None:
                     data_type=v.get("data_type", "Bool"),
                     initial_value=str(v.get("initial_value", "")),
                     comment=v.get("comment", ""),
+                    offset=str(v.get("offset", "")),
                 )
                 for v in vars_data
                 if v.get("name") and v.get("data_type")
@@ -496,7 +505,7 @@ def register_mcp_tools(mcp) -> None:
 
             plc_sw = _get_plc_software(device_name)
             temp_dir = _ensure_temp_dir()
-            create_global_db(plc_sw, temp_dir, db_name, db_number, db_vars)
+            _openness_create_global_db(plc_sw, temp_dir, db_name, db_number, db_vars)
 
             return (
                 f"✅ 全局 DB '{db_name}' (DB{db_number}) 已创建，"
@@ -537,7 +546,81 @@ def register_mcp_tools(mcp) -> None:
         except Exception as exc:
             return f"❌ 导入 SCL 块失败：{exc}"
 
-    # ── 8. compile_and_save ───────────────────────────────────────────────────
+    # ── 8. add_lad_block ─────────────────────────────────────────────────────
+    @mcp.tool(
+        name="add_lad_block",
+        description=(
+            "向指定 PLC 设备导入梯形图（LAD）程序块。\n"
+            "本工具采用「JSON 逻辑描述 → Python 自动生成 XML」方案，\n"
+            "你只需描述梯级逻辑，无需手写 XML。\n\n"
+            "【block_type】：FC | FB | OB\n"
+            "【block_number】：块编号（整数）\n"
+            "【networks_json】：JSON 数组，每项描述一个梯级（网络），格式如下：\n\n"
+            "串联（AND）格式：\n"
+            "  {\n"
+            "    \"title\": \"电机启动\",\n"
+            "    \"contacts\": [\n"
+            "      {\"var\": \"DB1.Start\", \"nc\": false},\n"
+            "      {\"var\": \"DB1.Stop\",  \"nc\": true}\n"
+            "    ],\n"
+            "    \"outputs\": [{\"var\": \"DB1.Motor\", \"type\": \"Coil\"}]\n"
+            "  }\n\n"
+            "并联（OR）格式：\n"
+            "  {\n"
+            "    \"title\": \"多条件启动\",\n"
+            "    \"branches\": [\n"
+            "      [{\"var\": \"DB1.Remote\", \"nc\": false}],\n"
+            "      [{\"var\": \"DB1.Local\", \"nc\": false}]\n"
+            "    ],\n"
+            "    \"outputs\": [{\"var\": \"DB1.Motor\", \"type\": \"SCoil\"}]\n"
+            "  }\n\n"
+            "【字段说明】\n"
+            "  var：变量路径。全局标签直接写名称，DB 成员用点分隔（如 DB_Motor.Run）\n"
+            "  nc：触点类型，false=常开(NO)，true=常闭(NC)\n"
+            "  type：线圈类型，Coil=普通输出，SCoil=SET置位，RCoil=RESET复位\n\n"
+            "【OR 逻辑替代方案】\n"
+            "  若逻辑复杂，可拆成多个梯级使用 SCoil/RCoil 实现，避免 Or 节点：\n"
+            "  梯级1: 条件A → SCoil(Flag)\n"
+            "  梯级2: 条件B → SCoil(Flag)\n"
+            "  梯级3: 停止条件 → RCoil(Flag)"
+        ),
+    )
+    def add_lad_block(
+        device_name: str,
+        block_name: str,
+        block_type: str,
+        block_number: int,
+        networks_json,
+    ) -> str:
+        """向 PLC 导入 LAD 程序块。"""
+        try:
+            _check_session()
+            nets_data: list = (
+                networks_json if isinstance(networks_json, list)
+                else json.loads(networks_json)
+            )
+            if not isinstance(nets_data, list):
+                return "❌ networks_json 必须是 JSON 数组。"
+
+            bt = block_type.upper()
+            if bt not in ("FC", "FB", "OB"):
+                return "❌ block_type 必须是 FC、FB 或 OB。"
+
+            networks = lad_networks_from_json(nets_data)
+            xml_content = build_lad_xml(block_name, bt, block_number, networks)
+
+            plc_sw = _get_plc_software(device_name)
+            temp_dir = _ensure_temp_dir()
+            import_lad_xml_block(plc_sw, temp_dir, block_name, xml_content)
+
+            return (
+                f"✅ LAD 程序块 '{block_name}' ({bt}{block_number}) 已导入到 {device_name}，"
+                f"共 {len(networks)} 个网络。"
+            )
+        except Exception as exc:
+            return f"❌ 导入 LAD 块失败：{exc}\n{traceback.format_exc()}"
+
+    # ── 9. compile_and_save ───────────────────────────────────────────────────
     @mcp.tool(
         name="compile_and_save",
         description=(
@@ -560,138 +643,104 @@ def register_mcp_tools(mcp) -> None:
         except Exception as exc:
             return f"❌ 编译/保存失败：{exc}"
 
-    # ── 9. create_project_from_xlsx ───────────────────────────────────────────
+    # ── 9. read_project_spec_from_xlsx ────────────────────────────────────────
     @mcp.tool(
-        name="create_project_from_xlsx",
+        name="read_project_spec_from_xlsx",
         description=(
-            "从 xlsx 配置文件一键创建完整 TIA 博途项目。\n"
-            "xlsx 文件须包含以下信息（参考 PLC程序完整.xlsx 格式）：\n"
-            "  - 设备清单（CPU 型号及订货号、模块等）\n"
-            "  - I/O 点表（变量名/类型/地址）\n"
-            "  - DB 块变量列表\n\n"
-            "此工具会：\n"
-            "  1. 解析 xlsx 提取配置（CPU 订货号自动从设备清单读取）\n"
-            "  2. 创建 TIA 项目\n"
-            "  3. 添加 PLC 设备（CPU）\n"
-            "  4. 按模块组创建变量表\n"
-            "  5. 创建全局 DB 块\n"
-            "  6. 编译并保存\n\n"
-            "注意：硬件模块（I/O 扩展模块等）需在 xlsx 中提供精确的 TIA TypeIdentifier。"
+            "解析 xlsx 配置文件，读取 PLC 项目规格并以结构化文本返回，供后续逐步调用其他工具创建项目使用。\n"
+            "返回内容包括：\n"
+            "  - 硬件设备清单（CPU 订货号、I/O 模块等）\n"
+            "  - I/O 点表（按模块组分组，含变量名/数据类型/地址/注释）\n"
+            "  - DB 块列表（含变量定义，不含逻辑描述）\n"
+            "  - 【LAD 功能逻辑清单】每条功能的逻辑描述文本，这是生成 LAD 程序块的依据\n\n"
+            "读取结果后，按以下顺序调用工具完成项目创建：\n"
+            "  1. init_tia_project       — 创建 TIA 项目\n"
+            "  2. add_plc_to_project     — 添加 CPU（使用此工具返回的订货号）\n"
+            "  3. create_plc_tag_table   — 按模块组创建变量表\n"
+            "  4. create_global_db       — 创建各 DB 块\n"
+            "  5. add_lad_block          — 【重要】根据 LAD 功能逻辑清单为每个功能生成 LAD 程序块\n"
+            "  6. compile_and_save       — 编译并保存\n\n"
+            "注意：LAD 功能逻辑清单中的每条描述都需要生成对应的 LAD 块（FC），\n"
+            "描述中包含的条件/动作信息应转化为 contacts/outputs 梯级逻辑。"
         ),
     )
-    def create_project_from_xlsx(
-        xlsx_path: str,
-        project_name: str,
-        project_root: str,
-        api_dir: str = r"E:\PlcProject\SoftWares\Siemens\Automation\Portal V17\PublicAPI\V17",
-        with_ui: bool = True,
-        overwrite: bool = False,
-    ) -> str:
-        """从 xlsx 文件一键创建 TIA 项目，CPU 订货号自动从 xlsx 设备清单中提取。"""
-        _cleanup_session()
-        log: List[str] = []
-
+    def read_project_spec_from_xlsx(xlsx_path: str) -> str:
+        """解析 xlsx 文件，返回结构化的 PLC 项目规格信息。"""
         try:
-            # ① 解析 xlsx
-            log.append(f"📂 正在解析 xlsx：{xlsx_path}")
             spec = read_plc_project_xlsx(xlsx_path)
-            log.append(
-                f"   设备：{len(spec.hardware)} 项，"
-                f"I/O 变量：{len(spec.io_tags)} 个，"
-                f"DB 块：{len(spec.db_blocks)} 个"
-            )
-
-            # 从设备清单中提取 CPU 订货号
-            cpu_hw = next(
-                (hw for hw in spec.hardware if "cpu" in hw.category.lower()),
-                None,
-            )
-            if cpu_hw is None:
-                return "❌ xlsx 设备清单中未找到 CPU 设备（category 需含 'cpu'）。"
-            raw_order = cpu_hw.order_number
-            if not raw_order:
-                return (
-                    f"❌ 无法从型号字符串中解析 CPU 订货号：{cpu_hw.model_full!r}\n"
-                    "请确认 xlsx 的型号列包含完整订货号，如 6ES7 214-1BG40-0XB0。"
-                )
-            cpu_order_number = f"OrderNumber:{raw_order}"
-
-            # ② 初始化 TIA 并创建项目
-            log.append("🔧 正在启动 TIA Portal…")
-            from openness.tia_core import load_tia_api, set_default_api_dir
-            set_default_api_dir(api_dir)
-            load_tia_api(api_dir)
-
-            tia = start_tia_portal(with_ui=with_ui)
-            project = create_project(tia, project_root, project_name, overwrite=overwrite)
-            _session["tia"] = tia
-            _session["project"] = project
-            log.append(f"   项目已创建：{os.path.join(project_root, project_name)}")
-
-            # ③ 添加 CPU 设备
-            log.append(f"🔩 正在添加 CPU：{cpu_order_number}（来源：xlsx 设备清单）")
-            device, plc_sw = add_plc_device(project, cpu_order_number, "PLC_1")
-            _session["devices"]["PLC_1"] = {"device": device, "plc_software": plc_sw}
-            log.append("   CPU 已添加：PLC_1")
-
-            temp_dir = _ensure_temp_dir()
-
-            # ④ 按模块组创建变量表
-            from collections import defaultdict
-            groups = defaultdict(list)
-            for tag in spec.io_tags:
-                groups[tag.module_group or "Default_Tags"].append(tag)
-
-            for group_name, tags in groups.items():
-                tag_specs = [
-                    TagSpec(
-                        name=t.name,
-                        data_type=t.data_type,
-                        logical_address=t.address,
-                        comment=t.comment,
-                    )
-                    for t in tags
-                ]
-                create_tag_table_with_tags(plc_sw, group_name, tag_specs)
-                log.append(f"   变量表 '{group_name}'：{len(tag_specs)} 个变量")
-
-            # ⑤ 创建 DB 块
-            for db_spec in spec.db_blocks:
-                db_vars = [
-                    DBVariable(
-                        name=v.name,
-                        data_type=v.data_type,
-                        initial_value="",
-                        comment=v.comment,
-                    )
-                    for v in db_spec.variables
-                    if v.name and v.data_type
-                ]
-                # DB 编号自动从 100 开始
-                db_number = 100 + spec.db_blocks.index(db_spec)
-                create_global_db(plc_sw, temp_dir, db_spec.function_name, db_number, db_vars)
-                log.append(
-                    f"   DB 块 '{db_spec.function_name}' (DB{db_number})："
-                    f"{len(db_vars)} 个变量"
-                )
-                if db_spec.description:
-                    log.append(f"   功能描述：{db_spec.description[:80]}…")
-
-            # ⑥ 编译并保存
-            log.append("⚙️  正在编译…")
-            compile_result = compile_plc(plc_sw)
-            save_project(project)
-
-            status = "✅ 编译成功" if compile_result.success else "⚠️ 编译有警告/错误"
-            log.append(f"{status}，项目已保存。")
-            if compile_result.messages:
-                log.append("编译消息：")
-                log.extend(f"   {m}" for m in compile_result.messages[:10])
-
-            return "\n".join(log)
-
         except Exception as exc:
-            log.append(f"❌ 执行失败：{exc}")
-            log.append(traceback.format_exc())
-            _cleanup_session()
-            return "\n".join(log)
+            return f"❌ 解析 xlsx 失败：{exc}\n{traceback.format_exc()}"
+
+        lines: List[str] = []
+
+        # ── 硬件设备清单 ──────────────────────────────────────────────────────
+        lines.append(f"=== 硬件设备清单（共 {len(spec.hardware)} 项）===")
+        for hw in spec.hardware:
+            lines.append(
+                f"  [{hw.category}] {hw.model_full}"
+                + (f"  订货号：{hw.order_number}" if hw.order_number else "")
+                + (f"  数量：{hw.quantity}" if hw.quantity and hw.quantity != 1 else "")
+            )
+
+        # 提取 CPU 订货号供后续参考
+        cpu_hw = next((hw for hw in spec.hardware if "cpu" in hw.category.lower()), None)
+        if cpu_hw and cpu_hw.order_number:
+            lines.append(f"\n>>> CPU 订货号（调用 add_plc_to_project 时使用）：OrderNumber:{cpu_hw.order_number}")
+        else:
+            lines.append("\n⚠️  未在硬件清单中找到 CPU 订货号，请手动确认。")
+
+        # ── I/O 点表（按模块组） ──────────────────────────────────────────────
+        from collections import defaultdict
+        groups: dict = defaultdict(list)
+        for tag in spec.io_tags:
+            groups[tag.module_group or "Default_Tags"].append(tag)
+
+        lines.append(f"\n=== I/O 点表（共 {len(spec.io_tags)} 个变量，{len(groups)} 个模块组）===")
+        for group_name, tags in groups.items():
+            lines.append(f"\n  [变量表] {group_name}（{len(tags)} 个变量）")
+            for t in tags:
+                lines.append(
+                    f"    {t.name:<30} {t.data_type:<10} {t.address:<14}"
+                    + (f"  // {t.comment}" if t.comment else "")
+                )
+
+        # ── DB 块 ─────────────────────────────────────────────────────────────
+        lines.append(f"\n=== DB 块（共 {len(spec.db_blocks)} 个）===")
+        for i, db in enumerate(spec.db_blocks):
+            db_number = 100 + i
+            lines.append(f"\n  [DB{db_number}] {db.function_name}")
+            valid_vars = [v for v in db.variables if v.name and v.data_type]
+            lines.append(f"  变量数：{len(valid_vars)}")
+            for v in valid_vars:
+                offset_str = str(v.offset).strip() if v.offset is not None else ""
+                lines.append(
+                    f"    {v.name:<30} {v.data_type:<20} offset={offset_str:<8}"
+                    + (f"  // {v.comment}" if v.comment else "")
+                )
+
+        # ── LAD 功能逻辑清单（核心：每条描述对应一个需要生成的 LAD 程序块）────
+        lines.append(
+            f"\n=== LAD 功能逻辑清单（共 {len(spec.logic_functions)} 个功能，每个功能需调用 add_lad_block 生成 LAD 块）==="
+        )
+        if not spec.logic_functions:
+            lines.append("  （xlsx 中未找到功能描述，无需生成 LAD 块）")
+        for fn in spec.logic_functions:
+            lines.append(f"\n  [FC{fn.block_index}] 功能名称：{fn.function_name}")
+            lines.append(f"  关联 DB 块：{fn.db_block_name}")
+            lines.append(f"  >>> 逻辑描述（根据此描述生成 LAD 梯级）：")
+            lines.append(f"  {fn.description}")
+            lines.append(
+                f"  >>> 调用方式：add_lad_block(block_name=\"FC_{fn.block_index}\", "
+                f"block_type=\"FC\", block_number={fn.block_index}, "
+                f"networks_json=<根据上述描述生成的梯级 JSON>)"
+            )
+
+        lines.append(
+            f"\n=== 汇总 ===\n"
+            f"  硬件：{len(spec.hardware)} 项\n"
+            f"  I/O 变量：{len(spec.io_tags)} 个（{len(groups)} 个变量表）\n"
+            f"  DB 块：{len(spec.db_blocks)} 个\n"
+            f"  LAD 逻辑功能：{len(spec.logic_functions)} 个（需调用 add_lad_block 生成）"
+        )
+
+        return "\n".join(lines)

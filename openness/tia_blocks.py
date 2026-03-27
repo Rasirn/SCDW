@@ -9,10 +9,31 @@ tia_blocks.py
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import List, Optional
 
 from .tia_core import safe_filename, write_text_file
+
+# TIA Portal SCL 变量名规则：以字母或下划线开头，只含字母/数字/下划线
+_VAR_NAME_RE = re.compile(r'^[A-Za-z_\u4e00-\u9fff][A-Za-z0-9_\u4e00-\u9fff]*$')
+
+
+def _validate_var_name(name: str) -> None:
+    """校验 TIA Portal 变量名，不合法时抛出 ValueError。"""
+    if not name:
+        raise ValueError("变量名不能为空")
+    if name[0].isdigit():
+        raise ValueError(
+            f"变量名 '{name}' 以数字开头，TIA Portal 不允许此格式。"
+            f"建议改为下划线或字母开头，如 '_{name}' 或将数字移至末尾。"
+        )
+    if not _VAR_NAME_RE.match(name):
+        invalid_chars = {c for c in name if not re.match(r'[A-Za-z0-9_\u4e00-\u9fff]', c)}
+        raise ValueError(
+            f"变量名 '{name}' 含非法字符 {invalid_chars}（不允许空格、连字符等）。"
+            f"请只使用字母、数字、下划线或中文字符。"
+        )
 
 
 # ── 数据结构 ──────────────────────────────────────────────────────────────────
@@ -24,6 +45,7 @@ class DBVariable:
     data_type: str
     initial_value: str = ""
     comment: str = ""
+    offset: str = ""   # 逻辑偏移量，如 "0.0"、"2"，仅用于 SCL 注释中记录，不影响 TIA 编译器分配地址
 
 
 # ── 内部辅助 ──────────────────────────────────────────────────────────────────
@@ -72,7 +94,7 @@ def import_scl_block(
     _delete_if_exists(_find_external_source(plc_software, block_name))
 
     filename = safe_filename(block_name, ".scl")
-    scl_path = write_text_file(temp_dir, filename, scl_content)
+    scl_path = write_text_file(temp_dir, filename, scl_content, encoding="utf-8-sig")
 
     ext_src = plc_software.ExternalSourceGroup.ExternalSources.CreateFromFile(
         block_name, scl_path
@@ -83,6 +105,52 @@ def import_scl_block(
 
 
 # ── 全局 DB ───────────────────────────────────────────────────────────────────
+
+# TIA Portal SCL 中不需要加引号的基础类型（小写）
+_S7_PRIMITIVE_TYPES: frozenset = frozenset({
+    "bool", "byte", "word", "dword", "lword",
+    "int", "uint", "sint", "usint", "dint", "udint", "lint", "ulint",
+    "real", "lreal",
+    "time", "ltime", "date", "time_of_day", "tod", "ltime_of_day", "ltod",
+    "date_and_time", "dt", "ldt",
+    "char", "wchar", "string", "wstring",
+    "s5time",
+})
+
+
+def _scl_type(data_type: str) -> tuple[str, bool]:
+    """
+    规范化 SCL 类型名，返回 (scl_type_str, is_primitive)。
+
+    - 基础类型原样返回，is_primitive=True
+    - Array / String[n] / WString[n]：原样返回，is_primitive=True（允许初始值）
+    - 已有双引号：原样返回，is_primitive=False
+    - 其他（UDT、系统结构体如 IEC_TIMER、FB 实例）：加双引号，is_primitive=False
+      → 复合类型在 DATA_BLOCK 中不允许 := 初始值
+    """
+    s = data_type.strip()
+    lower = s.lower()
+
+    if s.startswith('"'):
+        return s, False
+
+    # Array 类型（Array[lo..hi] of T）
+    if lower.startswith("array"):
+        return s, True
+
+    # String / WString 含长度参数
+    if lower.startswith("string[") or lower.startswith("wstring["):
+        return s, True
+
+    # 纯基础类型（可能携带长度，如 String 不含括号时）
+    base = lower.split("[")[0].strip()
+    if base in _S7_PRIMITIVE_TYPES:
+        return s, True
+
+    # 其余为复合/UDT/系统类型 → 加双引号，不允许初始值
+    return f'"{s}"', False
+
+
 def build_global_db_scl(
     db_name: str,
     db_number: int,
@@ -101,14 +169,18 @@ def build_global_db_scl(
     """
     lines = [
         f'DATA_BLOCK "{db_name}"',
-        "{ S7_Optimized_Access := 'TRUE' }",
+        "{ S7_Optimized_Access := 'FALSE' }",
         "VERSION : 0.1",
+        "NON_RETAIN",
         "VAR",
     ]
     for var in variables:
+        _validate_var_name(var.name)
+        scl_dtype, is_primitive = _scl_type(var.data_type)
         comment_part = f"  // {var.comment}" if var.comment else ""
-        init_part = f" := {var.initial_value}" if var.initial_value else ""
-        lines.append(f"    {var.name} : {var.data_type}{init_part};{comment_part}")
+        # 复合类型（IEC_TIMER 等系统结构体/UDT）不允许 := 初始值
+        init_part = f" := {var.initial_value}" if (var.initial_value and is_primitive) else ""
+        lines.append(f"    {var.name} : {scl_dtype}{init_part};{comment_part}")
     lines += ["END_VAR", "", "BEGIN", "END_DATA_BLOCK"]
     return "\n".join(lines)
 
