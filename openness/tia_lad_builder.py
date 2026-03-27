@@ -998,3 +998,88 @@ def _parse_boxes(boxes_json: list) -> List[LadBox]:
             dest_type=b.get("dest_type", ""),
         ))
     return result
+
+
+# ── XML 验证 ──────────────────────────────────────────────────────────────────
+
+# 各 Part 类型允许的引脚名
+_VALID_PINS: Dict[str, set] = {
+    "Contact":  {"in", "out", "operand"},
+    "PContact": {"in", "out", "operand"},
+    "NContact": {"in", "out", "operand"},
+    "Coil":     {"in", "out", "operand"},
+    "SCoil":    {"in", "out", "operand"},
+    "RCoil":    {"in", "out", "operand"},
+    "Or":       {f"in{i}" for i in range(1, 33)} | {"out"},
+    "Move":     {"en", "eno", "in"} | {f"out{i}" for i in range(1, 33)},
+    "Add":      {"en", "eno", "out"} | {f"in{i}" for i in range(1, 33)},
+    "Sub":      {"en", "eno", "in1", "in2", "out"},
+    "Mul":      {"en", "eno", "out"} | {f"in{i}" for i in range(1, 33)},
+    "Div":      {"en", "eno", "in1", "in2", "out"},
+    "Convert":  {"en", "eno", "in", "out"},
+    "Round":    {"en", "eno", "in", "out"},
+    "Trunc":    {"en", "eno", "in", "out"},
+    "Ceil":     {"en", "eno", "in", "out"},
+    "Floor":    {"en", "eno", "in", "out"},
+    "Eq":       {"pre", "out", "in1", "in2"},
+    "Ne":       {"pre", "out", "in1", "in2"},
+    "Gt":       {"pre", "out", "in1", "in2"},
+    "Lt":       {"pre", "out", "in1", "in2"},
+    "Ge":       {"pre", "out", "in1", "in2"},
+    "Le":       {"pre", "out", "in1", "in2"},
+    "TON":      {"in", "Q", "PT", "ET"},
+    "TOF":      {"in", "Q", "PT", "ET"},
+    "TP":       {"in", "Q", "PT", "ET"},
+    "TON_TIME": {"in", "Q", "PT", "ET"},
+    "TOF_TIME": {"in", "Q", "PT", "ET"},
+    "TP_TIME":  {"in", "Q", "PT", "ET"},
+    "CTU":      {"cu", "r", "PV", "Q", "CV"},
+    "CTD":      {"cd", "ld", "PV", "Q", "CV"},
+    "CTUD":     {"cu", "cd", "r", "ld", "PV", "QU", "QD", "CV"},
+    "SR":       {"S1", "R", "Q"},
+    "RS":       {"S", "R1", "Q"},
+}
+
+
+def validate_lad_xml(xml: str) -> List[str]:
+    """
+    验证生成的 LAD XML 中 UID 引用和引脚名是否正确。
+
+    Returns:
+        错误消息列表（空列表表示无错误）
+    """
+    import re as _re
+    errors: List[str] = []
+
+    # 收集所有 Part（有 Name 连接的元素）
+    parts = {uid: name for name, uid in _re.findall(
+        r'<Part Name="(\w+)" UId="(\d+)"', xml)}
+
+    # 收集所有 Access（只能用 IdentCon 引用）
+    accesses = set(_re.findall(r'<Access[^>]*UId="(\d+)"', xml))
+
+    # 检查所有 NameCon 引用
+    for uid, pin in _re.findall(r'<NameCon UId="(\d+)" Name="(\w+)"', xml):
+        if uid in accesses:
+            errors.append(
+                f"Wire 错误引用了 Access 元素（UID={uid}）的引脚 '{pin}'，"
+                f"Access 只能用 IdentCon 引用")
+        elif uid not in parts:
+            errors.append(
+                f"Wire 引用了不存在的 UID={uid}（引脚 '{pin}'）")
+        else:
+            part_name = parts[uid]
+            valid = _VALID_PINS.get(part_name)
+            if valid and pin not in valid:
+                errors.append(
+                    f"{part_name}(UID={uid}) 没有引脚 '{pin}'，"
+                    f"有效引脚: {sorted(valid)}")
+
+    # 检查所有 IdentCon 引用（应指向 Access 或带 Instance 的 Part 子元素）
+    for uid in _re.findall(r'<IdentCon UId="(\d+)"', xml):
+        if uid in parts and uid not in accesses:
+            errors.append(
+                f"IdentCon 错误引用了 Part 元素 {parts[uid]}（UID={uid}），"
+                f"Part 应该用 NameCon 引用")
+
+    return errors

@@ -258,6 +258,8 @@ def register_mcp_tools(mcp) -> None:
 
     编译下载：
       compile_and_save       编译并保存当前项目
+      compile_check          仅编译不保存，用于检查错误
+      delete_plc_block       删除指定程序块（编译失败后重建用）
 
     自动化工具：
       create_project_from_xlsx  从 xlsx 文件一键创建完整 TIA 项目
@@ -278,7 +280,9 @@ def register_mcp_tools(mcp) -> None:
         DBVariable,
         build_lad_xml,
         lad_networks_from_json,
+        validate_lad_xml,
         compile_plc,
+        delete_block,
     )
     from data.xlsx_reader import read_plc_project_xlsx
 
@@ -552,7 +556,8 @@ def register_mcp_tools(mcp) -> None:
         description=(
             "向指定 PLC 设备导入梯形图（LAD）程序块。\n"
             "本工具采用「JSON 逻辑描述 → Python 自动生成 XML」方案，\n"
-            "你只需描述梯级逻辑，无需手写 XML。\n\n"
+            "你只需描述梯级逻辑，无需手写 XML。\n"
+            "【重要】同名块会自动覆盖，编译失败后可直接重新调用此工具修正。\n\n"
             "【block_type】：FC | FB | OB\n"
             "【block_number】：块编号（整数）\n"
             "【networks_json】：JSON 数组，每项描述一个梯级（网络）\n\n"
@@ -565,18 +570,37 @@ def register_mcp_tools(mcp) -> None:
             "  type: Coil=普通输出, SCoil=SET置位, RCoil=RESET复位\n\n"
             "═══ 功能块 boxes ═══（放在 contacts 之后、outputs 之前）\n"
             "支持的 box type：\n"
-            "  定时器: TON, TOF, TP (需要 instance_db)\n"
-            "  计数器: CTU, CTD, CTUD (需要 instance_db)\n"
-            "  赋值:   Move\n"
-            "  数学:   Add, Sub, Mul, Div\n"
-            "  比较:   Eq, Ne, Gt, Lt, Ge, Le\n"
-            "  触发器: SR, RS\n\n"
+            "  定时器:   TON, TOF, TP (需要 instance_db)\n"
+            "  计数器:   CTU, CTD, CTUD (需要 instance_db)\n"
+            "  赋值:     Move\n"
+            "  数学:     Add, Sub, Mul, Div\n"
+            "  比较:     Eq, Ne, Gt, Lt, Ge, Le\n"
+            "  触发器:   SR, RS\n"
+            "  类型转换: Convert, Round, Trunc, Ceil, Floor\n\n"
+            "═══ ⚠️ 数据类型转换规则（必须遵守！）═══\n"
+            "TIA Portal 不允许不同类型直接赋值，必须使用类型转换指令：\n"
+            "  Real → Int/DInt:  用 Convert (或 Round/Trunc/Ceil/Floor)\n"
+            "  Int → Real:       用 Convert\n"
+            "  Int → Bool:       不能直接转换！应使用比较指令 Ne（!=0）\n"
+            "  Bool → Int:       不能直接转换！应使用 Move(1) 配合条件触点\n"
+            "  DInt → Int:       用 Convert\n"
+            "  Word → Int:       用 Convert\n"
+            "数学运算指令（Add/Sub/Mul/Div）的输入输出类型必须一致！\n"
+            "  如需 Real*Int，先将 Int 转为 Real，再做乘法。\n\n"
             "Box JSON 格式：\n"
             "  {\n"
             "    \"type\": \"TON\",\n"
             "    \"instance_db\": \"DB_Motor.Timer1\",\n"
             "    \"params\": {\"PT\": \"T#5s\"},\n"
             "    \"outputs_from\": {\"Q\": \"DB1.DelayDone\", \"ET\": \"DB1.Elapsed\"}\n"
+            "  }\n\n"
+            "类型转换 Box JSON 格式（需要 src_type + dest_type）：\n"
+            "  {\n"
+            "    \"type\": \"Convert\",\n"
+            "    \"src_type\": \"Real\",\n"
+            "    \"dest_type\": \"Int\",\n"
+            "    \"params\": {\"in\": \"DB1.RealValue\"},\n"
+            "    \"outputs_from\": {\"out\": \"DB1.IntValue\"}\n"
             "  }\n\n"
             "═══ 梯级格式示例 ═══\n\n"
             "1. 基本串联（AND）：\n"
@@ -591,7 +615,7 @@ def register_mcp_tools(mcp) -> None:
             "3. 带比较器：\n"
             "  {\"title\": \"超限报警\",\n"
             "   \"contacts\": [{\"var\": \"DB1.Enable\", \"nc\": false}],\n"
-            "   \"boxes\": [{\"type\": \"Gt\", \"params\": {\"in1\": \"DB1.Temp\", \"in2\": \"80.0\"}}],\n"
+            "   \"boxes\": [{\"type\": \"Gt\", \"params\": {\"in1\": \"DB1.Temp\", \"in2\": \"80.0\"}, \"src_type\": \"Real\"}],\n"
             "   \"outputs\": [{\"var\": \"DB1.Alarm\", \"type\": \"SCoil\"}]}\n\n"
             "4. 并联（OR）：\n"
             "  {\"title\": \"多条件\",\n"
@@ -605,6 +629,26 @@ def register_mcp_tools(mcp) -> None:
             "  {\"title\": \"参数传递\",\n"
             "   \"contacts\": [{\"var\": \"DB1.Enable\", \"nc\": false}],\n"
             "   \"boxes\": [{\"type\": \"Move\", \"params\": {\"in\": \"DB1.SP\"}, \"outputs_from\": {\"out1\": \"DB1.PV\"}}],\n"
+            "   \"outputs\": []}\n\n"
+            "6. 类型转换（Real→Int）：\n"
+            "  {\"title\": \"浮点转整数\",\n"
+            "   \"contacts\": [{\"var\": \"DB1.Enable\", \"nc\": false}],\n"
+            "   \"boxes\": [{\"type\": \"Convert\", \"src_type\": \"Real\", \"dest_type\": \"Int\",\n"
+            "              \"params\": {\"in\": \"DB1.RealVal\"}, \"outputs_from\": {\"out\": \"DB1.IntVal\"}}],\n"
+            "   \"outputs\": []}\n\n"
+            "7. Int→Bool（用比较实现）：\n"
+            "  {\"title\": \"整数转布尔\",\n"
+            "   \"contacts\": [],\n"
+            "   \"boxes\": [{\"type\": \"Ne\", \"params\": {\"in1\": \"DB1.IntStatus\", \"in2\": \"0\"}, \"src_type\": \"Int\"}],\n"
+            "   \"outputs\": [{\"var\": \"DB1.BoolFlag\", \"type\": \"Coil\"}]}\n\n"
+            "8. 串联多个 box（先转换再运算）：\n"
+            "  {\"title\": \"先转换再赋值\",\n"
+            "   \"contacts\": [{\"var\": \"DB1.Enable\", \"nc\": false}],\n"
+            "   \"boxes\": [\n"
+            "     {\"type\": \"Convert\", \"src_type\": \"Real\", \"dest_type\": \"Int\",\n"
+            "      \"params\": {\"in\": \"DB1.RealVal\"}, \"outputs_from\": {\"out\": \"DB1.TempInt\"}},\n"
+            "     {\"type\": \"Move\", \"params\": {\"in\": \"DB1.TempInt\"}, \"outputs_from\": {\"out1\": \"DB1.Target\"}}\n"
+            "   ],\n"
             "   \"outputs\": []}\n\n"
             "═══ var 路径规则 ═══\n"
             "  全局标签: \"StartButton\"\n"
@@ -641,6 +685,27 @@ def register_mcp_tools(mcp) -> None:
             networks = lad_networks_from_json(nets_data)
             xml_content = build_lad_xml(block_name, bt, block_number, networks)
 
+            # 导入前验证 XML 结构
+            validation_errors = validate_lad_xml(xml_content)
+            if validation_errors:
+                temp_dir = _ensure_temp_dir()
+                # 保存调试文件
+                json_path = os.path.join(temp_dir, f"{block_name}_debug_input.json")
+                xml_path = os.path.join(temp_dir, f"{block_name}_debug_output.xml")
+                with open(json_path, "w", encoding="utf-8") as f:
+                    json.dump(nets_data, f, ensure_ascii=False, indent=2)
+                with open(xml_path, "w", encoding="utf-8") as f:
+                    f.write(xml_content)
+                err_list = "\n".join(f"  - {e}" for e in validation_errors)
+                return (
+                    f"❌ LAD XML 验证失败（未导入），发现 {len(validation_errors)} 个结构错误：\n"
+                    f"{err_list}\n\n"
+                    f"调试文件已保存：\n"
+                    f"  JSON 输入：{json_path}\n"
+                    f"  XML 输出：{xml_path}\n"
+                    f"请检查 networks_json 中的 box type / pin 名称是否正确。"
+                )
+
             plc_sw = _get_plc_software(device_name)
             temp_dir = _ensure_temp_dir()
             import_lad_xml_block(plc_sw, temp_dir, block_name, xml_content)
@@ -650,7 +715,89 @@ def register_mcp_tools(mcp) -> None:
                 f"共 {len(networks)} 个网络。"
             )
         except Exception as exc:
-            return f"❌ 导入 LAD 块失败：{exc}\n{traceback.format_exc()}"
+            # 导入失败时保存调试文件
+            err_msg = str(exc)
+            debug_info = ""
+            try:
+                temp_dir = _ensure_temp_dir()
+                json_path = os.path.join(temp_dir, f"{block_name}_debug_input.json")
+                xml_path = os.path.join(temp_dir, f"{block_name}_debug_output.xml")
+                with open(json_path, "w", encoding="utf-8") as f:
+                    json.dump(nets_data, f, ensure_ascii=False, indent=2)
+                with open(xml_path, "w", encoding="utf-8") as f:
+                    f.write(xml_content)
+                debug_info = (
+                    f"\n\n调试文件已保存：\n"
+                    f"  JSON 输入：{json_path}\n"
+                    f"  XML 输出：{xml_path}"
+                )
+            except Exception:
+                pass
+            return f"❌ 导入 LAD 块失败：{err_msg}{debug_info}\n{traceback.format_exc()}"
+
+    # ── 8b. preview_lad_xml ──────────────────────────────────────────────────
+    @mcp.tool(
+        name="preview_lad_xml",
+        description=(
+            "【调试工具】仅生成 LAD XML 并验证，不导入 TIA Portal。\n"
+            "用途：在导入前检查 networks_json 生成的 XML 是否正确。\n"
+            "返回验证结果和 XML 文件保存路径，供人工检查。\n"
+            "参数与 add_lad_block 相同（不需要 device_name）。"
+        ),
+    )
+    def preview_lad_xml(
+        block_name: str,
+        block_type: str,
+        block_number: int,
+        networks_json,
+    ) -> str:
+        """生成 LAD XML 并验证，不导入到 TIA。"""
+        try:
+            nets_data: list = (
+                networks_json if isinstance(networks_json, list)
+                else json.loads(networks_json)
+            )
+            if not isinstance(nets_data, list):
+                return "❌ networks_json 必须是 JSON 数组。"
+
+            bt = block_type.upper()
+            if bt not in ("FC", "FB", "OB"):
+                return "❌ block_type 必须是 FC、FB 或 OB。"
+
+            networks = lad_networks_from_json(nets_data)
+            xml_content = build_lad_xml(block_name, bt, block_number, networks)
+
+            # 验证 XML
+            validation_errors = validate_lad_xml(xml_content)
+
+            # 保存文件
+            temp_dir = _ensure_temp_dir()
+            json_path = os.path.join(temp_dir, f"{block_name}_preview_input.json")
+            xml_path = os.path.join(temp_dir, f"{block_name}_preview_output.xml")
+            with open(json_path, "w", encoding="utf-8") as f:
+                json.dump(nets_data, f, ensure_ascii=False, indent=2)
+            with open(xml_path, "w", encoding="utf-8") as f:
+                f.write(xml_content)
+
+            lines = [
+                f"LAD XML 预览 - {block_name} ({bt}{block_number})",
+                f"网络数：{len(networks)}",
+                f"XML 大小：{len(xml_content)} 字节",
+            ]
+
+            if validation_errors:
+                lines.append(f"\n⚠️ 发现 {len(validation_errors)} 个验证错误：")
+                for e in validation_errors:
+                    lines.append(f"  - {e}")
+            else:
+                lines.append("\n✅ XML 结构验证通过，可以安全导入。")
+
+            lines.append(f"\n文件已保存：")
+            lines.append(f"  JSON 输入：{json_path}")
+            lines.append(f"  XML 输出：{xml_path}")
+            return "\n".join(lines)
+        except Exception as exc:
+            return f"❌ XML 生成失败：{exc}\n{traceback.format_exc()}"
 
     # ── 9. compile_and_save ───────────────────────────────────────────────────
     @mcp.tool(
@@ -675,7 +822,64 @@ def register_mcp_tools(mcp) -> None:
         except Exception as exc:
             return f"❌ 编译/保存失败：{exc}"
 
-    # ── 9. read_project_spec_from_xlsx ────────────────────────────────────────
+    # ── 10. compile_check ─────────────────────────────────────────────────────
+    @mcp.tool(
+        name="compile_check",
+        description=(
+            "仅编译指定 PLC 设备的软件（不保存项目），用于检查是否有编译错误。\n"
+            "返回编译状态和详细错误/警告消息列表。\n"
+            "【工作流程】：\n"
+            "  1. 先导入所有块 → 调用 compile_check 检查错误\n"
+            "  2. 若有类型不匹配等错误 → 修正 networks_json → 重新调用 add_lad_block（自动覆盖）\n"
+            "  3. 再次 compile_check 确认无误 → 最后调用 compile_and_save 保存\n"
+            "【常见编译错误及修复方法】：\n"
+            "  - 'Operand type mismatch' / 类型不匹配 → 使用 Convert 指令做类型转换\n"
+            "  - Real→Int: 用 Convert(src_type=Real, dest_type=Int)\n"
+            "  - Int→Bool: 用 Ne 比较指令 (in1=IntVar, in2=0) 代替直接赋值\n"
+            "  - 数学运算类型不一致: 先 Convert 统一类型再运算"
+        ),
+    )
+    def compile_check(device_name: str) -> str:
+        """仅编译 PLC 软件，返回编译结果（不保存）。"""
+        try:
+            _check_session()
+            plc_sw = _get_plc_software(device_name)
+            result = compile_plc(plc_sw)
+
+            status = "✅ 编译通过，无错误" if result.success else "⚠️ 编译有错误，需要修正"
+            lines = [status, result.summary()]
+            if not result.success:
+                lines.append(
+                    "\n💡 提示：可用 add_lad_block 重新调用修正后的块（同名自动覆盖），"
+                    "修正后再次 compile_check 验证。"
+                )
+            return "\n".join(lines)
+        except Exception as exc:
+            return f"❌ 编译检查失败：{exc}"
+
+    # ── 11. delete_plc_block ──────────────────────────────────────────────────
+    @mcp.tool(
+        name="delete_plc_block",
+        description=(
+            "删除指定 PLC 设备中的程序块。\n"
+            "用途：当编译失败且重新导入覆盖无法解决时，可先删除再重建。\n"
+            "注意：通常不需要先删除再导入 —— add_lad_block 和 import_scl_block 会自动覆盖同名块。"
+        ),
+    )
+    def delete_plc_block(device_name: str, block_name: str) -> str:
+        """删除 PLC 中的指定程序块。"""
+        try:
+            _check_session()
+            plc_sw = _get_plc_software(device_name)
+            found = delete_block(plc_sw, block_name)
+            if found:
+                return f"✅ 程序块 '{block_name}' 已从 {device_name} 中删除。"
+            else:
+                return f"ℹ️ 未找到程序块 '{block_name}'，无需删除。"
+        except Exception as exc:
+            return f"❌ 删除程序块失败：{exc}"
+
+    # ── 12. read_project_spec_from_xlsx ───────────────────────────────────────
     @mcp.tool(
         name="read_project_spec_from_xlsx",
         description=(
@@ -691,9 +895,12 @@ def register_mcp_tools(mcp) -> None:
             "  3. create_plc_tag_table   — 按模块组创建变量表\n"
             "  4. create_global_db       — 创建各 DB 块\n"
             "  5. add_lad_block          — 【重要】根据 LAD 功能逻辑清单为每个功能生成 LAD 程序块\n"
-            "  6. compile_and_save       — 编译并保存\n\n"
-            "注意：LAD 功能逻辑清单中的每条描述都需要生成对应的 LAD 块（FC），\n"
-            "描述中包含的条件/动作信息应转化为 contacts/outputs 梯级逻辑。"
+            "  6. compile_check          — 检查编译错误（不保存），有类型错误则修正后重新 add_lad_block\n"
+            "  7. compile_and_save       — 确认无误后编译并保存\n\n"
+            "注意：\n"
+            "  - LAD 功能逻辑清单中的每条描述都需要生成对应的 LAD 块（FC）\n"
+            "  - 描述中包含的条件/动作信息应转化为 contacts/outputs 梯级逻辑\n"
+            "  - 注意数据类型匹配：Real→Int需要Convert，Int→Bool需要比较指令"
         ),
     )
     def read_project_spec_from_xlsx(xlsx_path: str) -> str:

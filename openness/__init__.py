@@ -59,6 +59,7 @@ from .tia_lad_builder import (
     LadNetwork,
     build_lad_xml,
     lad_networks_from_json,
+    validate_lad_xml,
 )
 
 from .tia_compiler import (
