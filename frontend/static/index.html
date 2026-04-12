@@ -8,7 +8,20 @@
   <!-- marked.js for markdown rendering (CDN, prototype only) -->
   <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
 
+  <!-- ══════════════════════════════════════════════════════════════════
+       FONT / WINDOW SIZE  —  直接修改下面这一行即可
+       可选值: 1.3 = 大  |  1.0 = 中  |  0.88 = 小
+       窗口尺寸会随缩放比例自动调整
+  ═══════════════════════════════════════════════════════════════════ -->
+  <script>
+    window.MAC_ZOOM = 1.3;
+    document.documentElement.style.setProperty('--zoom', window.MAC_ZOOM);
+  </script>
+
   <style>
+    /* ── font-size zoom ───────────────────────────────────────────────── */
+    :root { --zoom: 1.3; }   /* overwritten immediately by inline script */
+
     /* ── design tokens ─────────────────────────────────────────────────── */
     :root {
       --bg:            #0d0d14;
@@ -51,8 +64,10 @@
     #app {
       display: flex;
       flex-direction: column;
-      height: 100vh;
-      max-height: 100vh;
+      /* zoom + compensated height so the bottom input row is never clipped */
+      zoom: var(--zoom, 1);
+      height: calc(100vh / var(--zoom, 1));
+      max-height: calc(100vh / var(--zoom, 1));
     }
 
     /* ── header ────────────────────────────────────────────────────────── */
@@ -350,6 +365,9 @@
       padding: 10px 13px;
       line-height: 1.65;
       animation: slide-from-left 0.26s ease;
+      /* Make agent text selectable */
+      user-select: text;
+      -webkit-user-select: text;
     }
 
     .agent-label {
@@ -361,7 +379,12 @@
       margin-bottom: 6px;
     }
 
-    /* markdown inside agent-msg */
+    /* markdown inside agent-msg – always selectable */
+    .agent-content {
+      user-select: text;
+      -webkit-user-select: text;
+      cursor: text;
+    }
     .agent-content p              { margin-bottom: 6px; }
     .agent-content p:last-child   { margin-bottom: 0; }
     .agent-content code {
@@ -599,6 +622,12 @@ const statusTxt  = document.getElementById('status-txt');
 const overlay    = document.getElementById('init-overlay');
 const initMsg    = document.getElementById('init-msg');
 const btnClear   = document.getElementById('btn-clear');
+
+/* ── window resize to match zoom ───────────────────────────────────────── */
+// Base window dimensions (must match main_gui.py webview.create_window)
+const BASE_W = 440, BASE_H = 700;
+const _zoom  = window.MAC_ZOOM || 1.3;
+window.resizeTo(Math.round(BASE_W * _zoom), Math.round(BASE_H * _zoom));
 
 /* ── state ──────────────────────────────────────────────────────────────── */
 let ws            = null;

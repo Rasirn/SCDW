@@ -134,7 +134,11 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
 
             # ── clear conversation history ────────────────────────────────────
             if msg_type == "clear":
-                _chat.messages.clear()
+                # Keep only the system prompt (first message) to preserve identity
+                if _chat.messages and _chat.messages[0].get("role") == "system":
+                    _chat.messages[1:] = []
+                else:
+                    _chat.messages.clear()
                 await websocket.send_json({"type": "cleared"})
                 continue
 
