@@ -715,7 +715,7 @@ def register_mcp_tools(mcp) -> None:
                 f"共 {len(networks)} 个网络。"
             )
         except Exception as exc:
-            # 导入失败时保存调试文件
+            # 导入失败时保存调试文件并定位出错网络
             err_msg = str(exc)
             debug_info = ""
             try:
@@ -726,8 +726,37 @@ def register_mcp_tools(mcp) -> None:
                     json.dump(nets_data, f, ensure_ascii=False, indent=2)
                 with open(xml_path, "w", encoding="utf-8") as f:
                     f.write(xml_content)
+
+                # 尝试从错误信息中提取行号，定位出错的网络
+                network_hint = ""
+                import re as _re
+                line_match = _re.search(r'line number (\d+)', err_msg)
+                uid_match = _re.search(r"UID '(\d+)'", err_msg)
+                conn_match = _re.search(r"name '(\w+)'.*?UID '(\d+)'", err_msg)
+                if line_match:
+                    err_line = int(line_match.group(1))
+                    # 定位是第几个网络
+                    lines_before = xml_content[:sum(len(l)+1 for l in xml_content.split('\n')[:err_line])].count('CompileUnit')
+                    for net_idx, nd in enumerate(nets_data):
+                        pass  # just count
+                    network_hint += f"\n  出错行号：{err_line}"
+                if uid_match:
+                    bad_uid = uid_match.group(1)
+                    # 在 XML 中查找此 UID 属于什么元素
+                    uid_ctx = _re.search(
+                        rf'UId="{bad_uid}"[^>]*>?.*?(?:</\w+>|/>)',
+                        xml_content, _re.DOTALL)
+                    if uid_ctx:
+                        snippet = uid_ctx.group()[:200].replace('\n', ' ').strip()
+                        network_hint += f"\n  UID {bad_uid} 对应元素：{snippet}"
+                if conn_match:
+                    pin_name = conn_match.group(1)
+                    ref_uid = conn_match.group(2)
+                    network_hint += f"\n  错误连接：引脚 '{pin_name}' 在 UID {ref_uid} 上不存在"
+
                 debug_info = (
-                    f"\n\n调试文件已保存：\n"
+                    f"\n\n📋 调试信息：{network_hint}\n"
+                    f"调试文件已保存：\n"
                     f"  JSON 输入：{json_path}\n"
                     f"  XML 输出：{xml_path}"
                 )

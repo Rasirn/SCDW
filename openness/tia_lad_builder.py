@@ -802,22 +802,56 @@ _OB_INTERFACE = """\
 _INTERFACES = {"FC": _FC_INTERFACE, "FB": _FB_INTERFACE, "OB": _OB_INTERFACE}
 
 
+# ── OB 块 SecondaryType 映射 ──────────────────────────────────────────────────
+
+def _get_ob_secondary_type(block_number: int) -> str:
+    """根据 OB 编号返回 SecondaryType。"""
+    if block_number == 1:
+        return "ProgramCycle"
+    if block_number == 100:
+        return "Startup"
+    if 10 <= block_number <= 17:
+        return "TimeOfDay"
+    if 20 <= block_number <= 23:
+        return "TimeDelay"
+    if 30 <= block_number <= 38:
+        return "CyclicInterrupt"
+    if 40 <= block_number <= 47:
+        return "HardwareInterrupt"
+    if block_number == 80:
+        return "TimeError"
+    if block_number == 82:
+        return "DiagnosticError"
+    if block_number == 83:
+        return "PullOrPlugOfModules"
+    if block_number == 86:
+        return "RackOrStationFailure"
+    if block_number == 121:
+        return "ProgrammingError"
+    if block_number == 122:
+        return "IOAccessError"
+    # 默认为程序循环 OB
+    return "ProgramCycle"
+
+
 def build_lad_xml(
     block_name: str,
     block_type: str,
     block_number: int,
     networks: List[LadNetwork],
     tia_version: str = "V17",
+    secondary_type: str = "",
 ) -> str:
     """
     生成完整的 TIA Portal LAD 块 SimaticML/XML。
 
     Args:
-        block_name:   块名称，如 "FC_Motor"
-        block_type:   "FC" | "FB" | "OB"
-        block_number: 块编号
-        networks:     LadNetwork 列表
-        tia_version:  TIA Portal 版本字符串
+        block_name:     块名称，如 "FC_Motor"
+        block_type:     "FC" | "FB" | "OB"
+        block_number:   块编号
+        networks:       LadNetwork 列表
+        tia_version:    TIA Portal 版本字符串
+        secondary_type: OB 的 SecondaryType（仅 OB 需要，留空则自动推断）
 
     Returns:
         完整 XML 字符串
@@ -825,6 +859,12 @@ def build_lad_xml(
     cnt = _Counter(start=1)
     block_tag = f"SW.Blocks.{block_type.upper()}"
     interface_xml = _INTERFACES.get(block_type.upper(), _FC_INTERFACE)
+
+    # OB 块需要 SecondaryType
+    secondary_type_xml = ""
+    if block_type.upper() == "OB":
+        st = secondary_type or _get_ob_secondary_type(block_number)
+        secondary_type_xml = f'      <SecondaryType>{st}</SecondaryType>\n'
 
     blk_comment_id = cnt.next()
     blk_comment_item_id = cnt.next()
@@ -872,6 +912,7 @@ def build_lad_xml(
         f'      <Name>{block_name}</Name>\n'
         f'      <Number>{block_number}</Number>\n'
         f'      <ProgrammingLanguage>LAD</ProgrammingLanguage>\n'
+        f'{secondary_type_xml}'
         f'      <SetENOAutomatically>false</SetENOAutomatically>\n'
         f'      <UDABlockProperties />\n'
         f'      <UDAEnableTagReadback>false</UDAEnableTagReadback>\n'

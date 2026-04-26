@@ -9,4 +9,8 @@ dependencies = [
     "mcp[cli]>=1.8.0",
     "prompt-toolkit>=3.0.51",
     "python-dotenv>=1.1.0",
+    # ── frontend (GUI) ──────────────────────────────────────────────────
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.29.0",
+    "pywebview>=4.4.0",
 ]
