@@ -1,0 +1,39 @@
+{
+  "_category_desc": "应用级模板：从真实 S7-1200 工程导出的完整 LAD 程序块，含复杂逻辑（GATHER/SCATTER/Calc等），AI 参考时以此为结构样板",
+  "Main": {
+    "description": "主程序 OB1 框架模板（空 LAD 主程序，可作为 OB 创建参考）",
+    "keywords": ["Main", "OB1", "主程序", "OB", "框架"]
+  },
+  "风机燃气": {
+    "description": "风机燃气控制 FC：含复杂串并联逻辑、MOVE/Calc/Convert/GATHER/SCATTER 指令，完整 LAD 应用示例",
+    "keywords": ["风机", "燃气", "MOVE", "Calc", "Convert", "GATHER", "SCATTER", "并联", "串联", "多指令"]
+  },
+  "烧嘴控制": {
+    "description": "烧嘴控制 FC：点火/熄火逻辑，含置位复位、定时器控制序列",
+    "keywords": ["烧嘴", "点火", "熄火", "SCoil", "RCoil", "定时器", "燃烧"]
+  },
+  "烧嘴控制块": {
+    "description": "烧嘴控制 FB：带实例 DB 的功能块版本，封装了烧嘴完整控制逻辑",
+    "keywords": ["烧嘴", "FB", "功能块", "实例DB", "封装"]
+  },
+  "程序发生器": {
+    "description": "程序发生器 FC：步进程序/顺序控制逻辑，含多段顺序执行控制",
+    "keywords": ["程序发生器", "步进", "顺序控制", "状态机", "sequence"]
+  },
+  "设定值传递": {
+    "description": "设定值传递 FC：参数传递与数值转换逻辑",
+    "keywords": ["设定值", "传递", "参数", "数值", "转换"]
+  },
+  "输入信号转换块": {
+    "description": "输入信号转换 FB：模拟量/数字量输入预处理，含量程转换",
+    "keywords": ["输入", "信号", "转换", "模拟量", "量程", "Convert"]
+  },
+  "报警": {
+    "description": "报警处理 FC：报警检测、消音、复位逻辑",
+    "keywords": ["报警", "消音", "复位", "alarm", "故障"]
+  },
+  "PID参数控制": {
+    "description": "PID 参数控制 FC：PID 调节器参数设定与控制逻辑",
+    "keywords": ["PID", "参数", "控制", "调节", "PID控制"]
+  }
+}

@@ -547,6 +547,36 @@
       color: var(--text-muted);
     }
 
+    /* ── copy button ────────────────────────────────────────────────────── */
+    .copy-wrap {
+      position: relative;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      background: rgba(10, 10, 18, 0.92);
+      border: 1px solid #252540;
+      border-radius: 3px;
+      color: #4b5563;
+      cursor: pointer;
+      font-size: 9px;
+      padding: 1px 5px;
+      opacity: 0;
+      transition: opacity 0.15s, color 0.15s;
+      line-height: 1.5;
+      z-index: 2;
+      white-space: nowrap;
+    }
+    .copy-wrap:hover .copy-btn { opacity: 1; }
+    .copy-btn:hover { color: #a5b4fc; border-color: #4b5563; }
+    .copy-btn.copied { color: var(--success); border-color: var(--success); opacity: 1; }
+
+    /* agent-msg copy button (absolute in top-right corner) */
+    .agent-msg { position: relative; }
+    .agent-msg > .copy-btn { top: 8px; right: 10px; }
+    .agent-msg:hover > .copy-btn { opacity: 1; }
+
     .init-spinner {
       width: 14px; height: 14px;
       border: 2px solid var(--border);
@@ -658,7 +688,33 @@ function setBusy(on) {
   if (!on) { setStatus('ready', 'Agent 就绪'); inputEl.focus(); }
   else       setStatus('thinking', '处理中…');
 }
-
+/* ── copy helpers ──────────────────────────────────────────────────────── */
+function _copyText(text) {
+  if (navigator.clipboard) return navigator.clipboard.writeText(text);
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+  document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+  document.body.removeChild(ta); return Promise.resolve();
+}
+function makeCopyBtn(getText) {
+  const btn = document.createElement('button');
+  btn.className = 'copy-btn'; btn.title = '复制'; btn.textContent = '复制';
+  btn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    try {
+      await _copyText(getText());
+      btn.textContent = '✓'; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 1500);
+    } catch { /* ignore */ }
+  });
+  return btn;
+}
+function wrapWithCopy(el, getText) {
+  const wrap = document.createElement('div');
+  wrap.className = 'copy-wrap';
+  el.parentNode.insertBefore(wrap, el);
+  wrap.appendChild(el); wrap.appendChild(makeCopyBtn(getText));
+}
 /* ── message builders ───────────────────────────────────────────────────── */
 function appendUserMsg(text) {
   const el = document.createElement('div');
@@ -748,6 +804,9 @@ function onToolCall(evt) {
     card.querySelector('.step-body').classList.toggle('open');
   });
 
+  // 参数复制按钮
+  wrapWithCopy(card.querySelector('.step-code'), () => argsStr);
+
   curBlock.appendChild(card);
   stepCards[evt.id] = card;
   scrollBottom();
@@ -780,6 +839,9 @@ function onToolResult(evt) {
   inner.appendChild(lbl);
   inner.appendChild(res);
 
+  // 返回值复制按钮
+  wrapWithCopy(res, () => raw);
+
   // Expand max-height to fit (bump it)
   const body = card.querySelector('.step-body');
   if (body.classList.contains('open')) {
@@ -806,6 +868,10 @@ function onFinal(content) {
   bubble.innerHTML = `
     <div class="agent-label">AGENT</div>
     <div class="agent-content">${renderMd(content)}</div>`;
+
+  // 最终回答复制按钮（复制原始文本，不含 markdown 标记）
+  bubble.appendChild(makeCopyBtn(() => content));
+
   msgBox.appendChild(bubble);
 
   setBusy(false);

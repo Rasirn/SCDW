@@ -1,0 +1,31 @@
+{
+  "_category_desc": "基础示例模板：单指令/单逻辑示例，AI 生成 LAD XML 时优先参考这些模板学习正确的 XML 结构",
+  "01_串联_触点线圈": {
+    "description": "串联逻辑：常开触点 + 常闭触点串联驱动输出线圈（Contact NO → Contact NC → Coil）",
+    "keywords": ["串联", "触点", "线圈", "Contact", "Coil", "series", "NO", "NC", "常开", "常闭", "基础"]
+  },
+  "02_并联_多支路": {
+    "description": "并联逻辑：两条并联支路共用一条 Powerrail，包含置位/复位线圈示例（SCoil/RCoil）",
+    "keywords": ["并联", "多支路", "Powerrail", "SCoil", "RCoil", "置位", "复位", "parallel", "基础"]
+  },
+  "03_移动指令_MOVE": {
+    "description": "MOVE 指令示例：接触条件使能后执行数据移动（Contact → Move EN/ENO → 数据引脚连接）",
+    "keywords": ["Move", "移动", "MOVE", "FunctionBox", "数据传输", "EN", "ENO", "基础"]
+  },
+  "04_多网络示例": {
+    "description": "多程序段示例：包含 2 个 CompileUnit，段1串联逻辑、段2并联逻辑，展示多网络 UId 规范",
+    "keywords": ["多网络", "多段", "CompileUnit", "段1", "段2", "multi-network", "UId"]
+  },
+  "05_串联后分叉": {
+    "description": "串联后分叉（fan-out）：公共条件触点接通后，out 引脚同时连接多个下游线圈/指令（一句话逻辑=一个梯级的标准写法）",
+    "keywords": ["分叉", "fan-out", "公共条件", "一梯级", "梯级", "多输出", "串联后", "并行输出", "故障分支"]
+  },
+  "06_数学运算指令_Mul_Calc_Convert": {
+    "description": "数学运算指令三合一示例：Mul乘法（AutomaticTyped自动类型）、Calc公式计算（Equation子元素）、Convert类型转换（SrcType/DestType），包含 TemplateValue Type 正确枚举值说明",
+    "keywords": ["数学", "乘法", "Mul", "公式", "Calc", "类型转换", "Convert", "TemplateValue", "Cardinality", "AutomaticTyped", "Equation", "SrcType", "DestType", "Real", "Int", "运算"]
+  },
+  "07_数组访问与IO标签": {
+    "description": "数组元素访问（AccessModifier=Array + LiteralConstant下标）和PLC变量表I/O标签引用（单Component直接写标签名），包含DB成员变量与I/O标签的对比写法",
+    "keywords": ["数组", "Array", "AccessModifier", "下标", "索引", "IO标签", "变量表", "PLC标签", "Component", "GlobalVariable", "LiteralConstant", "数字量信号", "I", "Q"]
+  }
+}

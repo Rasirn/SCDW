@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  基础示例 07：数组元素访问 + I/O 标签引用
+  =====================================================
+  程序段1：数组元素作为数据引脚输入
+    将 DB.DataArray[1]（Real）复制到 DB.OutputValue（Real）
+
+  程序段2：I/O 标签（PLC变量表）的引用方式
+    使用 PLC 变量表中的直接标签（消音复位、数字量输入等）
+
+  ★ 数组元素访问格式（从真实工程导出确认）：
+    <Access Scope="GlobalVariable" UId="1">
+      <Symbol>
+        <Component Name="DB名" />
+        <Component Name="数组变量名" AccessModifier="Array">
+          <Access Scope="LiteralConstant">
+            <Constant>
+              <ConstantType>DInt</ConstantType>
+              <ConstantValue>1</ConstantValue>   ← 数组下标（从0开始）
+            </Constant>
+          </Access>
+        </Component>
+      </Symbol>
+    </Access>
+  ⛔ 数组元素的限制：
+    - 只能作为数据引脚（Move.in、Calc.in1 等）连接
+    - 不能作为 Contact/Coil 的 operand 引脚（operand 只接受 Bool 类型）
+    - Array[0..15] of Bool 整体不能用于 operand，必须映射到中间 Bool 变量
+
+  ★ I/O 标签（PLC 变量表）引用格式：
+    - 单个 Component，直接写标签名（不加变量表名前缀）
+    - 跨多个变量表时，TIA Portal 会全局查找
+    <Access Scope="GlobalVariable" UId="2">
+      <Symbol>
+        <Component Name="消音复位" />   ← 直接用标签名，不加表名
+      </Symbol>
+    </Access>
+-->
+<Document>
+  <Engineering version="V17" />
+  <SW.Blocks.FC ID="0">
+    <AttributeList>
+      <AutoNumber>true</AutoNumber>
+      <HeaderAuthor />
+      <HeaderFamily />
+      <HeaderName />
+      <HeaderVersion>0.1</HeaderVersion>
+      <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v5">
+  <Section Name="Input" />
+  <Section Name="Output" />
+  <Section Name="InOut" />
+  <Section Name="Temp" />
+  <Section Name="Constant" />
+  <Section Name="Return">
+    <Member Name="Ret_Val" Datatype="Void" Accessibility="Public" />
+  </Section>
+</Sections></Interface>
+      <IsIECCheckEnabled>false</IsIECCheckEnabled>
+      <MemoryLayout>Optimized</MemoryLayout>
+      <Name>数组访问与IO标签</Name>
+      <ProgrammingLanguage>LAD</ProgrammingLanguage>
+      <SetENOAutomatically>false</SetENOAutomatically>
+    </AttributeList>
+    <ObjectList>
+
+      <!-- ═══════════════════════════════════════════════════════════
+           程序段1：数组元素作为 MOVE 数据引脚
+           将 DB.RunDataArray[1] 复制到 DB.FreqSetpoint
+           ═══════════════════════════════════════════════════════════ -->
+      <SW.Blocks.CompileUnit ID="1" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="1">
+      <Symbol><Component Name="DB1" /><Component Name="RunFlag" /></Symbol>
+    </Access>
+
+    <!--
+      数组元素访问：DB1.RunDataArray[1]
+      AccessModifier="Array" 标识这是数组元素
+      内嵌 <Access Scope="LiteralConstant"> 指定下标（DInt 类型）
+    -->
+    <Access Scope="GlobalVariable" UId="2">
+      <Symbol>
+        <Component Name="DB1" />
+        <Component Name="RunDataArray" AccessModifier="Array">
+          <Access Scope="LiteralConstant">
+            <Constant>
+              <ConstantType>DInt</ConstantType>
+              <ConstantValue>1</ConstantValue>
+            </Constant>
+          </Access>
+        </Component>
+      </Symbol>
+    </Access>
+
+    <Access Scope="GlobalVariable" UId="3">
+      <Symbol><Component Name="DB1" /><Component Name="FreqSetpoint" /></Symbol>
+    </Access>
+
+    <Part Name="Contact" UId="10" />
+    <Part Name="Move" UId="11" DisabledENO="false">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+  </Parts>
+  <Wires>
+    <Wire UId="20"><Powerrail /><NameCon UId="10" Name="in" /></Wire>
+    <Wire UId="21"><IdentCon UId="1" /><NameCon UId="10" Name="operand" /></Wire>
+    <Wire UId="22"><NameCon UId="10" Name="out" /><NameCon UId="11" Name="en" /></Wire>
+    <!-- 数组元素作为 Move.in 数据输入 -->
+    <Wire UId="23"><IdentCon UId="2" /><NameCon UId="11" Name="in" /></Wire>
+    <Wire UId="24"><NameCon UId="11" Name="out1" /><IdentCon UId="3" /></Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+      </SW.Blocks.CompileUnit>
+
+      <!-- ═══════════════════════════════════════════════════════════
+           程序段2：PLC 变量表标签引用（I/O 直接标签）
+           逻辑：消音按钮按下 AND 风机故障 → 消音复位输出
+           这三个变量来自 PLC 变量表（不是 DB），单 Component 写法
+           ═══════════════════════════════════════════════════════════ -->
+      <SW.Blocks.CompileUnit ID="2" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <!--
+      PLC 变量表标签（I/O变量）的引用：
+      - 只有一个 <Component>，直接写标签名
+      - 不需要 DB 名前缀，TIA Portal 全局变量表中查找
+      - 即使变量在不同的变量表中，也只需要标签名（全局唯一时）
+    -->
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="消音按" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="风机故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="消音复位" />
+      </Symbol>
+    </Access>
+
+    <!-- 如果是 DB 成员变量，则用两个 Component：DB名 + 变量名 -->
+    <!-- <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="DB名" />
+        <Component Name="变量名" />
+      </Symbol>
+    </Access> -->
+
+    <Part Name="Contact" UId="40" />
+    <Part Name="Contact" UId="41" />
+    <Part Name="Coil" UId="42" />
+  </Parts>
+  <Wires>
+    <Wire UId="50"><Powerrail /><NameCon UId="40" Name="in" /></Wire>
+    <Wire UId="51"><IdentCon UId="30" /><NameCon UId="40" Name="operand" /></Wire>
+    <Wire UId="52"><NameCon UId="40" Name="out" /><NameCon UId="41" Name="in" /></Wire>
+    <Wire UId="53"><IdentCon UId="31" /><NameCon UId="41" Name="operand" /></Wire>
+    <Wire UId="54"><NameCon UId="41" Name="out" /><NameCon UId="42" Name="in" /></Wire>
+    <Wire UId="55"><IdentCon UId="32" /><NameCon UId="42" Name="operand" /></Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+      </SW.Blocks.CompileUnit>
+
+    </ObjectList>
+  </SW.Blocks.FC>
+</Document>

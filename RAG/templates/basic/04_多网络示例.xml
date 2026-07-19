@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  基础示例 04：两个程序段 — 多网络示例
+  =====================================================
+  段1：串联逻辑   Sensor1(NO) 串联 Sensor2(NO) → Output1 线圈
+  段2：并联逻辑   条件A(NO) 并联 条件B(NO) → Output2 线圈，采用串联前置组合
+
+  注意：两个 CompileUnit 的 UId 各自从 1 开始也可，
+  但整个块内最好保持全局唯一（本例使用全局唯一 UId 避免混淆）
+  两段程序段总线圈输出用不同的 Output 变量。
+-->
+<Document>
+  <Engineering version="V17" />
+  <SW.Blocks.FC ID="0">
+    <AttributeList>
+      <AutoNumber>true</AutoNumber>
+      <HeaderAuthor />
+      <HeaderFamily />
+      <HeaderName />
+      <HeaderVersion>0.1</HeaderVersion>
+      <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v5">
+  <Section Name="Input" />
+  <Section Name="Output" />
+  <Section Name="InOut" />
+  <Section Name="Temp" />
+  <Section Name="Constant" />
+  <Section Name="Return">
+    <Member Name="Ret_Val" Datatype="Void" Accessibility="Public" />
+  </Section>
+</Sections></Interface>
+      <IsIECCheckEnabled>false</IsIECCheckEnabled>
+      <MemoryLayout>Optimized</MemoryLayout>
+      <Name>多网络示例</Name>
+      <ProgrammingLanguage>LAD</ProgrammingLanguage>
+      <SetENOAutomatically>false</SetENOAutomatically>
+    </AttributeList>
+    <ObjectList>
+      <!-- 程序段1（ID=1）：Sensor1 串联 Sensor2 → Output1 -->
+      <SW.Blocks.CompileUnit ID="1" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="1">
+      <Symbol><Component Name="DB1" /><Component Name="Sensor1" /></Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="2">
+      <Symbol><Component Name="DB1" /><Component Name="Sensor2" /></Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="3">
+      <Symbol><Component Name="DB1" /><Component Name="Output1" /></Symbol>
+    </Access>
+    <Part Name="Contact" UId="10" />
+    <Part Name="Contact" UId="11" />
+    <Part Name="Coil" UId="12" />
+  </Parts>
+  <Wires>
+    <Wire UId="20"><Powerrail /><NameCon UId="10" Name="in" /></Wire>
+    <Wire UId="21"><IdentCon UId="1" /><NameCon UId="10" Name="operand" /></Wire>
+    <Wire UId="22"><NameCon UId="10" Name="out" /><NameCon UId="11" Name="in" /></Wire>
+    <Wire UId="23"><IdentCon UId="2" /><NameCon UId="11" Name="operand" /></Wire>
+    <Wire UId="24"><NameCon UId="11" Name="out" /><NameCon UId="12" Name="in" /></Wire>
+    <Wire UId="25"><IdentCon UId="3" /><NameCon UId="12" Name="operand" /></Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+      </SW.Blocks.CompileUnit>
+
+      <!-- 程序段2（ID=2）：CondA 并联 CondB → Output2（两条并联支路） -->
+      <SW.Blocks.CompileUnit ID="2" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol><Component Name="DB1" /><Component Name="CondA" /></Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol><Component Name="DB1" /><Component Name="Output2" /></Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol><Component Name="DB1" /><Component Name="CondB" /></Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol><Component Name="DB1" /><Component Name="Output2" /></Symbol>
+    </Access>
+    <!-- 支路1：CondA → SCoil  支路2：CondB → Coil -->
+    <Part Name="Contact" UId="40" />
+    <Part Name="SCoil" UId="41" />
+    <Part Name="Contact" UId="42" />
+    <Part Name="Coil" UId="43" />
+  </Parts>
+  <Wires>
+    <!-- 1 条 Powerrail Wire，挂两个支路首元素 -->
+    <Wire UId="50">
+      <Powerrail />
+      <NameCon UId="40" Name="in" />
+      <NameCon UId="42" Name="in" />
+    </Wire>
+    <Wire UId="51"><IdentCon UId="30" /><NameCon UId="40" Name="operand" /></Wire>
+    <Wire UId="52"><NameCon UId="40" Name="out" /><NameCon UId="41" Name="in" /></Wire>
+    <Wire UId="53"><IdentCon UId="31" /><NameCon UId="41" Name="operand" /></Wire>
+    <Wire UId="54"><IdentCon UId="32" /><NameCon UId="42" Name="operand" /></Wire>
+    <Wire UId="55"><NameCon UId="42" Name="out" /><NameCon UId="43" Name="in" /></Wire>
+    <Wire UId="56"><IdentCon UId="33" /><NameCon UId="43" Name="operand" /></Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+      </SW.Blocks.CompileUnit>
+
+    </ObjectList>
+  </SW.Blocks.FC>
+</Document>

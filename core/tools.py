@@ -255,6 +255,9 @@ def register_mcp_tools(mcp) -> None:
       create_plc_tag_table   创建 PLC 变量表并批量添加变量
       create_global_db       创建全局数据块
       import_scl_block       导入 SCL 程序块
+      import_lad_xml         导入 AI 生成的 LAD XML 程序块（同时保存文件）
+      save_lad_xml           仅保存 LAD XML 到文件（不导入）
+      import_lad_xml_from_file  从已保存的文件路径导入（配合 save_lad_xml 使用）
 
     编译下载：
       compile_and_save       编译并保存当前项目
@@ -278,9 +281,6 @@ def register_mcp_tools(mcp) -> None:
         import_lad_xml_block,
         build_global_db_scl,
         DBVariable,
-        build_lad_xml,
-        lad_networks_from_json,
-        validate_lad_xml,
         compile_plc,
         delete_block,
     )
@@ -315,9 +315,25 @@ def register_mcp_tools(mcp) -> None:
             _session["tia"] = tia
             _session["project"] = project
 
+            # ── 清理上轮生成的临时 XML ──────────────────────────────────────
+            try:
+                import glob as _glob
+                _rag_base = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "RAG")
+                _gen_dir  = os.path.join(_rag_base, "generated")
+                _removed  = 0
+                for _f in _glob.glob(os.path.join(_gen_dir, "*.xml")):
+                    try:
+                        os.remove(_f)
+                        _removed += 1
+                    except Exception:
+                        pass
+            except Exception:
+                _removed = 0
+
             project_dir = os.path.join(project_root, project_name)
+            _gen_note = f"（已清理 {_removed} 个上轮生成文件）" if _removed else ""
             return (
-                f"✅ TIA 项目已创建\n"
+                f"✅ TIA 项目已创建 {_gen_note}\n"
                 f"  项目名称：{project_name}\n"
                 f"  项目路径：{project_dir}\n"
                 f"  TIA UI：{'有界面' if with_ui else '无界面'}\n"
@@ -474,7 +490,11 @@ def register_mcp_tools(mcp) -> None:
     @mcp.tool(
         name="create_global_db",
         description=(
-            "在指定 PLC 设备下创建全局数据块（Global DB，非优化访问，偏移量可见）。\n"
+            "在指定 PLC 设备下创建全局数据块（Global DB，优化访问 S7_Optimized_Access=TRUE）。\n"
+            "⚠️  创建的 DB 是优化访问类型：\n"
+            "  - 只能用符号名访问：\"DB名\".变量名（LAD XML 中 Component Name=\"DB名\"）\n"
+            "  - 绝对地址 %DB100.DBX / %DB100.DBD 对优化 DB 无效，禁止使用\n"
+            "  - 创建后须先 compile_check，使符号注册到交叉引用表，再导入引用该 DB 的程序块\n\n"
             "variables_json 为 JSON 数组，每项格式：\n"
             '  {"name":"变量名","data_type":"Bool","offset":"0.0","initial_value":"","comment":"注释"}\n'
             "offset 为 xlsx 中的字节偏移量（如 0.0、2.0），仅写入 SCL 注释，不影响编译器分配地址。\n"
@@ -550,283 +570,369 @@ def register_mcp_tools(mcp) -> None:
         except Exception as exc:
             return f"❌ 导入 SCL 块失败：{exc}"
 
-    # ── 8. add_lad_block ─────────────────────────────────────────────────────
+    # ── 8. import_lad_xml ────────────────────────────────────────────────────
     @mcp.tool(
-        name="add_lad_block",
+        name="import_lad_xml",
         description=(
-            "向指定 PLC 设备导入梯形图（LAD）程序块。\n"
-            "本工具采用「JSON 逻辑描述 → Python 自动生成 XML」方案，\n"
-            "你只需描述梯级逻辑，无需手写 XML。\n"
-            "【重要】同名块会自动覆盖，编译失败后可直接重新调用此工具修正。\n\n"
-            "【block_type】：FC | FB | OB\n"
-            "【block_number】：块编号（整数）\n"
-            "【networks_json】：JSON 数组，每项描述一个梯级（网络）\n\n"
-            "═══ 触点 contacts ═══\n"
-            "  {\"var\": \"DB1.Start\", \"nc\": false}       常开触点\n"
-            "  {\"var\": \"DB1.Stop\", \"nc\": true}         常闭触点\n"
-            "  {\"var\": \"DB1.Btn\", \"nc\": false, \"edge\": \"P\"}  上升沿触点\n"
-            "  {\"var\": \"DB1.Btn\", \"nc\": false, \"edge\": \"N\"}  下降沿触点\n\n"
-            "═══ 线圈 outputs ═══\n"
-            "  type: Coil=普通输出, SCoil=SET置位, RCoil=RESET复位\n\n"
-            "═══ 功能块 boxes ═══（放在 contacts 之后、outputs 之前）\n"
-            "支持的 box type：\n"
-            "  定时器:   TON, TOF, TP (需要 instance_db)\n"
-            "  计数器:   CTU, CTD, CTUD (需要 instance_db)\n"
-            "  赋值:     Move\n"
-            "  数学:     Add, Sub, Mul, Div\n"
-            "  比较:     Eq, Ne, Gt, Lt, Ge, Le\n"
-            "  触发器:   SR, RS\n"
-            "  类型转换: Convert, Round, Trunc, Ceil, Floor\n\n"
-            "═══ ⚠️ 数据类型转换规则（必须遵守！）═══\n"
-            "TIA Portal 不允许不同类型直接赋值，必须使用类型转换指令：\n"
-            "  Real → Int/DInt:  用 Convert (或 Round/Trunc/Ceil/Floor)\n"
-            "  Int → Real:       用 Convert\n"
-            "  Int → Bool:       不能直接转换！应使用比较指令 Ne（!=0）\n"
-            "  Bool → Int:       不能直接转换！应使用 Move(1) 配合条件触点\n"
-            "  DInt → Int:       用 Convert\n"
-            "  Word → Int:       用 Convert\n"
-            "数学运算指令（Add/Sub/Mul/Div）的输入输出类型必须一致！\n"
-            "  如需 Real*Int，先将 Int 转为 Real，再做乘法。\n\n"
-            "Box JSON 格式：\n"
-            "  {\n"
-            "    \"type\": \"TON\",\n"
-            "    \"instance_db\": \"DB_Motor.Timer1\",\n"
-            "    \"params\": {\"PT\": \"T#5s\"},\n"
-            "    \"outputs_from\": {\"Q\": \"DB1.DelayDone\", \"ET\": \"DB1.Elapsed\"}\n"
-            "  }\n\n"
-            "类型转换 Box JSON 格式（需要 src_type + dest_type）：\n"
-            "  {\n"
-            "    \"type\": \"Convert\",\n"
-            "    \"src_type\": \"Real\",\n"
-            "    \"dest_type\": \"Int\",\n"
-            "    \"params\": {\"in\": \"DB1.RealValue\"},\n"
-            "    \"outputs_from\": {\"out\": \"DB1.IntValue\"}\n"
-            "  }\n\n"
-            "═══ 梯级格式示例 ═══\n\n"
-            "1. 基本串联（AND）：\n"
-            "  {\"title\": \"电机启动\",\n"
-            "   \"contacts\": [{\"var\": \"DB1.Start\", \"nc\": false}, {\"var\": \"DB1.Stop\", \"nc\": true}],\n"
-            "   \"outputs\": [{\"var\": \"DB1.Motor\", \"type\": \"Coil\"}]}\n\n"
-            "2. 带定时器：\n"
-            "  {\"title\": \"延时启动\",\n"
-            "   \"contacts\": [{\"var\": \"DB1.Start\", \"nc\": false}],\n"
-            "   \"boxes\": [{\"type\": \"TON\", \"instance_db\": \"DB_Motor.T1\", \"params\": {\"PT\": \"T#5s\"}}],\n"
-            "   \"outputs\": [{\"var\": \"DB1.Motor\", \"type\": \"Coil\"}]}\n\n"
-            "3. 带比较器：\n"
-            "  {\"title\": \"超限报警\",\n"
-            "   \"contacts\": [{\"var\": \"DB1.Enable\", \"nc\": false}],\n"
-            "   \"boxes\": [{\"type\": \"Gt\", \"params\": {\"in1\": \"DB1.Temp\", \"in2\": \"80.0\"}, \"src_type\": \"Real\"}],\n"
-            "   \"outputs\": [{\"var\": \"DB1.Alarm\", \"type\": \"SCoil\"}]}\n\n"
-            "4. 并联（OR）：\n"
-            "  {\"title\": \"多条件\",\n"
-            "   \"branches\": [\n"
-            "     {\"contacts\": [{\"var\": \"DB1.Remote\", \"nc\": false}]},\n"
-            "     {\"contacts\": [{\"var\": \"DB1.Local\", \"nc\": false}],\n"
-            "      \"boxes\": [{\"type\": \"Gt\", \"params\": {\"in1\": \"DB1.Temp\", \"in2\": \"50.0\"}}]}\n"
-            "   ],\n"
-            "   \"outputs\": [{\"var\": \"DB1.Motor\", \"type\": \"SCoil\"}]}\n\n"
-            "5. MOVE 赋值（无线圈输出）：\n"
-            "  {\"title\": \"参数传递\",\n"
-            "   \"contacts\": [{\"var\": \"DB1.Enable\", \"nc\": false}],\n"
-            "   \"boxes\": [{\"type\": \"Move\", \"params\": {\"in\": \"DB1.SP\"}, \"outputs_from\": {\"out1\": \"DB1.PV\"}}],\n"
-            "   \"outputs\": []}\n\n"
-            "6. 类型转换（Real→Int）：\n"
-            "  {\"title\": \"浮点转整数\",\n"
-            "   \"contacts\": [{\"var\": \"DB1.Enable\", \"nc\": false}],\n"
-            "   \"boxes\": [{\"type\": \"Convert\", \"src_type\": \"Real\", \"dest_type\": \"Int\",\n"
-            "              \"params\": {\"in\": \"DB1.RealVal\"}, \"outputs_from\": {\"out\": \"DB1.IntVal\"}}],\n"
-            "   \"outputs\": []}\n\n"
-            "7. Int→Bool（用比较实现）：\n"
-            "  {\"title\": \"整数转布尔\",\n"
-            "   \"contacts\": [],\n"
-            "   \"boxes\": [{\"type\": \"Ne\", \"params\": {\"in1\": \"DB1.IntStatus\", \"in2\": \"0\"}, \"src_type\": \"Int\"}],\n"
-            "   \"outputs\": [{\"var\": \"DB1.BoolFlag\", \"type\": \"Coil\"}]}\n\n"
-            "8. 串联多个 box（先转换再运算）：\n"
-            "  {\"title\": \"先转换再赋值\",\n"
-            "   \"contacts\": [{\"var\": \"DB1.Enable\", \"nc\": false}],\n"
-            "   \"boxes\": [\n"
-            "     {\"type\": \"Convert\", \"src_type\": \"Real\", \"dest_type\": \"Int\",\n"
-            "      \"params\": {\"in\": \"DB1.RealVal\"}, \"outputs_from\": {\"out\": \"DB1.TempInt\"}},\n"
-            "     {\"type\": \"Move\", \"params\": {\"in\": \"DB1.TempInt\"}, \"outputs_from\": {\"out1\": \"DB1.Target\"}}\n"
-            "   ],\n"
-            "   \"outputs\": []}\n\n"
-            "═══ var 路径规则 ═══\n"
-            "  全局标签: \"StartButton\"\n"
-            "  DB 成员:  \"DB_Motor.SpeedRef\"\n"
-            "  常量值:   \"T#5s\", \"80.0\", \"100\", \"TRUE\"\n\n"
-            "═══ OR 逻辑替代方案 ═══\n"
-            "  若逻辑复杂，可拆成多个梯级使用 SCoil/RCoil：\n"
-            "  梯级1: 条件A → SCoil(Flag)\n"
-            "  梯级2: 条件B → SCoil(Flag)\n"
-            "  梯级3: 停止条件 → RCoil(Flag)"
+            "将 AI 直接生成的 SimaticML XML 导入到指定 PLC 设备。\n"
+            "这是新版 LAD 生成主路径：AI 以真实工程模板为参考，直接生成合法 XML。\n\n"
+            "═══ 标准工作流 ═══\n"
+            "  1. search_plc_templates(query) → 找相关模板\n"
+            "  2. get_plc_template(name, full=True) → 获取完整 XML 作参考\n"
+            "  3. 在模板 XML 基础上修改，生成目标块 XML\n"
+            "  4. import_lad_xml(device_name, block_name, xml_content) → 导入\n"
+            "  5. compile_check → 验证，有报错则修正 XML 后重新调用本工具\n\n"
+            "═══ XML 必须满足的格式要求 ═══\n"
+            "① 根元素：<Document>\n"
+            "② 必须含 <Engineering version=\"V17\" />\n"
+            "③ 块元素：<SW.Blocks.FC>、<SW.Blocks.FB> 或 <SW.Blocks.OB>\n"
+            "   - 属性 ID=\"0\"\n"
+            "   - <AttributeList> 中 <Name> 必须与 block_name 一致\n"
+            "   - <AutoNumber>true</AutoNumber> → 博途自动分配编号\n"
+            "   - <ProgrammingLanguage>LAD</ProgrammingLanguage>\n"
+            "④ 每个网络用 <SW.Blocks.CompileUnit> 包裹，含 <NetworkSource>\n"
+            "⑤ NetworkSource 内用 FlgNet：\n"
+            "   <FlgNet xmlns=\"http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4\">\n"
+            "     <Parts>  ← 所有元件（Contact, Coil, Call, Part 等）\n"
+            "     <Wires>  ← 所有连线（Powerrail → 触点 → 线圈）\n"
+            "   </FlgNet>\n\n"
+            "═══ 常用 Parts 元素 ═══\n"
+            "⚠️ 核心规则：Access 元素必须在 <Parts> 顶层，不能嵌套在 Contact/Coil/Part 内！\n"
+            "   通过 Wires 中的 IdentCon 将 Access（变量）与 Part（指令）的 operand 引脚连接。\n\n"
+            "触点（常开 NO）— Parts 中写法：\n"
+            "  <Access Scope=\"GlobalVariable\" UId=\"22\">\n"
+            "    <Symbol><Component Name=\"DB1\" /><Component Name=\"Start\" /></Symbol>\n"
+            "  </Access>\n"
+            "  <Part Name=\"Contact\" UId=\"21\" />\n\n"
+            "触点（常闭 NC）— 加 <Negated> 子元素：\n"
+            "  <Access Scope=\"GlobalVariable\" UId=\"22\">\n"
+            "    <Symbol><Component Name=\"DB1\" /><Component Name=\"Stop\" /></Symbol>\n"
+            "  </Access>\n"
+            "  <Part Name=\"Contact\" UId=\"21\">\n"
+            "    <Negated Name=\"operand\" />\n"
+            "  </Part>\n\n"
+            "输出线圈（Coil=普通, SCoil=置位, RCoil=复位）— Parts 中写法：\n"
+            "  <Access Scope=\"GlobalVariable\" UId=\"31\">\n"
+            "    <Symbol><Component Name=\"DB1\" /><Component Name=\"MotorRun\" /></Symbol>\n"
+            "  </Access>\n"
+            "  <Part Name=\"Coil\" UId=\"30\" />\n\n"
+            "调用 FC/FB（Call 指令）：\n"
+            "  <Call UId=\"21\">\n"
+            "    <CallInfo Name=\"FC名称\" BlockType=\"FC\" />\n"
+            "  </Call>\n\n"
+            "TON 定时器（需要实例 DB）：\n"
+            "  <Part Name=\"TON\" UId=\"40\">\n"
+            "    <Instance UId=\"41\" Scope=\"GlobalVariable\">\n"
+            "      <Symbol><Component Name=\"DB_Motor\" /><Component Name=\"Timer1\" /></Symbol>\n"
+            "    </Instance>\n"
+            "  </Part>\n\n"
+            "═══ Wires 连线规则 ═══\n"
+            "引脚分类（极其重要）：\n"
+            "  • 功率流引脚 NameCon↔NameCon：Contact 的 in/out，Coil/FunctionBox 的 in，FunctionBox 的 en/eno\n"
+            "  • 数据引脚 IdentCon↔NameCon：Contact/Coil 的 operand，FunctionBox 的 in/out1/PT/Q 等\n\n"
+            "串联（左母线 → 触点 → 线圈）：\n"
+            "  <Wire UId=\"50\"><Powerrail /><NameCon UId=\"21\" Name=\"in\" /></Wire>              ← 左母线→触点 in 引脚\n"
+            "  <Wire UId=\"51\"><IdentCon UId=\"22\" /><NameCon UId=\"21\" Name=\"operand\" /></Wire>  ← 变量→触点 operand\n"
+            "  <Wire UId=\"52\"><NameCon UId=\"21\" Name=\"out\" /><NameCon UId=\"30\" Name=\"in\" /></Wire>  ← 触点 out→线圈 in\n"
+            "  <Wire UId=\"53\"><IdentCon UId=\"31\" /><NameCon UId=\"30\" Name=\"operand\" /></Wire>  ← 变量→线圈 operand\n\n"
+            "Function Box 连线（EN/ENO）：\n"
+            "  <Wire UId=\"60\"><Powerrail /><NameCon UId=\"40\" Name=\"en\" /></Wire>      ← 左母线→FunctionBox en\n"
+            "  <Wire UId=\"61\"><NameCon UId=\"40\" Name=\"eno\" /><NameCon UId=\"30\" Name=\"in\" /></Wire>  ← ENO→线圈 in（注意：是 in 不是 operand）\n"
+            "  数据引脚方向：输入=IdentCon在前NameCon在后；输出=NameCon在前IdentCon在后：\n"
+            "  <Wire UId=\"62\"><IdentCon UId=\"42\" /><NameCon UId=\"40\" Name=\"PT\" /></Wire>  ← 变量/常量→PT 输入\n"
+            "  <Wire UId=\"63\"><NameCon UId=\"40\" Name=\"out1\" /><IdentCon UId=\"43\" /></Wire>  ← Move out1→变量 输出\n\n"
+            "  Access（变量连接，定义在 Parts 顶层）：\n"
+            "  <Access UId=\"42\" Scope=\"GlobalVariable\">\n"
+            "    <Symbol><Component Name=\"DB1\" /><Component Name=\"Timeout\" /></Symbol>\n"
+            "  </Access>\n\n"
+            "═══ UId 规则 ═══\n"
+            "- 整个块内所有 UId 必须是唯一正整数，从 1 开始递增\n"
+            "- 不同网络（CompileUnit）的 UId 也不能重复\n"
+            "- 每次新建元素都分配一个新的递增 UId\n\n"
+            "═══ 全局变量访问格式 ═══\n"
+            "  DB成员：<Component Name=\"DB名\" /><Component Name=\"变量名\" />\n"
+            "  全局标签：<Component Name=\"标签名\" />（只有一个 Component）\n"
+            "  Scope：GlobalVariable（变量）| LocalVariable（局部）| LiteralConstant（常量）\n\n"
+            "═══ 常量访问格式 ═══\n"
+            "  <Access UId=\"n\" Scope=\"LiteralConstant\">\n"
+            "    <Constant><ConstantType>Time</ConstantType><ConstantValue>T#5s</ConstantValue></Constant>\n"
+            "  </Access>\n"
+            "  ConstantType: Time | Int | Real | Bool | DInt | Word 等\n\n"
+            "═══ 关键提示 ═══\n"
+            "- 参考模板时：修改 <Name> 的值、变量名称（Component Name），保持其余结构不变\n"
+            "- 导入失败后：用 save_lad_xml 保存 XML 到文件检查，或直接查看 compile_check 错误信息修正\n\n"
+            "═══ 梯级设计原则（最重要！）═══\n"
+            "- 一个 CompileUnit = 一个梯级 = 一句逻辑描述\n"
+            "- 每个梯级只能有一个连接到左母线（Powerrail）的起始触点/条件\n"
+            "  （即 Powerrail Wire 中只能有一个 NameCon 引脚，或多条并联起始支路共用同一个 Powerrail Wire）\n"
+            "- 起始条件之后可以有任意分叉输出（fan-out：一个 out → 多个 in）\n\n"
+            "═══ NameCon 引脚唯一性规则（违反会导致'连接被多次使用'或'电源线无效连接'错误）═══\n"
+            "- 任何 NameCon 引脚（包括 in/out/en/eno/operand）只能在整个 FlgNet 中出现 1 次\n"
+            "- fan-out（一出多入）合法：同一条 Wire 中，一个 out 接多个 in\n"
+            "    <Wire UId=\"22\"><NameCon UId=\"A\" Name=\"out\"/><NameCon UId=\"B\" Name=\"in\"/><NameCon UId=\"C\" Name=\"in\"/></Wire>\n"
+            "- fan-in（多出一入）非法：多条功率流汇聚到同一个 in 引脚\n"
+            "    ⛔ Wire1: out1 → in(C)    Wire2: out2 → in(C)   ← in(C) 被引用2次，报错\n"
+            "- OR 逻辑（多条件任意满足→输出）的正确实现方式：\n"
+            "  方法1（推荐）：拆成两个独立梯级，各自从 Powerrail 出发\n"
+            "    梯级A：条件1 → SCoil\n"
+            "    梯级B：条件2 → SCoil（同一个线圈可在多个梯级中被驱动）\n"
+            "  方法2：使用 O（OR）功能块合并多路功率流，再接到后续元素\n"
+            "    <Part Name=\"O\" UId=\"N\"><TemplateValue Name=\"Card\" Type=\"Cardinality\">2</TemplateValue></Part>\n"
+            "    引脚：in1/in2（功率流输入），out（功率流输出）\n"
+            "    <Wire UId=\"A\"><NameCon UId=\"Contact1\" Name=\"out\"/><NameCon UId=\"N\" Name=\"in1\"/></Wire>\n"
+            "    <Wire UId=\"B\"><NameCon UId=\"Contact2\" Name=\"out\"/><NameCon UId=\"N\" Name=\"in2\"/></Wire>\n"
+            "    <Wire UId=\"C\"><NameCon UId=\"N\" Name=\"out\"/><NameCon UId=\"Coil\" Name=\"in\"/></Wire>\n\n"
+            "串联后分叉写法（公共条件后多路输出）：\n"
+            "  场景：故障信号出现时，同时复位运行标志、复位自动输出、置位报警\n"
+            "  关键：Contact(故障).out 引脚连接多个下游线圈的 in 引脚（fan-out）\n"
+            "  <Wire UId=\"22\">                 ← 一条 Wire 实现 fan-out\n"
+            "    <NameCon UId=\"10\" Name=\"out\" />  ← 公共条件的 out\n"
+            "    <NameCon UId=\"11\" Name=\"in\" />   ← 输出1 in\n"
+            "    <NameCon UId=\"12\" Name=\"in\" />   ← 输出2 in\n"
+            "    <NameCon UId=\"13\" Name=\"in\" />   ← 输出3 in\n"
+            "  </Wire>\n"
+            "  参考模板：basic/05_串联后分叉.xml\n\n"
+            "不要混用：并联起始支路（各自从 Powerrail 出发）≠ 串联后分叉（共用一个先行条件）\n"
+            "  使用时机：\n"
+            "  - 并联起始支路（从 Powerrail 分叉）：多个完全独立的动作，无共同前提条件\n"
+            "  - 串联后分叉（从 Contact.out 分叉）：多个动作共享同一前提条件\n\n"
+            "═══ 并联支路规则（违反会导致'程序段中只能包含一个电源线'错误）═══\n"
+            "- 每个 CompileUnit（程序段）只能有 1 条 Powerrail\n"
+            "- 并联起始支路：在同一条 Powerrail Wire 中连接多个独立支路首元素：\n"
+            "    <Wire UId=\"N\">\n"
+            "      <Powerrail />\n"
+            "      <NameCon UId=\"支路1首元素\" Name=\"in\" />\n"
+            "      <NameCon UId=\"支路2首元素\" Name=\"in\" />\n"
+            "      <NameCon UId=\"支路3首元素\" Name=\"in\" />\n"
+            "    </Wire>\n"
+            "- 错误写法：每条并联支路单独写一个 <Wire><Powerrail />...</Wire>（多 Powerrail 错误）\n"
+            "- 设计原则：逻辑上相关的并联分支尽量放在同一 CompileUnit，共享一条 Powerrail\n\n"
+            "═══ IdentCon 唯一性规则（违反会导致'连接被多次使用'错误）═══\n"
+            "- 每个 Access 元素的 UId 只能在 1 条 Wire 中作为 IdentCon 引用\n"
+            "- 同一变量连接到多处时，必须为每次引用创建独立的 Access 元素（各用不同 UId）\n"
+            "- 错误写法（UId=301 的 Access 在 2 条 Wire 中都被引用）：\n"
+            "    <Access UId=\"301\">..SensorA..</Access>\n"
+            "    <Wire UId=\"309\"><IdentCon UId=\"301\" /><NameCon UId=\"304\" Name=\"operand\" /></Wire>\n"
+            "    <Wire UId=\"311\"><IdentCon UId=\"301\" /><NameCon UId=\"305\" Name=\"operand\" /></Wire>  ← 错误！\n"
+            "- 正确写法（两个 Access 指向同一变量，各自在独立 Wire 中引用）：\n"
+            "    <Access UId=\"301\">..SensorA..</Access>\n"
+            "    <Access UId=\"302\">..SensorA..</Access>  ← 内容相同但 UId 不同\n"
+            "    <Wire UId=\"309\"><IdentCon UId=\"301\" /><NameCon UId=\"304\" Name=\"operand\" /></Wire>\n"
+            "    <Wire UId=\"311\"><IdentCon UId=\"302\" /><NameCon UId=\"305\" Name=\"operand\" /></Wire>\n"
+            "- 系统会尝试自动修复此问题，但建议生成时直接写正确\n\n"
+            "═══ S7-1500 专用指令（S7-1200 不支持，禁止出现）═══\n"
+            "- GETIO / SETIO / GETIO_PART / SETIO_PART：S7-1500 专用直接 I/O 访问指令\n"
+            "  替代方案：在 S7-1200 中直接使用 I/Q 过程映像变量，无需专用指令\n"
+            "- GATHER / SCATTER：S7-1200 V4.0+ 支持，可以正常使用（应用模板中有示例）\n"
+            "- DisabledENO=\"true\" 属性：系统会自动改为 DisabledENO=\"false\"（属性必须显式存在，完全缺失会导致 Move/GATHER/Calc 等导入失败）\n"
+            "  生成 XML 时建议不加此属性；若加则写 DisabledENO=\"false\"，禁止写 DisabledENO=\"true\"\n\n"
+            "═══ TemplateValue 语法（违反会导致枚举约束错误，导入失败）═══\n"
+            "Type 属性只有两个合法枚举值（大小写严格区分）：\n"
+            "  • Type=\"Cardinality\" → 用于 Card 参数，指定输入/输出数量，值为正整数\n"
+            "  • Type=\"Type\"        → 用于数据类型参数，值为 TIA 类型名（Real/Int/DInt/Bool/Word 等）\n"
+            "  ⛔ 非法值（会直接导致导入失败）：Type=\"DataType\"  Type=\"String\"  Type=\"type\"\n\n"
+            "各指令的正确写法（均来自真实工程导出验证）：\n"
+            "  Move（1个输出）：\n"
+            "    <Part Name=\"Move\" UId=\"N\" DisabledENO=\"false\">\n"
+            "      <TemplateValue Name=\"Card\" Type=\"Cardinality\">1</TemplateValue>\n"
+            "    </Part>\n"
+            "  Mul（2个输入的乘法）：\n"
+            "    <Part Name=\"Mul\" UId=\"N\" DisabledENO=\"false\">\n"
+            "      <TemplateValue Name=\"Card\" Type=\"Cardinality\">2</TemplateValue>\n"
+            "      <AutomaticTyped Name=\"SrcType\" />   ← 不要用 TemplateValue 指定类型，用 AutomaticTyped！\n"
+            "    </Part>\n"
+            "    引脚：en/eno 功率流，in1/in2（数据输入），out（数据输出）\n"
+            "  Calc（公式计算，3个输入 IN1/IN2/IN3）：\n"
+            "    <Part Name=\"Calc\" UId=\"N\" DisabledENO=\"false\">\n"
+            "      <Equation>(IN1/IN2)*IN3</Equation>   ← 公式用 <Equation> 子元素，变量用 IN1/IN2/IN3（大写）\n"
+            "      <TemplateValue Name=\"Card\" Type=\"Cardinality\">3</TemplateValue>\n"
+            "      <TemplateValue Name=\"SrcType\" Type=\"Type\">Real</TemplateValue>\n"
+            "    </Part>\n"
+            "    ⛔ 禁止写法：<TemplateValue Name=\"Expression\" Type=\"String\">...</TemplateValue>（Expression/String 均无效）\n"
+            "    引脚：en/eno 功率流，in1/in2/in3...（数据输入，对应 IN1/IN2/IN3），out（数据输出）\n"
+            "  Convert（类型转换，Real→Int）：\n"
+            "    <Part Name=\"Convert\" UId=\"N\" DisabledENO=\"false\">\n"
+            "      <TemplateValue Name=\"SrcType\" Type=\"Type\">Real</TemplateValue>\n"
+            "      <TemplateValue Name=\"DestType\" Type=\"Type\">Int</TemplateValue>\n"
+            "    </Part>\n"
+            "    ⛔ 禁止写法：Name=\"src_type\" / Name=\"dest_type\"（下划线小写无效，必须驼峰 SrcType/DestType）\n"
+            "    引脚：en/eno 功率流，in（数据输入），out（数据输出）\n"
+            "  O（OR函数块）：\n"
+            "    <Part Name=\"O\" UId=\"N\">\n"
+            "      <TemplateValue Name=\"Card\" Type=\"Cardinality\">2</TemplateValue>\n"
+            "    </Part>\n"
+            "    引脚：in1/in2（功率流输入），out（功率流输出）\n\n"
+            "═══ 数组元素访问格式（只能接数据引脚，不能接 Contact/Coil operand）═══\n"
+            "  <Access Scope=\"GlobalVariable\" UId=\"N\">\n"
+            "    <Symbol>\n"
+            "      <Component Name=\"DB名\" />\n"
+            "      <Component Name=\"数组变量名\" AccessModifier=\"Array\">\n"
+            "        <Access Scope=\"LiteralConstant\">\n"
+            "          <Constant><ConstantType>DInt</ConstantType><ConstantValue>1</ConstantValue></Constant>\n"
+            "        </Access>\n"
+            "      </Component>\n"
+            "    </Symbol>\n"
+            "  </Access>\n"
+            "  ⛔ 不能将 Array[0..15] of Bool 的元素直接连接 operand，须先用 Move 赋值到中间 Bool 变量\n\n"
+            "═══ Part 排序规则（重要！违反会导致'元素必须根据电流排序'错误）═══\n"
+            "- <Parts> 内的 Part 元素必须按功率流方向排列，且同一分支的元素必须连续\n"
+            "- 错误写法（所有 Contact 在前，所有 Coil 在后）：\n"
+            "    <Part Name=\"Contact\" UId=\"25\" />  ← StartBtn 分支\n"
+            "    <Part Name=\"Contact\" UId=\"26\" />  ← StopBtn 分支（错！插入在两个分支之间）\n"
+            "    <Part Name=\"SCoil\"   UId=\"27\" />  ← StartBtn 分支的 Set\n"
+            "    <Part Name=\"RCoil\"   UId=\"28\" />  ← StopBtn 分支的 Reset\n"
+            "- 正确写法（分支1全部元素→分支2全部元素→...）：\n"
+            "    <Part Name=\"Contact\" UId=\"25\" />  ← 分支1 起点\n"
+            "    <Part Name=\"SCoil\"   UId=\"26\" />  ← 分支1 终点（紧跟上面）\n"
+            "    <Part Name=\"Contact\" UId=\"27\" />  ← 分支2 起点\n"
+            "    <Part Name=\"RCoil\"   UId=\"28\" />  ← 分支2 终点（紧跟上面）\n"
+            "- UId 分配规则：同一分支内的 UId 必须连续递增（25→26 为一支，27→28 为另一支）\n"
+            "- 系统会尝试自动修复此排序问题，但建议生成时直接写正确"
         ),
     )
-    def add_lad_block(
+    def import_lad_xml(
         device_name: str,
         block_name: str,
-        block_type: str,
-        block_number: int,
-        networks_json,
+        xml_content: str,
     ) -> str:
-        """向 PLC 导入 LAD 程序块。"""
+        """导入 AI 生成的 LAD XML 到 TIA Portal，并持久保存 XML 到 RAG/generated/。"""
+        import xml.etree.ElementTree as _ET
+        import sys as _sys
+        _rag_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "RAG")
+        if _rag_dir not in _sys.path:
+            _sys.path.insert(0, _rag_dir)
+        from rag_retriever import save_generated_xml as _save_xml
         try:
             _check_session()
-            nets_data: list = (
-                networks_json if isinstance(networks_json, list)
-                else json.loads(networks_json)
-            )
-            if not isinstance(nets_data, list):
-                return "❌ networks_json 必须是 JSON 数组。"
 
-            bt = block_type.upper()
-            if bt not in ("FC", "FB", "OB"):
-                return "❌ block_type 必须是 FC、FB 或 OB。"
+            # ── 持久保存 XML（无论成功失败都保存） ───────────────────────────
+            saved_path = _save_xml(block_name, xml_content)
 
-            networks = lad_networks_from_json(nets_data)
-            xml_content = build_lad_xml(block_name, bt, block_number, networks)
-
-            # 导入前验证 XML 结构
-            validation_errors = validate_lad_xml(xml_content)
-            if validation_errors:
-                temp_dir = _ensure_temp_dir()
-                # 保存调试文件
-                json_path = os.path.join(temp_dir, f"{block_name}_debug_input.json")
-                xml_path = os.path.join(temp_dir, f"{block_name}_debug_output.xml")
-                with open(json_path, "w", encoding="utf-8") as f:
-                    json.dump(nets_data, f, ensure_ascii=False, indent=2)
-                with open(xml_path, "w", encoding="utf-8") as f:
-                    f.write(xml_content)
-                err_list = "\n".join(f"  - {e}" for e in validation_errors)
+            # ── 基础 XML 语法验证 ────────────────────────────────────────────
+            try:
+                _ET.fromstring(xml_content.encode("utf-8"))
+            except _ET.ParseError as parse_err:
                 return (
-                    f"❌ LAD XML 验证失败（未导入），发现 {len(validation_errors)} 个结构错误：\n"
-                    f"{err_list}\n\n"
-                    f"调试文件已保存：\n"
-                    f"  JSON 输入：{json_path}\n"
-                    f"  XML 输出：{xml_path}\n"
-                    f"请检查 networks_json 中的 box type / pin 名称是否正确。"
+                    f"❌ XML 语法错误（未导入）：{parse_err}\n"
+                    f"已保存至：{saved_path}\n"
+                    f"请直接修改该文件中的 XML 后重新调用 import_lad_xml。"
                 )
 
+            # ── 导入 TIA Portal ──────────────────────────────────────────────
             plc_sw = _get_plc_software(device_name)
             temp_dir = _ensure_temp_dir()
             import_lad_xml_block(plc_sw, temp_dir, block_name, xml_content)
 
+            net_count = xml_content.count("SW.Blocks.CompileUnit") // 2
             return (
-                f"✅ LAD 程序块 '{block_name}' ({bt}{block_number}) 已导入到 {device_name}，"
-                f"共 {len(networks)} 个网络。"
+                f"✅ LAD 程序块 '{block_name}' 已导入到 {device_name}，共 {net_count} 个网络。\n"
+                f"📁 XML 已保存：{saved_path}\n"
+                f"💡 调用 compile_check(device_name=\"{device_name}\") 验证编译。"
             )
         except Exception as exc:
-            # 导入失败时保存调试文件并定位出错网络
             err_msg = str(exc)
-            debug_info = ""
             try:
-                temp_dir = _ensure_temp_dir()
-                json_path = os.path.join(temp_dir, f"{block_name}_debug_input.json")
-                xml_path = os.path.join(temp_dir, f"{block_name}_debug_output.xml")
-                with open(json_path, "w", encoding="utf-8") as f:
-                    json.dump(nets_data, f, ensure_ascii=False, indent=2)
-                with open(xml_path, "w", encoding="utf-8") as f:
-                    f.write(xml_content)
-
-                # 尝试从错误信息中提取行号，定位出错的网络
-                network_hint = ""
-                import re as _re
-                line_match = _re.search(r'line number (\d+)', err_msg)
-                uid_match = _re.search(r"UID '(\d+)'", err_msg)
-                conn_match = _re.search(r"name '(\w+)'.*?UID '(\d+)'", err_msg)
-                if line_match:
-                    err_line = int(line_match.group(1))
-                    # 定位是第几个网络
-                    lines_before = xml_content[:sum(len(l)+1 for l in xml_content.split('\n')[:err_line])].count('CompileUnit')
-                    for net_idx, nd in enumerate(nets_data):
-                        pass  # just count
-                    network_hint += f"\n  出错行号：{err_line}"
-                if uid_match:
-                    bad_uid = uid_match.group(1)
-                    # 在 XML 中查找此 UID 属于什么元素
-                    uid_ctx = _re.search(
-                        rf'UId="{bad_uid}"[^>]*>?.*?(?:</\w+>|/>)',
-                        xml_content, _re.DOTALL)
-                    if uid_ctx:
-                        snippet = uid_ctx.group()[:200].replace('\n', ' ').strip()
-                        network_hint += f"\n  UID {bad_uid} 对应元素：{snippet}"
-                if conn_match:
-                    pin_name = conn_match.group(1)
-                    ref_uid = conn_match.group(2)
-                    network_hint += f"\n  错误连接：引脚 '{pin_name}' 在 UID {ref_uid} 上不存在"
-
-                debug_info = (
-                    f"\n\n📋 调试信息：{network_hint}\n"
-                    f"调试文件已保存：\n"
-                    f"  JSON 输入：{json_path}\n"
-                    f"  XML 输出：{xml_path}"
-                )
+                debug = f"\n📁 XML 已保存（可修改后重试）：{saved_path}"
             except Exception:
-                pass
-            return f"❌ 导入 LAD 块失败：{err_msg}{debug_info}\n{traceback.format_exc()}"
+                debug = ""
+            return f"❌ 导入 LAD 块失败：{err_msg}{debug}\n{traceback.format_exc()}"
 
-    # ── 8b. preview_lad_xml ──────────────────────────────────────────────────
+    # ── 8b. save_lad_xml ─────────────────────────────────────────────────────
     @mcp.tool(
-        name="preview_lad_xml",
+        name="save_lad_xml",
         description=(
-            "【调试工具】仅生成 LAD XML 并验证，不导入 TIA Portal。\n"
-            "用途：在导入前检查 networks_json 生成的 XML 是否正确。\n"
-            "返回验证结果和 XML 文件保存路径，供人工检查。\n"
-            "参数与 add_lad_block 相同（不需要 device_name）。"
+            "【调试工具】将 AI 生成的 LAD XML 持久保存到 RAG/generated/ 目录，不导入 TIA Portal。\n"
+            "用途：\n"
+            "  - 在导入前检查 XML 语法是否正确\n"
+            "  - 保存生成的 XML 供人工检查或用编辑器修改后再导入\n"
+            "  - 文件名格式：{block_name}_{时间戳}.xml\n"
+            "保存后导入流程（重要）：\n"
+            "  1. 调用本工具获取 saved_path\n"
+            "  2. 直接调用 import_lad_xml_from_file(device_name, saved_path) 导入\n"
+            "     ← 不要重新生成 xml_content，直接用路径！\n"
+            "返回：XML 语法验证结果 + 文件保存路径。\n"
+            "注意：此工具不会连接 TIA Portal，无需活动会话。"
         ),
     )
-    def preview_lad_xml(
+    def save_lad_xml(
         block_name: str,
-        block_type: str,
-        block_number: int,
-        networks_json,
+        xml_content: str,
     ) -> str:
-        """生成 LAD XML 并验证，不导入到 TIA。"""
+        """保存 LAD XML 到 RAG/generated/ 并验证语法（不导入）。"""
+        import xml.etree.ElementTree as _ET
+        import sys as _sys
+        _rag_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "RAG")
+        if _rag_dir not in _sys.path:
+            _sys.path.insert(0, _rag_dir)
+        from rag_retriever import save_generated_xml as _save_xml
         try:
-            nets_data: list = (
-                networks_json if isinstance(networks_json, list)
-                else json.loads(networks_json)
-            )
-            if not isinstance(nets_data, list):
-                return "❌ networks_json 必须是 JSON 数组。"
+            # 语法验证
+            try:
+                _ET.fromstring(xml_content.encode("utf-8"))
+                syntax_ok = True
+                syntax_msg = "✅ XML 语法验证通过"
+            except _ET.ParseError as e:
+                syntax_ok = False
+                syntax_msg = f"⚠️ XML 语法错误：{e}"
 
-            bt = block_type.upper()
-            if bt not in ("FC", "FB", "OB"):
-                return "❌ block_type 必须是 FC、FB 或 OB。"
+            # 持久化保存到 RAG/generated/
+            saved_path = _save_xml(block_name, xml_content)
 
-            networks = lad_networks_from_json(nets_data)
-            xml_content = build_lad_xml(block_name, bt, block_number, networks)
-
-            # 验证 XML
-            validation_errors = validate_lad_xml(xml_content)
-
-            # 保存文件
-            temp_dir = _ensure_temp_dir()
-            json_path = os.path.join(temp_dir, f"{block_name}_preview_input.json")
-            xml_path = os.path.join(temp_dir, f"{block_name}_preview_output.xml")
-            with open(json_path, "w", encoding="utf-8") as f:
-                json.dump(nets_data, f, ensure_ascii=False, indent=2)
-            with open(xml_path, "w", encoding="utf-8") as f:
-                f.write(xml_content)
-
+            net_count = xml_content.count("SW.Blocks.CompileUnit") // 2
             lines = [
-                f"LAD XML 预览 - {block_name} ({bt}{block_number})",
-                f"网络数：{len(networks)}",
-                f"XML 大小：{len(xml_content)} 字节",
+                f"LAD XML 保存 - {block_name}",
+                f"XML 大小：{len(xml_content)} 字节，约 {net_count} 个网络",
+                syntax_msg,
+                f"\n📁 已持久保存至：{saved_path}",
             ]
-
-            if validation_errors:
-                lines.append(f"\n⚠️ 发现 {len(validation_errors)} 个验证错误：")
-                for e in validation_errors:
-                    lines.append(f"  - {e}")
+            if syntax_ok:
+                lines.append(
+                    f"💡 语法正常，调用 import_lad_xml_from_file(device_name=..., file_path=\"{saved_path}\") 导入。"
+                )
             else:
-                lines.append("\n✅ XML 结构验证通过，可以安全导入。")
-
-            lines.append(f"\n文件已保存：")
-            lines.append(f"  JSON 输入：{json_path}")
-            lines.append(f"  XML 输出：{xml_path}")
+                lines.append("请修正 XML 语法错误后再调用 import_lad_xml_from_file 导入。")
             return "\n".join(lines)
         except Exception as exc:
-            return f"❌ XML 生成失败：{exc}\n{traceback.format_exc()}"
+            return f"❌ 保存失败：{exc}"
+
+    # ── 8c. import_lad_xml_from_file ─────────────────────────────────────────
+    @mcp.tool(
+        name="import_lad_xml_from_file",
+        description=(
+            "从已保存的 XML 文件路径导入 LAD 程序块到 TIA Portal（不需要重新传入 xml_content）。\n"
+            "【何时使用】：\n"
+            "  - 调用 save_lad_xml 保存文件后，直接用返回的路径调用本工具导入，无需重新生成 XML\n"
+            "  - 手动编辑了 RAG/generated/ 下的 XML 文件后，用本工具重新导入\n"
+            "  - 导入失败修改文件后重试\n"
+            "【参数】：\n"
+            "  device_name: PLC 设备名称（同 import_lad_xml）\n"
+            "  file_path:   XML 文件的完整绝对路径（save_lad_xml 的返回值中包含此路径）\n"
+            "【注意】：文件必须是合法的 SimaticML XML 格式。"
+        ),
+    )
+    def import_lad_xml_from_file(device_name: str, file_path: str) -> str:
+        """从磁盘文件路径直接导入 LAD XML，不重新生成内容。"""
+        try:
+            _check_session()
+            if not os.path.isfile(file_path):
+                return f"❌ 文件不存在：{file_path}"
+            with open(file_path, encoding="utf-8") as _fh:
+                xml_content = _fh.read()
+            block_name = os.path.splitext(os.path.basename(file_path))[0]
+            # 去掉时间戳后缀（格式：块名_YYYYMMDD_HHMMSS）
+            import re as _re2
+            block_name = _re2.sub(r'_\d{8}_\d{6}$', '', block_name)
+            plc_sw = _get_plc_software(device_name)
+            temp_dir = _ensure_temp_dir()
+            import_lad_xml_block(plc_sw, temp_dir, block_name, xml_content)
+            net_count = xml_content.count("SW.Blocks.CompileUnit") // 2
+            return (
+                f"✅ LAD 程序块 '{block_name}' 已从文件导入到 {device_name}，共 {net_count} 个网络。\n"
+                f"📁 源文件：{file_path}\n"
+                f"💡 调用 compile_check(device_name=\"{device_name}\") 验证编译。"
+            )
+        except Exception as exc:
+            return f"❌ 从文件导入失败：{exc}\n{traceback.format_exc()}"
 
     # ── 9. compile_and_save ───────────────────────────────────────────────────
     @mcp.tool(
@@ -859,7 +965,7 @@ def register_mcp_tools(mcp) -> None:
             "返回编译状态和详细错误/警告消息列表。\n"
             "【工作流程】：\n"
             "  1. 先导入所有块 → 调用 compile_check 检查错误\n"
-            "  2. 若有类型不匹配等错误 → 修正 networks_json → 重新调用 add_lad_block（自动覆盖）\n"
+            "  2. 若有类型不匹配等错误 → 修正 networks_json → 重新调用 import_lad_xml（自动覆盖）\n"
             "  3. 再次 compile_check 确认无误 → 最后调用 compile_and_save 保存\n"
             "【常见编译错误及修复方法】：\n"
             "  - 'Operand type mismatch' / 类型不匹配 → 使用 Convert 指令做类型转换\n"
@@ -879,7 +985,7 @@ def register_mcp_tools(mcp) -> None:
             lines = [status, result.summary()]
             if not result.success:
                 lines.append(
-                    "\n💡 提示：可用 add_lad_block 重新调用修正后的块（同名自动覆盖），"
+                    "\n💡 提示：修正 XML 后重新调用 import_lad_xml 覆盖导入，"
                     "修正后再次 compile_check 验证。"
                 )
             return "\n".join(lines)
@@ -892,7 +998,7 @@ def register_mcp_tools(mcp) -> None:
         description=(
             "删除指定 PLC 设备中的程序块。\n"
             "用途：当编译失败且重新导入覆盖无法解决时，可先删除再重建。\n"
-            "注意：通常不需要先删除再导入 —— add_lad_block 和 import_scl_block 会自动覆盖同名块。"
+            "注意：通常不需要先删除再导入 —— import_lad_xml 和 import_scl_block 会自动覆盖同名块。"
         ),
     )
     def delete_plc_block(device_name: str, block_name: str) -> str:
@@ -923,8 +1029,12 @@ def register_mcp_tools(mcp) -> None:
             "  2. add_plc_to_project     — 添加 CPU（使用此工具返回的订货号）\n"
             "  3. create_plc_tag_table   — 按模块组创建变量表\n"
             "  4. create_global_db       — 创建各 DB 块\n"
-            "  5. add_lad_block          — 【重要】根据 LAD 功能逻辑清单为每个功能生成 LAD 程序块\n"
-            "  6. compile_check          — 检查编译错误（不保存），有类型错误则修正后重新 add_lad_block\n"
+            "  4.5 compile_check         — 【必须！】编译 DB，使符号注册到交叉引用表\n"
+            "                              跳过此步直接导入程序块会导致 'Tag not defined' 编译错误\n"
+            "  5. import_lad_xml          — 【重要】根据 LAD 功能逻辑清单为每个功能生成 LAD 程序块\n"
+            "                              LAD 中引用 DB 变量必须用符号名：Component Name=\"DB名\"+Component Name=\"变量名\"\n"
+            "                              禁止用绝对地址（%DB100.DBX...），create_global_db 创建的是优化 DB\n"
+            "  6. compile_check          — 检查编译错误（不保存），有类型错误则修正后重新 import_lad_xml\n"
             "  7. compile_and_save       — 确认无误后编译并保存\n\n"
             "注意：\n"
             "  - LAD 功能逻辑清单中的每条描述都需要生成对应的 LAD 块（FC）\n"
@@ -988,7 +1098,7 @@ def register_mcp_tools(mcp) -> None:
 
         # ── LAD 功能逻辑清单（核心：每条描述对应一个需要生成的 LAD 程序块）────
         lines.append(
-            f"\n=== LAD 功能逻辑清单（共 {len(spec.logic_functions)} 个功能，每个功能需调用 add_lad_block 生成 LAD 块）==="
+            f"\n=== LAD 功能逻辑清单（共 {len(spec.logic_functions)} 个功能，每个功能需调用 import_lad_xml 生成 LAD 块）==="
         )
         if not spec.logic_functions:
             lines.append("  （xlsx 中未找到功能描述，无需生成 LAD 块）")
@@ -998,7 +1108,7 @@ def register_mcp_tools(mcp) -> None:
             lines.append(f"  >>> 逻辑描述（根据此描述生成 LAD 梯级）：")
             lines.append(f"  {fn.description}")
             lines.append(
-                f"  >>> 调用方式：add_lad_block(block_name=\"FC_{fn.block_index}\", "
+                f"  >>> 调用方式：import_lad_xml(block_name=\"FC_{fn.block_index}\", "
                 f"block_type=\"FC\", block_number={fn.block_index}, "
                 f"networks_json=<根据上述描述生成的梯级 JSON>)"
             )
@@ -1008,7 +1118,170 @@ def register_mcp_tools(mcp) -> None:
             f"  硬件：{len(spec.hardware)} 项\n"
             f"  I/O 变量：{len(spec.io_tags)} 个（{len(groups)} 个变量表）\n"
             f"  DB 块：{len(spec.db_blocks)} 个\n"
-            f"  LAD 逻辑功能：{len(spec.logic_functions)} 个（需调用 add_lad_block 生成）"
+            f"  LAD 逻辑功能：{len(spec.logic_functions)} 个（需调用 import_lad_xml 生成）"
         )
 
         return "\n".join(lines)
+
+    # ── 13. list_plc_templates ────────────────────────────────────────────────
+    @mcp.tool(
+        name="list_plc_templates",
+        description=(
+            "列出 RAG 模板库中所有可用的 PLC 程序模板。\n"
+            "模板来自真实博途工程导出的 SimaticML XML 文件，语法合法可直接导入。\n"
+            "每条记录含：name、category（分类）、block_type（FC/FB/OB）、description。\n"
+            "category 可选值：application（完整工程模板）、basic（基础单指令模板，待扩充）等。\n"
+            "返回结果可用于判断是否有匹配的现成模板，有则优先调用 import_template_block 直接导入，"
+            "无合适模板时再调用 import_lad_xml 生成。\n"
+            "可传 category=<分类名> 只列出该分类的模板。"
+        ),
+    )
+    def list_plc_templates(category: str = "") -> str:
+        """列出所有可用的 PLC 程序模板。"""
+        try:
+            import sys
+            import os as _os
+            _rag_dir = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "RAG")
+            if _rag_dir not in sys.path:
+                sys.path.insert(0, _rag_dir)
+            from rag_retriever import list_templates as _list, list_categories as _list_cats
+            cat_arg = category if category else None
+            templates = _list(category=cat_arg)
+            cats = _list_cats()
+            if not templates:
+                return "ℹ️ 模板库为空，请检查 RAG/templates/ 目录。"
+            lines = [f"📚 共找到 {len(templates)} 个程序模板（分类：{'全部' if not cat_arg else cat_arg}）：\n"]
+            last_cat = None
+            for t in templates:
+                if t["category"] != last_cat:
+                    last_cat = t["category"]
+                    cat_desc = cats.get(last_cat, "")
+                    lines.append(f"\n  【{last_cat}】{cat_desc}")
+                lines.append(
+                    f"    [{t['block_type']:2s}] {t['name']:<20}  {t['description']}"
+                )
+            lines.append(
+                "\n💡 使用 search_plc_templates(query=<关键词>) 精确检索，"
+                "或 import_template_block(template_name=<name>, ...) 直接导入。"
+            )
+            return "\n".join(lines)
+        except Exception as exc:
+            return f"❌ 获取模板列表失败：{exc}"
+
+    # ── 14. search_plc_templates ──────────────────────────────────────────────
+    @mcp.tool(
+        name="search_plc_templates",
+        description=(
+            "按关键词检索最相关的 PLC 程序模板（RAG 检索）。\n"
+            "query 支持中文描述或功能关键词，如「烧嘴控制」「风机启停」「定时报警」等。\n"
+            "返回最多 top_k 条匹配结果，含相关度得分（0~1，越高越相关）和所属 category。\n"
+            "category 可选，限定只在某分类中检索，如 category=\"application\"。\n"
+            "【工作流程】\n"
+            "  1. 先调用此工具检索是否有现成模板\n"
+            "  2. score >= 0.5 时，用 get_plc_template(name=<name>, full=True) 获取完整 XML\n"
+            "  3. 在模板 XML 基础上修改生成目标块 → import_lad_xml 导入\n"
+            "  4. 无合适模板时，从任意相关模板的 XML 学习语法后自行生成"
+        ),
+    )
+    def search_plc_templates(query: str, top_k: int = 5, category: str = "") -> str:
+        """检索最相关的 PLC 程序模板。"""
+        try:
+            import sys
+            import os as _os
+            _rag_dir = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "RAG")
+            if _rag_dir not in sys.path:
+                sys.path.insert(0, _rag_dir)
+            from rag_retriever import search_templates as _search
+            cat_arg = category if category else None
+            results = _search(query, top_k=top_k, category=cat_arg)
+            if not results:
+                return f"ℹ️ 未找到与「{query}」相关的模板，建议使用 import_lad_xml 基于参考模板自行生成 XML。"
+            lines = [f"🔍 检索「{query}」，共找到 {len(results)} 个相关模板：\n"]
+            for r in results:
+                bar = "█" * int(r["score"] * 10) + "░" * (10 - int(r["score"] * 10))
+                lines.append(
+                    f"  [{r['block_type']:2s}] {r['name']:<20}  [{r['category']}]  相关度: {r['score']:.2f} {bar}"
+                )
+                lines.append(f"       {r['description']}")
+            lines.append(
+                "\n💡 对 score >= 0.5 的模板，可调用 get_plc_template(name=<name>, full=True) 获取完整 XML 作参考，"
+                "再决定是修改导入还是参考语法自行生成。"
+            )
+            return "\n".join(lines)
+        except Exception as exc:
+            return f"❌ 检索模板失败：{exc}"
+
+    # ── 15. get_plc_template ──────────────────────────────────────────────────
+    @mcp.tool(
+        name="get_plc_template",
+        description=(
+            "获取指定模板的 XML 内容，用于作为生成新块的参考或直接复用。\n"
+            "template_name: 模板名（不含 .xml，如「烧嘴控制」）\n"
+            "full: false=返回截断摘要（约4000字符，含接口声明+首个网络，节省上下文）；\n"
+            "      true=返回完整 XML（【推荐】生成新块时必须传 full=True 以获取完整语法参考）。\n"
+            "用途：\n"
+            "  - 获取完整模板 XML 作为 AI 生成新块的参考蓝本\n"
+            "  - 了解梯形图网络结构、变量访问格式、UId 编排方式\n"
+            "  - 在此基础上修改变量名/网络内容生成目标块的 XML\n"
+            "注意：若要直接导入模板（不修改）请使用 import_template_block。"
+        ),
+    )
+    def get_plc_template(template_name: str, full: bool = False) -> str:
+        """获取模板 XML 内容。"""
+        try:
+            import sys
+            import os as _os
+            _rag_dir = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "RAG")
+            if _rag_dir not in sys.path:
+                sys.path.insert(0, _rag_dir)
+            from rag_retriever import get_template_xml as _get_xml, list_templates as _list
+            xml = _get_xml(template_name, full=full)
+            if xml is None:
+                all_names = [t["name"] for t in _list()]
+                candidates = [n for n in all_names if template_name.lower() in n.lower()][:3]
+                hint = ("  候选：" + "、".join(candidates)) if candidates else "  （无匹配，请调用 list_plc_templates 查看全部）"
+                return f"❌ 未找到模板「{template_name}」。\n{hint}"
+            mode_hint = "（完整内容）" if full else "（截断摘要，调用时传 full=true 获取完整内容）"
+            return f"📄 模板「{template_name}」{mode_hint}：\n\n{xml}"
+        except Exception as exc:
+            return f"❌ 获取模板内容失败：{exc}"
+
+    # ── 16. import_template_block ─────────────────────────────────────────────
+    @mcp.tool(
+        name="import_template_block",
+        description=(
+            "将 RAG 模板库中的程序块 XML 直接导入到指定 PLC 设备（最快路径）。\n"
+            "适用场景：模板与需求高度匹配，无需修改，直接复用真实工程导出的块。\n"
+            "template_name: 模板名（不含 .xml，如「烧嘴控制」「风机燃气」）\n"
+            "device_name:   目标 PLC 设备名（已通过 add_plc_to_project 添加）\n"
+            "【工作流程】\n"
+            "  search_plc_templates → get_plc_template（确认接口）→ import_template_block\n"
+            "注意：\n"
+            "  - 模板 XML 中的块名称和编号保持原样（由博途自动处理 AutoNumber=true）\n"
+            "  - 若需要修改变量名/逻辑，请使用 import_lad_xml 从 JSON 重新生成\n"
+            "  - 导入后可调用 compile_check 确认无编译错误"
+        ),
+    )
+    def import_template_block(template_name: str, device_name: str) -> str:
+        """将模板 XML 直接导入到指定 PLC 设备。"""
+        try:
+            _check_session()
+            import sys
+            import os as _os
+            _rag_dir = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "RAG")
+            if _rag_dir not in sys.path:
+                sys.path.insert(0, _rag_dir)
+            from rag_retriever import TemplateLibrary as _Lib
+            info = _Lib.instance().get(template_name)
+            if info is None:
+                return f"❌ 未找到模板「{template_name}」，请先调用 list_plc_templates 确认模板名称。"
+            xml_content = info.file_path.read_text(encoding="utf-8")
+            plc_sw = _get_plc_software(device_name)
+            temp_dir = _ensure_temp_dir()
+            import_lad_xml_block(plc_sw, temp_dir, info.block_name or template_name, xml_content)
+            return (
+                f"✅ 模板「{template_name}」（{info.block_type} {info.block_name}）已成功导入到 {device_name}。\n"
+                f"💡 如需验证，调用 compile_check(device_name=\"{device_name}\") 检查编译结果。"
+            )
+        except Exception as exc:
+            return f"❌ 导入模板失败：{exc}\n{traceback.format_exc()}"

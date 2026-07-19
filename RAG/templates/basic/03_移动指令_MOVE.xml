@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  基础示例 03：Function Box — MOVE 指令（带使能触点）
+  =====================================================
+  电路含义：
+    当 Enable(NO) 接通时，执行 MOVE：将 SourceValue 复制到 DestValue
+
+  核心规则（从此模板可学到）：
+  1. Function Box 引脚：en=使能输入（功率流），eno=使能输出（功率流）
+     数据引脚 in/out1 通过 IdentCon↔NameCon 连接
+  2. 数据输入方向：IdentCon（变量）在前，NameCon（引脚）在后
+     数据输出方向：NameCon（引脚）在前，IdentCon（变量）在后
+  3. Move 需要 TemplateValue 指定输出数量（Card=1 表示 1 个输出）
+  4. ENO 可不接线（相当于 DisabledENO），或连接到下一个元素的 in 引脚
+-->
+<Document>
+  <Engineering version="V17" />
+  <SW.Blocks.FC ID="0">
+    <AttributeList>
+      <AutoNumber>true</AutoNumber>
+      <HeaderAuthor />
+      <HeaderFamily />
+      <HeaderName />
+      <HeaderVersion>0.1</HeaderVersion>
+      <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v5">
+  <Section Name="Input" />
+  <Section Name="Output" />
+  <Section Name="InOut" />
+  <Section Name="Temp" />
+  <Section Name="Constant" />
+  <Section Name="Return">
+    <Member Name="Ret_Val" Datatype="Void" Accessibility="Public" />
+  </Section>
+</Sections></Interface>
+      <IsIECCheckEnabled>false</IsIECCheckEnabled>
+      <MemoryLayout>Optimized</MemoryLayout>
+      <Name>移动指令_MOVE</Name>
+      <ProgrammingLanguage>LAD</ProgrammingLanguage>
+      <SetENOAutomatically>false</SetENOAutomatically>
+    </AttributeList>
+    <ObjectList>
+      <!-- 程序段1：Enable 接通时执行 MOVE（SourceValue → DestValue） -->
+      <SW.Blocks.CompileUnit ID="1" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="1">
+      <Symbol>
+        <Component Name="DB1" />
+        <Component Name="Enable" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="2">
+      <Symbol>
+        <Component Name="DB1" />
+        <Component Name="SourceValue" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="3">
+      <Symbol>
+        <Component Name="DB1" />
+        <Component Name="DestValue" />
+      </Symbol>
+    </Access>
+    <!-- Contact(NO)：使能条件 -->
+    <Part Name="Contact" UId="10" />
+    <!-- Move 指令：TemplateValue Card=1 表示有 1 个输出（out1） -->
+    <Part Name="Move" UId="11">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+  </Parts>
+  <Wires>
+    <!-- 功率流：左母线 → Contact in -->
+    <Wire UId="20"><Powerrail /><NameCon UId="10" Name="in" /></Wire>
+    <!-- 数据：变量 → Contact operand -->
+    <Wire UId="21"><IdentCon UId="1" /><NameCon UId="10" Name="operand" /></Wire>
+    <!-- 功率流：Contact out → Move en（使能 FunctionBox） -->
+    <Wire UId="22"><NameCon UId="10" Name="out" /><NameCon UId="11" Name="en" /></Wire>
+    <!-- 数据输入（IdentCon 在前 NameCon 在后）：SourceValue → Move in -->
+    <Wire UId="23"><IdentCon UId="2" /><NameCon UId="11" Name="in" /></Wire>
+    <!-- 数据输出（NameCon 在前 IdentCon 在后）：Move out1 → DestValue -->
+    <Wire UId="24"><NameCon UId="11" Name="out1" /><IdentCon UId="3" /></Wire>
+    <!-- ENO 可选择不接线（等效于 DisabledENO），此处省略 ENO wire -->
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+      </SW.Blocks.CompileUnit>
+    </ObjectList>
+  </SW.Blocks.FC>
+</Document>

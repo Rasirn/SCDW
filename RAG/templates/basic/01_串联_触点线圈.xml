@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  基础示例 01：串联 — 常开触点 + 常闭触点 → 输出线圈
+  =====================================================
+  电路含义：StartBtn(NO) 串联 StopBtn(NC) 串联 → MotorRun 线圈
+  即：启动按钮按下 AND 停止按钮未按 → 电机运行
+
+  核心规则（从此模板可学到）：
+  1. Access 元素必须在 <Parts> 顶层，绝不嵌套在 Contact/Coil/Part 内
+  2. 功率流引脚（in/out）通过 NameCon↔NameCon 连接
+  3. 数据引脚（operand）通过 IdentCon↔NameCon 连接
+  4. Contact 引脚：in=功率输入, out=功率输出, operand=变量引脚
+  5. Coil 引脚：in=功率输入（无 out）, operand=输出变量引脚
+-->
+<Document>
+  <Engineering version="V17" />
+  <SW.Blocks.FC ID="0">
+    <AttributeList>
+      <AutoNumber>true</AutoNumber>
+      <HeaderAuthor />
+      <HeaderFamily />
+      <HeaderName />
+      <HeaderVersion>0.1</HeaderVersion>
+      <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v5">
+  <Section Name="Input" />
+  <Section Name="Output" />
+  <Section Name="InOut" />
+  <Section Name="Temp" />
+  <Section Name="Constant" />
+  <Section Name="Return">
+    <Member Name="Ret_Val" Datatype="Void" Accessibility="Public" />
+  </Section>
+</Sections></Interface>
+      <IsIECCheckEnabled>false</IsIECCheckEnabled>
+      <MemoryLayout>Optimized</MemoryLayout>
+      <Name>串联_触点线圈</Name>
+      <ProgrammingLanguage>LAD</ProgrammingLanguage>
+      <SetENOAutomatically>false</SetENOAutomatically>
+    </AttributeList>
+    <ObjectList>
+      <!-- 程序段1：StartBtn(NO) 串联 StopBtn(NC) → MotorRun 线圈 -->
+      <SW.Blocks.CompileUnit ID="1" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <!-- ① 所有变量访问 Access 写在 Parts 顶层，UId 全局唯一 -->
+    <Access Scope="GlobalVariable" UId="1">
+      <Symbol>
+        <Component Name="DB1" />
+        <Component Name="StartBtn" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="2">
+      <Symbol>
+        <Component Name="DB1" />
+        <Component Name="StopBtn" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="3">
+      <Symbol>
+        <Component Name="DB1" />
+        <Component Name="MotorRun" />
+      </Symbol>
+    </Access>
+    <!-- ② Contact 和 Coil 是独立 Part，不嵌套 Access -->
+    <!-- 常开触点 (NO)：无子元素 -->
+    <Part Name="Contact" UId="10" />
+    <!-- 常闭触点 (NC)：加 <Negated Name="operand" /> -->
+    <Part Name="Contact" UId="11">
+      <Negated Name="operand" />
+    </Part>
+    <!-- 普通输出线圈 (Coil=普通, SCoil=置位, RCoil=复位) -->
+    <Part Name="Coil" UId="12" />
+  </Parts>
+  <Wires>
+    <!-- ③ 功率流：左母线 → Contact(10) in 引脚 -->
+    <Wire UId="20"><Powerrail /><NameCon UId="10" Name="in" /></Wire>
+    <!-- ④ 数据：变量 Access(1)=StartBtn → Contact(10) operand 引脚 -->
+    <Wire UId="21"><IdentCon UId="1" /><NameCon UId="10" Name="operand" /></Wire>
+    <!-- ⑤ 功率流串联：Contact(10) out → Contact(11) in -->
+    <Wire UId="22"><NameCon UId="10" Name="out" /><NameCon UId="11" Name="in" /></Wire>
+    <!-- ⑥ 数据：变量 Access(2)=StopBtn → Contact(11) operand -->
+    <Wire UId="23"><IdentCon UId="2" /><NameCon UId="11" Name="operand" /></Wire>
+    <!-- ⑦ 功率流：Contact(11) out → Coil(12) in -->
+    <Wire UId="24"><NameCon UId="11" Name="out" /><NameCon UId="12" Name="in" /></Wire>
+    <!-- ⑧ 数据：变量 Access(3)=MotorRun → Coil(12) operand（输出变量） -->
+    <Wire UId="25"><IdentCon UId="3" /><NameCon UId="12" Name="operand" /></Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+      </SW.Blocks.CompileUnit>
+    </ObjectList>
+  </SW.Blocks.FC>
+</Document>

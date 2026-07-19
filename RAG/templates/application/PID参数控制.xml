@@ -1,0 +1,3033 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Document>
+  <Engineering version="V17" />
+  <DocumentInfo>
+    <Created>2026-04-12T10:31:11.5882867Z</Created>
+    <ExportSetting>WithDefaults</ExportSetting>
+    <InstalledProducts>
+      <Product>
+        <DisplayName>Totally Integrated Automation Portal</DisplayName>
+        <DisplayVersion>V17 Update 4</DisplayVersion>
+      </Product>
+      <OptionPackage>
+        <DisplayName>TIA Portal Openness</DisplayName>
+        <DisplayVersion>V17 Update 4</DisplayVersion>
+      </OptionPackage>
+      <OptionPackage>
+        <DisplayName>TIA Portal Version Control Interface</DisplayName>
+        <DisplayVersion>V17</DisplayVersion>
+      </OptionPackage>
+      <Product>
+        <DisplayName>SINAMICS Startdrive Advanced</DisplayName>
+        <DisplayVersion>V17</DisplayVersion>
+      </Product>
+      <OptionPackage>
+        <DisplayName>SINAMICS Startdrive G130, G150, S120, S150, SINAMICS MV, S210</DisplayName>
+        <DisplayVersion>V17</DisplayVersion>
+      </OptionPackage>
+      <OptionPackage>
+        <DisplayName>SINAMICS Startdrive G110M, G120, G120C, G120D, G120P, G115D</DisplayName>
+        <DisplayVersion>V17</DisplayVersion>
+      </OptionPackage>
+      <Product>
+        <DisplayName>STEP 7 Professional</DisplayName>
+        <DisplayVersion>V17 Update 4</DisplayVersion>
+      </Product>
+      <OptionPackage>
+        <DisplayName>STEP 7 Safety</DisplayName>
+        <DisplayVersion>V17</DisplayVersion>
+      </OptionPackage>
+      <Product>
+        <DisplayName>WinCC Advanced</DisplayName>
+        <DisplayVersion>V17 Update 4</DisplayVersion>
+      </Product>
+    </InstalledProducts>
+  </DocumentInfo>
+  <SW.Blocks.FC ID="0">
+    <AttributeList>
+      <AutoNumber>true</AutoNumber>
+      <HeaderAuthor />
+      <HeaderFamily />
+      <HeaderName />
+      <HeaderVersion>0.1</HeaderVersion>
+      <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v5">
+  <Section Name="Input" />
+  <Section Name="Output" />
+  <Section Name="InOut" />
+  <Section Name="Temp" />
+  <Section Name="Constant" />
+  <Section Name="Return">
+    <Member Name="Ret_Val" Datatype="Void" Accessibility="Public" />
+  </Section>
+</Sections></Interface>
+      <IsIECCheckEnabled>false</IsIECCheckEnabled>
+      <MemoryLayout>Optimized</MemoryLayout>
+      <Name>PID参数控制</Name>
+      <Number>6</Number>
+      <ProgrammingLanguage>LAD</ProgrammingLanguage>
+      <SetENOAutomatically>false</SetENOAutomatically>
+      <UDABlockProperties />
+      <UDAEnableTagReadback>false</UDAEnableTagReadback>
+    </AttributeList>
+    <ObjectList>
+      <MultilingualText ID="1" CompositionName="Comment">
+        <ObjectList>
+          <MultilingualTextItem ID="2" CompositionName="Items">
+            <AttributeList>
+              <Culture>zh-CN</Culture>
+              <Text />
+            </AttributeList>
+          </MultilingualTextItem>
+        </ObjectList>
+      </MultilingualText>
+      <SW.Blocks.CompileUnit ID="3" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="AlwaysTRUE" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="22">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="1区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Cycle" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="24">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="2区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Cycle" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="26">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="3区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Cycle" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="28">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="4区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Cycle" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="30">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="5区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Cycle" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="32">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="6区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Cycle" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="34">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="35">
+      <Symbol>
+        <Component Name="7区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Cycle" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="36">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="37">
+      <Symbol>
+        <Component Name="8区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Cycle" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="38">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="39">
+      <Symbol>
+        <Component Name="9区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Cycle" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="40">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="41">
+      <Symbol>
+        <Component Name="10区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Cycle" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="42">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="43">
+      <Symbol>
+        <Component Name="11区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Cycle" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="44">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="45">
+      <Symbol>
+        <Component Name="12区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Cycle" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="46">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="47">
+      <Symbol>
+        <Component Name="13区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Cycle" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="48">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="49">
+      <Symbol>
+        <Component Name="14区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Cycle" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="50">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="51">
+      <Symbol>
+        <Component Name="15区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Cycle" />
+      </Symbol>
+    </Access>
+    <Part Name="Contact" UId="52" />
+    <Part Name="Move" UId="53" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="54" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="55" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="56" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="57" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="58" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="59" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="60" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="61" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="62" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="63" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="64" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="65" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="66" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="67" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+  </Parts>
+  <Wires>
+    <Wire UId="68">
+      <Powerrail />
+      <NameCon UId="52" Name="in" />
+    </Wire>
+    <Wire UId="69">
+      <IdentCon UId="21" />
+      <NameCon UId="52" Name="operand" />
+    </Wire>
+    <Wire UId="70">
+      <NameCon UId="52" Name="out" />
+      <NameCon UId="53" Name="en" />
+      <NameCon UId="56" Name="en" />
+      <NameCon UId="59" Name="en" />
+      <NameCon UId="62" Name="en" />
+      <NameCon UId="65" Name="en" />
+    </Wire>
+    <Wire UId="71">
+      <IdentCon UId="22" />
+      <NameCon UId="53" Name="in" />
+    </Wire>
+    <Wire UId="72">
+      <NameCon UId="53" Name="eno" />
+      <NameCon UId="54" Name="en" />
+    </Wire>
+    <Wire UId="73">
+      <NameCon UId="53" Name="out1" />
+      <IdentCon UId="23" />
+    </Wire>
+    <Wire UId="74">
+      <IdentCon UId="24" />
+      <NameCon UId="54" Name="in" />
+    </Wire>
+    <Wire UId="75">
+      <NameCon UId="54" Name="eno" />
+      <NameCon UId="55" Name="en" />
+    </Wire>
+    <Wire UId="76">
+      <NameCon UId="54" Name="out1" />
+      <IdentCon UId="25" />
+    </Wire>
+    <Wire UId="77">
+      <IdentCon UId="26" />
+      <NameCon UId="55" Name="in" />
+    </Wire>
+    <Wire UId="78">
+      <NameCon UId="55" Name="out1" />
+      <IdentCon UId="27" />
+    </Wire>
+    <Wire UId="79">
+      <IdentCon UId="28" />
+      <NameCon UId="56" Name="in" />
+    </Wire>
+    <Wire UId="80">
+      <NameCon UId="56" Name="eno" />
+      <NameCon UId="57" Name="en" />
+    </Wire>
+    <Wire UId="81">
+      <NameCon UId="56" Name="out1" />
+      <IdentCon UId="29" />
+    </Wire>
+    <Wire UId="82">
+      <IdentCon UId="30" />
+      <NameCon UId="57" Name="in" />
+    </Wire>
+    <Wire UId="83">
+      <NameCon UId="57" Name="eno" />
+      <NameCon UId="58" Name="en" />
+    </Wire>
+    <Wire UId="84">
+      <NameCon UId="57" Name="out1" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="85">
+      <IdentCon UId="32" />
+      <NameCon UId="58" Name="in" />
+    </Wire>
+    <Wire UId="86">
+      <NameCon UId="58" Name="out1" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="87">
+      <IdentCon UId="34" />
+      <NameCon UId="59" Name="in" />
+    </Wire>
+    <Wire UId="88">
+      <NameCon UId="59" Name="eno" />
+      <NameCon UId="60" Name="en" />
+    </Wire>
+    <Wire UId="89">
+      <NameCon UId="59" Name="out1" />
+      <IdentCon UId="35" />
+    </Wire>
+    <Wire UId="90">
+      <IdentCon UId="36" />
+      <NameCon UId="60" Name="in" />
+    </Wire>
+    <Wire UId="91">
+      <NameCon UId="60" Name="eno" />
+      <NameCon UId="61" Name="en" />
+    </Wire>
+    <Wire UId="92">
+      <NameCon UId="60" Name="out1" />
+      <IdentCon UId="37" />
+    </Wire>
+    <Wire UId="93">
+      <IdentCon UId="38" />
+      <NameCon UId="61" Name="in" />
+    </Wire>
+    <Wire UId="94">
+      <NameCon UId="61" Name="out1" />
+      <IdentCon UId="39" />
+    </Wire>
+    <Wire UId="95">
+      <IdentCon UId="40" />
+      <NameCon UId="62" Name="in" />
+    </Wire>
+    <Wire UId="96">
+      <NameCon UId="62" Name="eno" />
+      <NameCon UId="63" Name="en" />
+    </Wire>
+    <Wire UId="97">
+      <NameCon UId="62" Name="out1" />
+      <IdentCon UId="41" />
+    </Wire>
+    <Wire UId="98">
+      <IdentCon UId="42" />
+      <NameCon UId="63" Name="in" />
+    </Wire>
+    <Wire UId="99">
+      <NameCon UId="63" Name="eno" />
+      <NameCon UId="64" Name="en" />
+    </Wire>
+    <Wire UId="100">
+      <NameCon UId="63" Name="out1" />
+      <IdentCon UId="43" />
+    </Wire>
+    <Wire UId="101">
+      <IdentCon UId="44" />
+      <NameCon UId="64" Name="in" />
+    </Wire>
+    <Wire UId="102">
+      <NameCon UId="64" Name="out1" />
+      <IdentCon UId="45" />
+    </Wire>
+    <Wire UId="103">
+      <IdentCon UId="46" />
+      <NameCon UId="65" Name="in" />
+    </Wire>
+    <Wire UId="104">
+      <NameCon UId="65" Name="eno" />
+      <NameCon UId="66" Name="en" />
+    </Wire>
+    <Wire UId="105">
+      <NameCon UId="65" Name="out1" />
+      <IdentCon UId="47" />
+    </Wire>
+    <Wire UId="106">
+      <IdentCon UId="48" />
+      <NameCon UId="66" Name="in" />
+    </Wire>
+    <Wire UId="107">
+      <NameCon UId="66" Name="eno" />
+      <NameCon UId="67" Name="en" />
+    </Wire>
+    <Wire UId="108">
+      <NameCon UId="66" Name="out1" />
+      <IdentCon UId="49" />
+    </Wire>
+    <Wire UId="109">
+      <IdentCon UId="50" />
+      <NameCon UId="67" Name="in" />
+    </Wire>
+    <Wire UId="110">
+      <NameCon UId="67" Name="out1" />
+      <IdentCon UId="51" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="4" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="5" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="6" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="7" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>采样时间</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="8" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="AlwaysTRUE" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="22">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="1区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="PWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="24">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="2区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="PWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="26">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="3区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="PWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="28">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="4区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="PWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="30">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="5区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="PWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="32">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="6区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="PWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="34">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="35">
+      <Symbol>
+        <Component Name="7区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="PWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="36">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="37">
+      <Symbol>
+        <Component Name="8区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="PWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="38">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="39">
+      <Symbol>
+        <Component Name="9区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="PWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="40">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="41">
+      <Symbol>
+        <Component Name="10区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="PWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="42">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="43">
+      <Symbol>
+        <Component Name="11区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="PWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="44">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="45">
+      <Symbol>
+        <Component Name="12区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="PWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="46">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="47">
+      <Symbol>
+        <Component Name="13区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="PWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="48">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="49">
+      <Symbol>
+        <Component Name="14区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="PWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="50">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="51">
+      <Symbol>
+        <Component Name="15区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="PWeighting" />
+      </Symbol>
+    </Access>
+    <Part Name="Contact" UId="52" />
+    <Part Name="Move" UId="53" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="54" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="55" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="56" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="57" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="58" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="59" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="60" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="61" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="62" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="63" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="64" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="65" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="66" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="67" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+  </Parts>
+  <Wires>
+    <Wire UId="68">
+      <Powerrail />
+      <NameCon UId="52" Name="in" />
+    </Wire>
+    <Wire UId="69">
+      <IdentCon UId="21" />
+      <NameCon UId="52" Name="operand" />
+    </Wire>
+    <Wire UId="70">
+      <NameCon UId="52" Name="out" />
+      <NameCon UId="53" Name="en" />
+      <NameCon UId="56" Name="en" />
+      <NameCon UId="59" Name="en" />
+      <NameCon UId="62" Name="en" />
+      <NameCon UId="65" Name="en" />
+    </Wire>
+    <Wire UId="71">
+      <IdentCon UId="22" />
+      <NameCon UId="53" Name="in" />
+    </Wire>
+    <Wire UId="72">
+      <NameCon UId="53" Name="eno" />
+      <NameCon UId="54" Name="en" />
+    </Wire>
+    <Wire UId="73">
+      <NameCon UId="53" Name="out1" />
+      <IdentCon UId="23" />
+    </Wire>
+    <Wire UId="74">
+      <IdentCon UId="24" />
+      <NameCon UId="54" Name="in" />
+    </Wire>
+    <Wire UId="75">
+      <NameCon UId="54" Name="eno" />
+      <NameCon UId="55" Name="en" />
+    </Wire>
+    <Wire UId="76">
+      <NameCon UId="54" Name="out1" />
+      <IdentCon UId="25" />
+    </Wire>
+    <Wire UId="77">
+      <IdentCon UId="26" />
+      <NameCon UId="55" Name="in" />
+    </Wire>
+    <Wire UId="78">
+      <NameCon UId="55" Name="out1" />
+      <IdentCon UId="27" />
+    </Wire>
+    <Wire UId="79">
+      <IdentCon UId="28" />
+      <NameCon UId="56" Name="in" />
+    </Wire>
+    <Wire UId="80">
+      <NameCon UId="56" Name="eno" />
+      <NameCon UId="57" Name="en" />
+    </Wire>
+    <Wire UId="81">
+      <NameCon UId="56" Name="out1" />
+      <IdentCon UId="29" />
+    </Wire>
+    <Wire UId="82">
+      <IdentCon UId="30" />
+      <NameCon UId="57" Name="in" />
+    </Wire>
+    <Wire UId="83">
+      <NameCon UId="57" Name="eno" />
+      <NameCon UId="58" Name="en" />
+    </Wire>
+    <Wire UId="84">
+      <NameCon UId="57" Name="out1" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="85">
+      <IdentCon UId="32" />
+      <NameCon UId="58" Name="in" />
+    </Wire>
+    <Wire UId="86">
+      <NameCon UId="58" Name="out1" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="87">
+      <IdentCon UId="34" />
+      <NameCon UId="59" Name="in" />
+    </Wire>
+    <Wire UId="88">
+      <NameCon UId="59" Name="eno" />
+      <NameCon UId="60" Name="en" />
+    </Wire>
+    <Wire UId="89">
+      <NameCon UId="59" Name="out1" />
+      <IdentCon UId="35" />
+    </Wire>
+    <Wire UId="90">
+      <IdentCon UId="36" />
+      <NameCon UId="60" Name="in" />
+    </Wire>
+    <Wire UId="91">
+      <NameCon UId="60" Name="eno" />
+      <NameCon UId="61" Name="en" />
+    </Wire>
+    <Wire UId="92">
+      <NameCon UId="60" Name="out1" />
+      <IdentCon UId="37" />
+    </Wire>
+    <Wire UId="93">
+      <IdentCon UId="38" />
+      <NameCon UId="61" Name="in" />
+    </Wire>
+    <Wire UId="94">
+      <NameCon UId="61" Name="out1" />
+      <IdentCon UId="39" />
+    </Wire>
+    <Wire UId="95">
+      <IdentCon UId="40" />
+      <NameCon UId="62" Name="in" />
+    </Wire>
+    <Wire UId="96">
+      <NameCon UId="62" Name="eno" />
+      <NameCon UId="63" Name="en" />
+    </Wire>
+    <Wire UId="97">
+      <NameCon UId="62" Name="out1" />
+      <IdentCon UId="41" />
+    </Wire>
+    <Wire UId="98">
+      <IdentCon UId="42" />
+      <NameCon UId="63" Name="in" />
+    </Wire>
+    <Wire UId="99">
+      <NameCon UId="63" Name="eno" />
+      <NameCon UId="64" Name="en" />
+    </Wire>
+    <Wire UId="100">
+      <NameCon UId="63" Name="out1" />
+      <IdentCon UId="43" />
+    </Wire>
+    <Wire UId="101">
+      <IdentCon UId="44" />
+      <NameCon UId="64" Name="in" />
+    </Wire>
+    <Wire UId="102">
+      <NameCon UId="64" Name="out1" />
+      <IdentCon UId="45" />
+    </Wire>
+    <Wire UId="103">
+      <IdentCon UId="46" />
+      <NameCon UId="65" Name="in" />
+    </Wire>
+    <Wire UId="104">
+      <NameCon UId="65" Name="eno" />
+      <NameCon UId="66" Name="en" />
+    </Wire>
+    <Wire UId="105">
+      <NameCon UId="65" Name="out1" />
+      <IdentCon UId="47" />
+    </Wire>
+    <Wire UId="106">
+      <IdentCon UId="48" />
+      <NameCon UId="66" Name="in" />
+    </Wire>
+    <Wire UId="107">
+      <NameCon UId="66" Name="eno" />
+      <NameCon UId="67" Name="en" />
+    </Wire>
+    <Wire UId="108">
+      <NameCon UId="66" Name="out1" />
+      <IdentCon UId="49" />
+    </Wire>
+    <Wire UId="109">
+      <IdentCon UId="50" />
+      <NameCon UId="67" Name="in" />
+    </Wire>
+    <Wire UId="110">
+      <NameCon UId="67" Name="out1" />
+      <IdentCon UId="51" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="9" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="A" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="B" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="C" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>加热比例权重</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="D" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="AlwaysTRUE" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="22">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="1区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="DWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="24">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="2区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="DWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="26">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="3区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="DWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="28">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="4区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="DWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="30">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="5区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="DWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="32">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="6区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="DWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="34">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="35">
+      <Symbol>
+        <Component Name="7区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="DWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="36">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="37">
+      <Symbol>
+        <Component Name="8区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="DWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="38">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="39">
+      <Symbol>
+        <Component Name="9区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="DWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="40">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="41">
+      <Symbol>
+        <Component Name="10区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="DWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="42">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="43">
+      <Symbol>
+        <Component Name="11区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="DWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="44">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="45">
+      <Symbol>
+        <Component Name="12区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="DWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="46">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="47">
+      <Symbol>
+        <Component Name="13区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="DWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="48">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="49">
+      <Symbol>
+        <Component Name="14区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="DWeighting" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="50">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>1.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="51">
+      <Symbol>
+        <Component Name="15区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="DWeighting" />
+      </Symbol>
+    </Access>
+    <Part Name="Contact" UId="52" />
+    <Part Name="Move" UId="53" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="54" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="55" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="56" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="57" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="58" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="59" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="60" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="61" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="62" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="63" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="64" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="65" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="66" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="67" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+  </Parts>
+  <Wires>
+    <Wire UId="68">
+      <Powerrail />
+      <NameCon UId="52" Name="in" />
+    </Wire>
+    <Wire UId="69">
+      <IdentCon UId="21" />
+      <NameCon UId="52" Name="operand" />
+    </Wire>
+    <Wire UId="70">
+      <NameCon UId="52" Name="out" />
+      <NameCon UId="53" Name="en" />
+      <NameCon UId="56" Name="en" />
+      <NameCon UId="59" Name="en" />
+      <NameCon UId="62" Name="en" />
+      <NameCon UId="65" Name="en" />
+    </Wire>
+    <Wire UId="71">
+      <IdentCon UId="22" />
+      <NameCon UId="53" Name="in" />
+    </Wire>
+    <Wire UId="72">
+      <NameCon UId="53" Name="eno" />
+      <NameCon UId="54" Name="en" />
+    </Wire>
+    <Wire UId="73">
+      <NameCon UId="53" Name="out1" />
+      <IdentCon UId="23" />
+    </Wire>
+    <Wire UId="74">
+      <IdentCon UId="24" />
+      <NameCon UId="54" Name="in" />
+    </Wire>
+    <Wire UId="75">
+      <NameCon UId="54" Name="eno" />
+      <NameCon UId="55" Name="en" />
+    </Wire>
+    <Wire UId="76">
+      <NameCon UId="54" Name="out1" />
+      <IdentCon UId="25" />
+    </Wire>
+    <Wire UId="77">
+      <IdentCon UId="26" />
+      <NameCon UId="55" Name="in" />
+    </Wire>
+    <Wire UId="78">
+      <NameCon UId="55" Name="out1" />
+      <IdentCon UId="27" />
+    </Wire>
+    <Wire UId="79">
+      <IdentCon UId="28" />
+      <NameCon UId="56" Name="in" />
+    </Wire>
+    <Wire UId="80">
+      <NameCon UId="56" Name="eno" />
+      <NameCon UId="57" Name="en" />
+    </Wire>
+    <Wire UId="81">
+      <NameCon UId="56" Name="out1" />
+      <IdentCon UId="29" />
+    </Wire>
+    <Wire UId="82">
+      <IdentCon UId="30" />
+      <NameCon UId="57" Name="in" />
+    </Wire>
+    <Wire UId="83">
+      <NameCon UId="57" Name="eno" />
+      <NameCon UId="58" Name="en" />
+    </Wire>
+    <Wire UId="84">
+      <NameCon UId="57" Name="out1" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="85">
+      <IdentCon UId="32" />
+      <NameCon UId="58" Name="in" />
+    </Wire>
+    <Wire UId="86">
+      <NameCon UId="58" Name="out1" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="87">
+      <IdentCon UId="34" />
+      <NameCon UId="59" Name="in" />
+    </Wire>
+    <Wire UId="88">
+      <NameCon UId="59" Name="eno" />
+      <NameCon UId="60" Name="en" />
+    </Wire>
+    <Wire UId="89">
+      <NameCon UId="59" Name="out1" />
+      <IdentCon UId="35" />
+    </Wire>
+    <Wire UId="90">
+      <IdentCon UId="36" />
+      <NameCon UId="60" Name="in" />
+    </Wire>
+    <Wire UId="91">
+      <NameCon UId="60" Name="eno" />
+      <NameCon UId="61" Name="en" />
+    </Wire>
+    <Wire UId="92">
+      <NameCon UId="60" Name="out1" />
+      <IdentCon UId="37" />
+    </Wire>
+    <Wire UId="93">
+      <IdentCon UId="38" />
+      <NameCon UId="61" Name="in" />
+    </Wire>
+    <Wire UId="94">
+      <NameCon UId="61" Name="out1" />
+      <IdentCon UId="39" />
+    </Wire>
+    <Wire UId="95">
+      <IdentCon UId="40" />
+      <NameCon UId="62" Name="in" />
+    </Wire>
+    <Wire UId="96">
+      <NameCon UId="62" Name="eno" />
+      <NameCon UId="63" Name="en" />
+    </Wire>
+    <Wire UId="97">
+      <NameCon UId="62" Name="out1" />
+      <IdentCon UId="41" />
+    </Wire>
+    <Wire UId="98">
+      <IdentCon UId="42" />
+      <NameCon UId="63" Name="in" />
+    </Wire>
+    <Wire UId="99">
+      <NameCon UId="63" Name="eno" />
+      <NameCon UId="64" Name="en" />
+    </Wire>
+    <Wire UId="100">
+      <NameCon UId="63" Name="out1" />
+      <IdentCon UId="43" />
+    </Wire>
+    <Wire UId="101">
+      <IdentCon UId="44" />
+      <NameCon UId="64" Name="in" />
+    </Wire>
+    <Wire UId="102">
+      <NameCon UId="64" Name="out1" />
+      <IdentCon UId="45" />
+    </Wire>
+    <Wire UId="103">
+      <IdentCon UId="46" />
+      <NameCon UId="65" Name="in" />
+    </Wire>
+    <Wire UId="104">
+      <NameCon UId="65" Name="eno" />
+      <NameCon UId="66" Name="en" />
+    </Wire>
+    <Wire UId="105">
+      <NameCon UId="65" Name="out1" />
+      <IdentCon UId="47" />
+    </Wire>
+    <Wire UId="106">
+      <IdentCon UId="48" />
+      <NameCon UId="66" Name="in" />
+    </Wire>
+    <Wire UId="107">
+      <NameCon UId="66" Name="eno" />
+      <NameCon UId="67" Name="en" />
+    </Wire>
+    <Wire UId="108">
+      <NameCon UId="66" Name="out1" />
+      <IdentCon UId="49" />
+    </Wire>
+    <Wire UId="109">
+      <IdentCon UId="50" />
+      <NameCon UId="67" Name="in" />
+    </Wire>
+    <Wire UId="110">
+      <NameCon UId="67" Name="out1" />
+      <IdentCon UId="51" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="E" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="F" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="10" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="11" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>微分比例权重</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="12" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="AlwaysTRUE" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="22">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="1区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Gain" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="24">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="2区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Gain" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="26">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="3区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Gain" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="28">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="4区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Gain" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="30">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="5区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Gain" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="32">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="6区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Gain" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="34">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="35">
+      <Symbol>
+        <Component Name="7区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Gain" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="36">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="37">
+      <Symbol>
+        <Component Name="8区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Gain" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="38">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="39">
+      <Symbol>
+        <Component Name="9区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Gain" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="40">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="41">
+      <Symbol>
+        <Component Name="10区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Gain" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="42">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="43">
+      <Symbol>
+        <Component Name="11区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Gain" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="44">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="45">
+      <Symbol>
+        <Component Name="12区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Gain" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="46">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="47">
+      <Symbol>
+        <Component Name="13区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Gain" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="48">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="49">
+      <Symbol>
+        <Component Name="14区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Gain" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="50">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>10.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="51">
+      <Symbol>
+        <Component Name="15区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Gain" />
+      </Symbol>
+    </Access>
+    <Part Name="Contact" UId="52" />
+    <Part Name="Move" UId="53" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="54" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="55" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="56" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="57" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="58" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="59" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="60" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="61" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="62" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="63" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="64" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="65" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="66" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="67" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+  </Parts>
+  <Wires>
+    <Wire UId="68">
+      <Powerrail />
+      <NameCon UId="52" Name="in" />
+    </Wire>
+    <Wire UId="69">
+      <IdentCon UId="21" />
+      <NameCon UId="52" Name="operand" />
+    </Wire>
+    <Wire UId="70">
+      <NameCon UId="52" Name="out" />
+      <NameCon UId="53" Name="en" />
+      <NameCon UId="56" Name="en" />
+      <NameCon UId="59" Name="en" />
+      <NameCon UId="62" Name="en" />
+      <NameCon UId="65" Name="en" />
+    </Wire>
+    <Wire UId="71">
+      <IdentCon UId="22" />
+      <NameCon UId="53" Name="in" />
+    </Wire>
+    <Wire UId="72">
+      <NameCon UId="53" Name="eno" />
+      <NameCon UId="54" Name="en" />
+    </Wire>
+    <Wire UId="73">
+      <NameCon UId="53" Name="out1" />
+      <IdentCon UId="23" />
+    </Wire>
+    <Wire UId="74">
+      <IdentCon UId="24" />
+      <NameCon UId="54" Name="in" />
+    </Wire>
+    <Wire UId="75">
+      <NameCon UId="54" Name="eno" />
+      <NameCon UId="55" Name="en" />
+    </Wire>
+    <Wire UId="76">
+      <NameCon UId="54" Name="out1" />
+      <IdentCon UId="25" />
+    </Wire>
+    <Wire UId="77">
+      <IdentCon UId="26" />
+      <NameCon UId="55" Name="in" />
+    </Wire>
+    <Wire UId="78">
+      <NameCon UId="55" Name="out1" />
+      <IdentCon UId="27" />
+    </Wire>
+    <Wire UId="79">
+      <IdentCon UId="28" />
+      <NameCon UId="56" Name="in" />
+    </Wire>
+    <Wire UId="80">
+      <NameCon UId="56" Name="eno" />
+      <NameCon UId="57" Name="en" />
+    </Wire>
+    <Wire UId="81">
+      <NameCon UId="56" Name="out1" />
+      <IdentCon UId="29" />
+    </Wire>
+    <Wire UId="82">
+      <IdentCon UId="30" />
+      <NameCon UId="57" Name="in" />
+    </Wire>
+    <Wire UId="83">
+      <NameCon UId="57" Name="eno" />
+      <NameCon UId="58" Name="en" />
+    </Wire>
+    <Wire UId="84">
+      <NameCon UId="57" Name="out1" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="85">
+      <IdentCon UId="32" />
+      <NameCon UId="58" Name="in" />
+    </Wire>
+    <Wire UId="86">
+      <NameCon UId="58" Name="out1" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="87">
+      <IdentCon UId="34" />
+      <NameCon UId="59" Name="in" />
+    </Wire>
+    <Wire UId="88">
+      <NameCon UId="59" Name="eno" />
+      <NameCon UId="60" Name="en" />
+    </Wire>
+    <Wire UId="89">
+      <NameCon UId="59" Name="out1" />
+      <IdentCon UId="35" />
+    </Wire>
+    <Wire UId="90">
+      <IdentCon UId="36" />
+      <NameCon UId="60" Name="in" />
+    </Wire>
+    <Wire UId="91">
+      <NameCon UId="60" Name="eno" />
+      <NameCon UId="61" Name="en" />
+    </Wire>
+    <Wire UId="92">
+      <NameCon UId="60" Name="out1" />
+      <IdentCon UId="37" />
+    </Wire>
+    <Wire UId="93">
+      <IdentCon UId="38" />
+      <NameCon UId="61" Name="in" />
+    </Wire>
+    <Wire UId="94">
+      <NameCon UId="61" Name="out1" />
+      <IdentCon UId="39" />
+    </Wire>
+    <Wire UId="95">
+      <IdentCon UId="40" />
+      <NameCon UId="62" Name="in" />
+    </Wire>
+    <Wire UId="96">
+      <NameCon UId="62" Name="eno" />
+      <NameCon UId="63" Name="en" />
+    </Wire>
+    <Wire UId="97">
+      <NameCon UId="62" Name="out1" />
+      <IdentCon UId="41" />
+    </Wire>
+    <Wire UId="98">
+      <IdentCon UId="42" />
+      <NameCon UId="63" Name="in" />
+    </Wire>
+    <Wire UId="99">
+      <NameCon UId="63" Name="eno" />
+      <NameCon UId="64" Name="en" />
+    </Wire>
+    <Wire UId="100">
+      <NameCon UId="63" Name="out1" />
+      <IdentCon UId="43" />
+    </Wire>
+    <Wire UId="101">
+      <IdentCon UId="44" />
+      <NameCon UId="64" Name="in" />
+    </Wire>
+    <Wire UId="102">
+      <NameCon UId="64" Name="out1" />
+      <IdentCon UId="45" />
+    </Wire>
+    <Wire UId="103">
+      <IdentCon UId="46" />
+      <NameCon UId="65" Name="in" />
+    </Wire>
+    <Wire UId="104">
+      <NameCon UId="65" Name="eno" />
+      <NameCon UId="66" Name="en" />
+    </Wire>
+    <Wire UId="105">
+      <NameCon UId="65" Name="out1" />
+      <IdentCon UId="47" />
+    </Wire>
+    <Wire UId="106">
+      <IdentCon UId="48" />
+      <NameCon UId="66" Name="in" />
+    </Wire>
+    <Wire UId="107">
+      <NameCon UId="66" Name="eno" />
+      <NameCon UId="67" Name="en" />
+    </Wire>
+    <Wire UId="108">
+      <NameCon UId="66" Name="out1" />
+      <IdentCon UId="49" />
+    </Wire>
+    <Wire UId="109">
+      <IdentCon UId="50" />
+      <NameCon UId="67" Name="in" />
+    </Wire>
+    <Wire UId="110">
+      <NameCon UId="67" Name="out1" />
+      <IdentCon UId="51" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="13" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="14" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="15" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="16" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>P值</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="17" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="AlwaysTRUE" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="22">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>180.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="1区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Ti" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="24">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>180.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="2区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Ti" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="26">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>180.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="3区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Ti" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="28">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>180.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="4区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Ti" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="30">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>180.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="5区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Ti" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="32">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>180.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="6区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Ti" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="34">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>180.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="35">
+      <Symbol>
+        <Component Name="7区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Ti" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="36">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>180.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="37">
+      <Symbol>
+        <Component Name="8区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Ti" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="38">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>180.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="39">
+      <Symbol>
+        <Component Name="9区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Ti" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="40">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>180.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="41">
+      <Symbol>
+        <Component Name="10区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Ti" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="42">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>180.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="43">
+      <Symbol>
+        <Component Name="11区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Ti" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="44">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>180.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="45">
+      <Symbol>
+        <Component Name="12区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Ti" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="46">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>180.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="47">
+      <Symbol>
+        <Component Name="13区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Ti" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="48">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>180.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="49">
+      <Symbol>
+        <Component Name="14区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Ti" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="50">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>180.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="51">
+      <Symbol>
+        <Component Name="15区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Ti" />
+      </Symbol>
+    </Access>
+    <Part Name="Contact" UId="52" />
+    <Part Name="Move" UId="53" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="54" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="55" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="56" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="57" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="58" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="59" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="60" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="61" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="62" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="63" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="64" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="65" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="66" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="67" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+  </Parts>
+  <Wires>
+    <Wire UId="68">
+      <Powerrail />
+      <NameCon UId="52" Name="in" />
+    </Wire>
+    <Wire UId="69">
+      <IdentCon UId="21" />
+      <NameCon UId="52" Name="operand" />
+    </Wire>
+    <Wire UId="70">
+      <NameCon UId="52" Name="out" />
+      <NameCon UId="53" Name="en" />
+      <NameCon UId="56" Name="en" />
+      <NameCon UId="59" Name="en" />
+      <NameCon UId="62" Name="en" />
+      <NameCon UId="65" Name="en" />
+    </Wire>
+    <Wire UId="71">
+      <IdentCon UId="22" />
+      <NameCon UId="53" Name="in" />
+    </Wire>
+    <Wire UId="72">
+      <NameCon UId="53" Name="eno" />
+      <NameCon UId="54" Name="en" />
+    </Wire>
+    <Wire UId="73">
+      <NameCon UId="53" Name="out1" />
+      <IdentCon UId="23" />
+    </Wire>
+    <Wire UId="74">
+      <IdentCon UId="24" />
+      <NameCon UId="54" Name="in" />
+    </Wire>
+    <Wire UId="75">
+      <NameCon UId="54" Name="eno" />
+      <NameCon UId="55" Name="en" />
+    </Wire>
+    <Wire UId="76">
+      <NameCon UId="54" Name="out1" />
+      <IdentCon UId="25" />
+    </Wire>
+    <Wire UId="77">
+      <IdentCon UId="26" />
+      <NameCon UId="55" Name="in" />
+    </Wire>
+    <Wire UId="78">
+      <NameCon UId="55" Name="out1" />
+      <IdentCon UId="27" />
+    </Wire>
+    <Wire UId="79">
+      <IdentCon UId="28" />
+      <NameCon UId="56" Name="in" />
+    </Wire>
+    <Wire UId="80">
+      <NameCon UId="56" Name="eno" />
+      <NameCon UId="57" Name="en" />
+    </Wire>
+    <Wire UId="81">
+      <NameCon UId="56" Name="out1" />
+      <IdentCon UId="29" />
+    </Wire>
+    <Wire UId="82">
+      <IdentCon UId="30" />
+      <NameCon UId="57" Name="in" />
+    </Wire>
+    <Wire UId="83">
+      <NameCon UId="57" Name="eno" />
+      <NameCon UId="58" Name="en" />
+    </Wire>
+    <Wire UId="84">
+      <NameCon UId="57" Name="out1" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="85">
+      <IdentCon UId="32" />
+      <NameCon UId="58" Name="in" />
+    </Wire>
+    <Wire UId="86">
+      <NameCon UId="58" Name="out1" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="87">
+      <IdentCon UId="34" />
+      <NameCon UId="59" Name="in" />
+    </Wire>
+    <Wire UId="88">
+      <NameCon UId="59" Name="eno" />
+      <NameCon UId="60" Name="en" />
+    </Wire>
+    <Wire UId="89">
+      <NameCon UId="59" Name="out1" />
+      <IdentCon UId="35" />
+    </Wire>
+    <Wire UId="90">
+      <IdentCon UId="36" />
+      <NameCon UId="60" Name="in" />
+    </Wire>
+    <Wire UId="91">
+      <NameCon UId="60" Name="eno" />
+      <NameCon UId="61" Name="en" />
+    </Wire>
+    <Wire UId="92">
+      <NameCon UId="60" Name="out1" />
+      <IdentCon UId="37" />
+    </Wire>
+    <Wire UId="93">
+      <IdentCon UId="38" />
+      <NameCon UId="61" Name="in" />
+    </Wire>
+    <Wire UId="94">
+      <NameCon UId="61" Name="out1" />
+      <IdentCon UId="39" />
+    </Wire>
+    <Wire UId="95">
+      <IdentCon UId="40" />
+      <NameCon UId="62" Name="in" />
+    </Wire>
+    <Wire UId="96">
+      <NameCon UId="62" Name="eno" />
+      <NameCon UId="63" Name="en" />
+    </Wire>
+    <Wire UId="97">
+      <NameCon UId="62" Name="out1" />
+      <IdentCon UId="41" />
+    </Wire>
+    <Wire UId="98">
+      <IdentCon UId="42" />
+      <NameCon UId="63" Name="in" />
+    </Wire>
+    <Wire UId="99">
+      <NameCon UId="63" Name="eno" />
+      <NameCon UId="64" Name="en" />
+    </Wire>
+    <Wire UId="100">
+      <NameCon UId="63" Name="out1" />
+      <IdentCon UId="43" />
+    </Wire>
+    <Wire UId="101">
+      <IdentCon UId="44" />
+      <NameCon UId="64" Name="in" />
+    </Wire>
+    <Wire UId="102">
+      <NameCon UId="64" Name="out1" />
+      <IdentCon UId="45" />
+    </Wire>
+    <Wire UId="103">
+      <IdentCon UId="46" />
+      <NameCon UId="65" Name="in" />
+    </Wire>
+    <Wire UId="104">
+      <NameCon UId="65" Name="eno" />
+      <NameCon UId="66" Name="en" />
+    </Wire>
+    <Wire UId="105">
+      <NameCon UId="65" Name="out1" />
+      <IdentCon UId="47" />
+    </Wire>
+    <Wire UId="106">
+      <IdentCon UId="48" />
+      <NameCon UId="66" Name="in" />
+    </Wire>
+    <Wire UId="107">
+      <NameCon UId="66" Name="eno" />
+      <NameCon UId="67" Name="en" />
+    </Wire>
+    <Wire UId="108">
+      <NameCon UId="66" Name="out1" />
+      <IdentCon UId="49" />
+    </Wire>
+    <Wire UId="109">
+      <IdentCon UId="50" />
+      <NameCon UId="67" Name="in" />
+    </Wire>
+    <Wire UId="110">
+      <NameCon UId="67" Name="out1" />
+      <IdentCon UId="51" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="18" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="19" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="1A" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="1B" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>I值</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="1C" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="AlwaysTRUE" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="22">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>60.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="1区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Td" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="24">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>60.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="2区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Td" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="26">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>60.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="3区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Td" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="28">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>60.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="4区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Td" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="30">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>60.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="5区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Td" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="32">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>60.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="6区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Td" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="34">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>60.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="35">
+      <Symbol>
+        <Component Name="7区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Td" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="36">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>60.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="37">
+      <Symbol>
+        <Component Name="8区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Td" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="38">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>60.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="39">
+      <Symbol>
+        <Component Name="9区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Td" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="40">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>60.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="41">
+      <Symbol>
+        <Component Name="10区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Td" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="42">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>60.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="43">
+      <Symbol>
+        <Component Name="11区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Td" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="44">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>60.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="45">
+      <Symbol>
+        <Component Name="12区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Td" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="46">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>60.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="47">
+      <Symbol>
+        <Component Name="13区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Td" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="48">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>60.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="49">
+      <Symbol>
+        <Component Name="14区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Td" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="50">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>60.0</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="51">
+      <Symbol>
+        <Component Name="15区温度PID" />
+        <Component Name="Retain" />
+        <Component Name="CtrlParams" />
+        <Component Name="Heat" />
+        <Component Name="Td" />
+      </Symbol>
+    </Access>
+    <Part Name="Contact" UId="52" />
+    <Part Name="Move" UId="53" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="54" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="55" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="56" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="57" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="58" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="59" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="60" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="61" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="62" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="63" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="64" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="65" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="66" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Move" UId="67" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+  </Parts>
+  <Wires>
+    <Wire UId="68">
+      <Powerrail />
+      <NameCon UId="52" Name="in" />
+    </Wire>
+    <Wire UId="69">
+      <IdentCon UId="21" />
+      <NameCon UId="52" Name="operand" />
+    </Wire>
+    <Wire UId="70">
+      <NameCon UId="52" Name="out" />
+      <NameCon UId="53" Name="en" />
+      <NameCon UId="56" Name="en" />
+      <NameCon UId="59" Name="en" />
+      <NameCon UId="62" Name="en" />
+      <NameCon UId="65" Name="en" />
+    </Wire>
+    <Wire UId="71">
+      <IdentCon UId="22" />
+      <NameCon UId="53" Name="in" />
+    </Wire>
+    <Wire UId="72">
+      <NameCon UId="53" Name="eno" />
+      <NameCon UId="54" Name="en" />
+    </Wire>
+    <Wire UId="73">
+      <NameCon UId="53" Name="out1" />
+      <IdentCon UId="23" />
+    </Wire>
+    <Wire UId="74">
+      <IdentCon UId="24" />
+      <NameCon UId="54" Name="in" />
+    </Wire>
+    <Wire UId="75">
+      <NameCon UId="54" Name="eno" />
+      <NameCon UId="55" Name="en" />
+    </Wire>
+    <Wire UId="76">
+      <NameCon UId="54" Name="out1" />
+      <IdentCon UId="25" />
+    </Wire>
+    <Wire UId="77">
+      <IdentCon UId="26" />
+      <NameCon UId="55" Name="in" />
+    </Wire>
+    <Wire UId="78">
+      <NameCon UId="55" Name="out1" />
+      <IdentCon UId="27" />
+    </Wire>
+    <Wire UId="79">
+      <IdentCon UId="28" />
+      <NameCon UId="56" Name="in" />
+    </Wire>
+    <Wire UId="80">
+      <NameCon UId="56" Name="eno" />
+      <NameCon UId="57" Name="en" />
+    </Wire>
+    <Wire UId="81">
+      <NameCon UId="56" Name="out1" />
+      <IdentCon UId="29" />
+    </Wire>
+    <Wire UId="82">
+      <IdentCon UId="30" />
+      <NameCon UId="57" Name="in" />
+    </Wire>
+    <Wire UId="83">
+      <NameCon UId="57" Name="eno" />
+      <NameCon UId="58" Name="en" />
+    </Wire>
+    <Wire UId="84">
+      <NameCon UId="57" Name="out1" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="85">
+      <IdentCon UId="32" />
+      <NameCon UId="58" Name="in" />
+    </Wire>
+    <Wire UId="86">
+      <NameCon UId="58" Name="out1" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="87">
+      <IdentCon UId="34" />
+      <NameCon UId="59" Name="in" />
+    </Wire>
+    <Wire UId="88">
+      <NameCon UId="59" Name="eno" />
+      <NameCon UId="60" Name="en" />
+    </Wire>
+    <Wire UId="89">
+      <NameCon UId="59" Name="out1" />
+      <IdentCon UId="35" />
+    </Wire>
+    <Wire UId="90">
+      <IdentCon UId="36" />
+      <NameCon UId="60" Name="in" />
+    </Wire>
+    <Wire UId="91">
+      <NameCon UId="60" Name="eno" />
+      <NameCon UId="61" Name="en" />
+    </Wire>
+    <Wire UId="92">
+      <NameCon UId="60" Name="out1" />
+      <IdentCon UId="37" />
+    </Wire>
+    <Wire UId="93">
+      <IdentCon UId="38" />
+      <NameCon UId="61" Name="in" />
+    </Wire>
+    <Wire UId="94">
+      <NameCon UId="61" Name="out1" />
+      <IdentCon UId="39" />
+    </Wire>
+    <Wire UId="95">
+      <IdentCon UId="40" />
+      <NameCon UId="62" Name="in" />
+    </Wire>
+    <Wire UId="96">
+      <NameCon UId="62" Name="eno" />
+      <NameCon UId="63" Name="en" />
+    </Wire>
+    <Wire UId="97">
+      <NameCon UId="62" Name="out1" />
+      <IdentCon UId="41" />
+    </Wire>
+    <Wire UId="98">
+      <IdentCon UId="42" />
+      <NameCon UId="63" Name="in" />
+    </Wire>
+    <Wire UId="99">
+      <NameCon UId="63" Name="eno" />
+      <NameCon UId="64" Name="en" />
+    </Wire>
+    <Wire UId="100">
+      <NameCon UId="63" Name="out1" />
+      <IdentCon UId="43" />
+    </Wire>
+    <Wire UId="101">
+      <IdentCon UId="44" />
+      <NameCon UId="64" Name="in" />
+    </Wire>
+    <Wire UId="102">
+      <NameCon UId="64" Name="out1" />
+      <IdentCon UId="45" />
+    </Wire>
+    <Wire UId="103">
+      <IdentCon UId="46" />
+      <NameCon UId="65" Name="in" />
+    </Wire>
+    <Wire UId="104">
+      <NameCon UId="65" Name="eno" />
+      <NameCon UId="66" Name="en" />
+    </Wire>
+    <Wire UId="105">
+      <NameCon UId="65" Name="out1" />
+      <IdentCon UId="47" />
+    </Wire>
+    <Wire UId="106">
+      <IdentCon UId="48" />
+      <NameCon UId="66" Name="in" />
+    </Wire>
+    <Wire UId="107">
+      <NameCon UId="66" Name="eno" />
+      <NameCon UId="67" Name="en" />
+    </Wire>
+    <Wire UId="108">
+      <NameCon UId="66" Name="out1" />
+      <IdentCon UId="49" />
+    </Wire>
+    <Wire UId="109">
+      <IdentCon UId="50" />
+      <NameCon UId="67" Name="in" />
+    </Wire>
+    <Wire UId="110">
+      <NameCon UId="67" Name="out1" />
+      <IdentCon UId="51" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="1D" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="1E" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="1F" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="20" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>D值</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="21" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource />
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="22" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="23" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="24" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="25" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <MultilingualText ID="26" CompositionName="Title">
+        <ObjectList>
+          <MultilingualTextItem ID="27" CompositionName="Items">
+            <AttributeList>
+              <Culture>zh-CN</Culture>
+              <Text />
+            </AttributeList>
+          </MultilingualTextItem>
+        </ObjectList>
+      </MultilingualText>
+    </ObjectList>
+  </SW.Blocks.FC>
+</Document>

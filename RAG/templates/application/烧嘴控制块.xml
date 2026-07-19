@@ -1,0 +1,4255 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Document>
+  <Engineering version="V17" />
+  <DocumentInfo>
+    <Created>2026-04-12T10:31:24.245585Z</Created>
+    <ExportSetting>WithDefaults</ExportSetting>
+    <InstalledProducts>
+      <Product>
+        <DisplayName>Totally Integrated Automation Portal</DisplayName>
+        <DisplayVersion>V17 Update 4</DisplayVersion>
+      </Product>
+      <OptionPackage>
+        <DisplayName>TIA Portal Openness</DisplayName>
+        <DisplayVersion>V17 Update 4</DisplayVersion>
+      </OptionPackage>
+      <OptionPackage>
+        <DisplayName>TIA Portal Version Control Interface</DisplayName>
+        <DisplayVersion>V17</DisplayVersion>
+      </OptionPackage>
+      <Product>
+        <DisplayName>SINAMICS Startdrive Advanced</DisplayName>
+        <DisplayVersion>V17</DisplayVersion>
+      </Product>
+      <OptionPackage>
+        <DisplayName>SINAMICS Startdrive G130, G150, S120, S150, SINAMICS MV, S210</DisplayName>
+        <DisplayVersion>V17</DisplayVersion>
+      </OptionPackage>
+      <OptionPackage>
+        <DisplayName>SINAMICS Startdrive G110M, G120, G120C, G120D, G120P, G115D</DisplayName>
+        <DisplayVersion>V17</DisplayVersion>
+      </OptionPackage>
+      <Product>
+        <DisplayName>STEP 7 Professional</DisplayName>
+        <DisplayVersion>V17 Update 4</DisplayVersion>
+      </Product>
+      <OptionPackage>
+        <DisplayName>STEP 7 Safety</DisplayName>
+        <DisplayVersion>V17</DisplayVersion>
+      </OptionPackage>
+      <Product>
+        <DisplayName>WinCC Advanced</DisplayName>
+        <DisplayVersion>V17 Update 4</DisplayVersion>
+      </Product>
+    </InstalledProducts>
+  </DocumentInfo>
+  <SW.Blocks.FC ID="0">
+    <AttributeList>
+      <AutoNumber>true</AutoNumber>
+      <HeaderAuthor />
+      <HeaderFamily />
+      <HeaderName />
+      <HeaderVersion>0.1</HeaderVersion>
+      <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v5">
+  <Section Name="Input" />
+  <Section Name="Output" />
+  <Section Name="InOut" />
+  <Section Name="Temp" />
+  <Section Name="Constant" />
+  <Section Name="Return">
+    <Member Name="Ret_Val" Datatype="Void" Accessibility="Public" />
+  </Section>
+</Sections></Interface>
+      <IsIECCheckEnabled>false</IsIECCheckEnabled>
+      <MemoryLayout>Optimized</MemoryLayout>
+      <Name>烧嘴控制块</Name>
+      <Number>4</Number>
+      <ProgrammingLanguage>LAD</ProgrammingLanguage>
+      <SetENOAutomatically>false</SetENOAutomatically>
+      <UDABlockProperties />
+      <UDAEnableTagReadback>false</UDAEnableTagReadback>
+    </AttributeList>
+    <ObjectList>
+      <MultilingualText ID="1" CompositionName="Comment">
+        <ObjectList>
+          <MultilingualTextItem ID="2" CompositionName="Items">
+            <AttributeList>
+              <Culture>zh-CN</Culture>
+              <Text />
+            </AttributeList>
+          </MultilingualTextItem>
+        </ObjectList>
+      </MultilingualText>
+      <SW.Blocks.CompileUnit ID="3" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="1区测量值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="1区设定值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="1#小火反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="24">
+      <Symbol>
+        <Component Name="1#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="1#自动" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="26">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="1#手动小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="1#手动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="28">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="1区PLC自动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="曲线数据" />
+        <Component Name="1-8区通讯故障" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="1#小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="1#大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="1#复位" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="1#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="34">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="1区超温标志" />
+      </Symbol>
+    </Access>
+    <Call UId="35">
+      <CallInfo Name="烧嘴控制" BlockType="FB">
+        <Instance Scope="GlobalVariable" UId="36">
+          <Component Name="烧嘴控制_DB" />
+        </Instance>
+        <Parameter Name="测量值" Section="Input" Type="Real" />
+        <Parameter Name="设定值" Section="Input" Type="Real" />
+        <Parameter Name="小火反馈" Section="Input" Type="Bool" />
+        <Parameter Name="故障反馈" Section="Input" Type="Bool" />
+        <Parameter Name="自动" Section="Input" Type="Bool" />
+        <Parameter Name="手动小火" Section="Input" Type="Bool" />
+        <Parameter Name="手动大火" Section="Input" Type="Bool" />
+        <Parameter Name="PID大火输出" Section="Input" Type="Bool" />
+        <Parameter Name="控温通讯状态" Section="Input" Type="Bool" />
+        <Parameter Name="小火输出" Section="Output" Type="Bool" />
+        <Parameter Name="大火输出" Section="Output" Type="Bool" />
+        <Parameter Name="复位输出" Section="Output" Type="Bool" />
+        <Parameter Name="自动复位失败" Section="Output" Type="Bool" />
+        <Parameter Name="超温标志" Section="Output" Type="Bool" />
+      </CallInfo>
+    </Call>
+  </Parts>
+  <Wires>
+    <Wire UId="37">
+      <Powerrail />
+      <NameCon UId="35" Name="en" />
+    </Wire>
+    <Wire UId="38">
+      <IdentCon UId="21" />
+      <NameCon UId="35" Name="测量值" />
+    </Wire>
+    <Wire UId="39">
+      <IdentCon UId="22" />
+      <NameCon UId="35" Name="设定值" />
+    </Wire>
+    <Wire UId="40">
+      <IdentCon UId="23" />
+      <NameCon UId="35" Name="小火反馈" />
+    </Wire>
+    <Wire UId="41">
+      <IdentCon UId="24" />
+      <NameCon UId="35" Name="故障反馈" />
+    </Wire>
+    <Wire UId="42">
+      <IdentCon UId="25" />
+      <NameCon UId="35" Name="自动" />
+    </Wire>
+    <Wire UId="43">
+      <IdentCon UId="26" />
+      <NameCon UId="35" Name="手动小火" />
+    </Wire>
+    <Wire UId="44">
+      <IdentCon UId="27" />
+      <NameCon UId="35" Name="手动大火" />
+    </Wire>
+    <Wire UId="45">
+      <IdentCon UId="28" />
+      <NameCon UId="35" Name="PID大火输出" />
+    </Wire>
+    <Wire UId="46">
+      <IdentCon UId="29" />
+      <NameCon UId="35" Name="控温通讯状态" />
+    </Wire>
+    <Wire UId="47">
+      <NameCon UId="35" Name="小火输出" />
+      <IdentCon UId="30" />
+    </Wire>
+    <Wire UId="48">
+      <NameCon UId="35" Name="大火输出" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="49">
+      <NameCon UId="35" Name="复位输出" />
+      <IdentCon UId="32" />
+    </Wire>
+    <Wire UId="50">
+      <NameCon UId="35" Name="自动复位失败" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="51">
+      <NameCon UId="35" Name="超温标志" />
+      <IdentCon UId="34" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="4" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="5" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="6" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="7" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>1#烧嘴控制</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="8" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="2区测量值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="2区设定值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="2#小火反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="24">
+      <Symbol>
+        <Component Name="2#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="2#自动" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="26">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="2#手动小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="2#手动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="28">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="2区PLC自动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="曲线数据" />
+        <Component Name="1-8区通讯故障" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="2#小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="2#大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="2#复位" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="2#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="34">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="2区超温标志" />
+      </Symbol>
+    </Access>
+    <Call UId="35">
+      <CallInfo Name="烧嘴控制" BlockType="FB">
+        <Instance Scope="GlobalVariable" UId="36">
+          <Component Name="烧嘴控制_DB_1" />
+        </Instance>
+        <Parameter Name="测量值" Section="Input" Type="Real" />
+        <Parameter Name="设定值" Section="Input" Type="Real" />
+        <Parameter Name="小火反馈" Section="Input" Type="Bool" />
+        <Parameter Name="故障反馈" Section="Input" Type="Bool" />
+        <Parameter Name="自动" Section="Input" Type="Bool" />
+        <Parameter Name="手动小火" Section="Input" Type="Bool" />
+        <Parameter Name="手动大火" Section="Input" Type="Bool" />
+        <Parameter Name="PID大火输出" Section="Input" Type="Bool" />
+        <Parameter Name="控温通讯状态" Section="Input" Type="Bool" />
+        <Parameter Name="小火输出" Section="Output" Type="Bool" />
+        <Parameter Name="大火输出" Section="Output" Type="Bool" />
+        <Parameter Name="复位输出" Section="Output" Type="Bool" />
+        <Parameter Name="自动复位失败" Section="Output" Type="Bool" />
+        <Parameter Name="超温标志" Section="Output" Type="Bool" />
+      </CallInfo>
+    </Call>
+  </Parts>
+  <Wires>
+    <Wire UId="37">
+      <Powerrail />
+      <NameCon UId="35" Name="en" />
+    </Wire>
+    <Wire UId="38">
+      <IdentCon UId="21" />
+      <NameCon UId="35" Name="测量值" />
+    </Wire>
+    <Wire UId="39">
+      <IdentCon UId="22" />
+      <NameCon UId="35" Name="设定值" />
+    </Wire>
+    <Wire UId="40">
+      <IdentCon UId="23" />
+      <NameCon UId="35" Name="小火反馈" />
+    </Wire>
+    <Wire UId="41">
+      <IdentCon UId="24" />
+      <NameCon UId="35" Name="故障反馈" />
+    </Wire>
+    <Wire UId="42">
+      <IdentCon UId="25" />
+      <NameCon UId="35" Name="自动" />
+    </Wire>
+    <Wire UId="43">
+      <IdentCon UId="26" />
+      <NameCon UId="35" Name="手动小火" />
+    </Wire>
+    <Wire UId="44">
+      <IdentCon UId="27" />
+      <NameCon UId="35" Name="手动大火" />
+    </Wire>
+    <Wire UId="45">
+      <IdentCon UId="28" />
+      <NameCon UId="35" Name="PID大火输出" />
+    </Wire>
+    <Wire UId="46">
+      <IdentCon UId="29" />
+      <NameCon UId="35" Name="控温通讯状态" />
+    </Wire>
+    <Wire UId="47">
+      <NameCon UId="35" Name="小火输出" />
+      <IdentCon UId="30" />
+    </Wire>
+    <Wire UId="48">
+      <NameCon UId="35" Name="大火输出" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="49">
+      <NameCon UId="35" Name="复位输出" />
+      <IdentCon UId="32" />
+    </Wire>
+    <Wire UId="50">
+      <NameCon UId="35" Name="自动复位失败" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="51">
+      <NameCon UId="35" Name="超温标志" />
+      <IdentCon UId="34" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="9" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="A" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="B" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="C" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>2#烧嘴控制</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="D" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="3区测量值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="3区设定值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="3#小火反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="24">
+      <Symbol>
+        <Component Name="3#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="3#自动" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="26">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="3#手动小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="3#手动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="28">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="3区PLC自动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="曲线数据" />
+        <Component Name="1-8区通讯故障" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="3#小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="3#大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="3#复位" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="3#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="34">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="3区超温标志" />
+      </Symbol>
+    </Access>
+    <Call UId="35">
+      <CallInfo Name="烧嘴控制" BlockType="FB">
+        <Instance Scope="GlobalVariable" UId="36">
+          <Component Name="烧嘴控制_DB_2" />
+        </Instance>
+        <Parameter Name="测量值" Section="Input" Type="Real" />
+        <Parameter Name="设定值" Section="Input" Type="Real" />
+        <Parameter Name="小火反馈" Section="Input" Type="Bool" />
+        <Parameter Name="故障反馈" Section="Input" Type="Bool" />
+        <Parameter Name="自动" Section="Input" Type="Bool" />
+        <Parameter Name="手动小火" Section="Input" Type="Bool" />
+        <Parameter Name="手动大火" Section="Input" Type="Bool" />
+        <Parameter Name="PID大火输出" Section="Input" Type="Bool" />
+        <Parameter Name="控温通讯状态" Section="Input" Type="Bool" />
+        <Parameter Name="小火输出" Section="Output" Type="Bool" />
+        <Parameter Name="大火输出" Section="Output" Type="Bool" />
+        <Parameter Name="复位输出" Section="Output" Type="Bool" />
+        <Parameter Name="自动复位失败" Section="Output" Type="Bool" />
+        <Parameter Name="超温标志" Section="Output" Type="Bool" />
+      </CallInfo>
+    </Call>
+  </Parts>
+  <Wires>
+    <Wire UId="37">
+      <Powerrail />
+      <NameCon UId="35" Name="en" />
+    </Wire>
+    <Wire UId="38">
+      <IdentCon UId="21" />
+      <NameCon UId="35" Name="测量值" />
+    </Wire>
+    <Wire UId="39">
+      <IdentCon UId="22" />
+      <NameCon UId="35" Name="设定值" />
+    </Wire>
+    <Wire UId="40">
+      <IdentCon UId="23" />
+      <NameCon UId="35" Name="小火反馈" />
+    </Wire>
+    <Wire UId="41">
+      <IdentCon UId="24" />
+      <NameCon UId="35" Name="故障反馈" />
+    </Wire>
+    <Wire UId="42">
+      <IdentCon UId="25" />
+      <NameCon UId="35" Name="自动" />
+    </Wire>
+    <Wire UId="43">
+      <IdentCon UId="26" />
+      <NameCon UId="35" Name="手动小火" />
+    </Wire>
+    <Wire UId="44">
+      <IdentCon UId="27" />
+      <NameCon UId="35" Name="手动大火" />
+    </Wire>
+    <Wire UId="45">
+      <IdentCon UId="28" />
+      <NameCon UId="35" Name="PID大火输出" />
+    </Wire>
+    <Wire UId="46">
+      <IdentCon UId="29" />
+      <NameCon UId="35" Name="控温通讯状态" />
+    </Wire>
+    <Wire UId="47">
+      <NameCon UId="35" Name="小火输出" />
+      <IdentCon UId="30" />
+    </Wire>
+    <Wire UId="48">
+      <NameCon UId="35" Name="大火输出" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="49">
+      <NameCon UId="35" Name="复位输出" />
+      <IdentCon UId="32" />
+    </Wire>
+    <Wire UId="50">
+      <NameCon UId="35" Name="自动复位失败" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="51">
+      <NameCon UId="35" Name="超温标志" />
+      <IdentCon UId="34" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="E" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="F" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="10" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="11" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>3#烧嘴控制</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="12" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="4区测量值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="4区设定值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="6#小火反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="24">
+      <Symbol>
+        <Component Name="6#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="4#自动" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="26">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="4#手动小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="4#手动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="28">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="4区PLC自动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="曲线数据" />
+        <Component Name="1-8区通讯故障" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="6#小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="6#大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="6#复位" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="6#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="34">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="6区超温标志" />
+      </Symbol>
+    </Access>
+    <Call UId="35">
+      <CallInfo Name="烧嘴控制" BlockType="FB">
+        <Instance Scope="GlobalVariable" UId="36">
+          <Component Name="烧嘴控制_DB_3" />
+        </Instance>
+        <Parameter Name="测量值" Section="Input" Type="Real" />
+        <Parameter Name="设定值" Section="Input" Type="Real" />
+        <Parameter Name="小火反馈" Section="Input" Type="Bool" />
+        <Parameter Name="故障反馈" Section="Input" Type="Bool" />
+        <Parameter Name="自动" Section="Input" Type="Bool" />
+        <Parameter Name="手动小火" Section="Input" Type="Bool" />
+        <Parameter Name="手动大火" Section="Input" Type="Bool" />
+        <Parameter Name="PID大火输出" Section="Input" Type="Bool" />
+        <Parameter Name="控温通讯状态" Section="Input" Type="Bool" />
+        <Parameter Name="小火输出" Section="Output" Type="Bool" />
+        <Parameter Name="大火输出" Section="Output" Type="Bool" />
+        <Parameter Name="复位输出" Section="Output" Type="Bool" />
+        <Parameter Name="自动复位失败" Section="Output" Type="Bool" />
+        <Parameter Name="超温标志" Section="Output" Type="Bool" />
+      </CallInfo>
+    </Call>
+  </Parts>
+  <Wires>
+    <Wire UId="37">
+      <Powerrail />
+      <NameCon UId="35" Name="en" />
+    </Wire>
+    <Wire UId="38">
+      <IdentCon UId="21" />
+      <NameCon UId="35" Name="测量值" />
+    </Wire>
+    <Wire UId="39">
+      <IdentCon UId="22" />
+      <NameCon UId="35" Name="设定值" />
+    </Wire>
+    <Wire UId="40">
+      <IdentCon UId="23" />
+      <NameCon UId="35" Name="小火反馈" />
+    </Wire>
+    <Wire UId="41">
+      <IdentCon UId="24" />
+      <NameCon UId="35" Name="故障反馈" />
+    </Wire>
+    <Wire UId="42">
+      <IdentCon UId="25" />
+      <NameCon UId="35" Name="自动" />
+    </Wire>
+    <Wire UId="43">
+      <IdentCon UId="26" />
+      <NameCon UId="35" Name="手动小火" />
+    </Wire>
+    <Wire UId="44">
+      <IdentCon UId="27" />
+      <NameCon UId="35" Name="手动大火" />
+    </Wire>
+    <Wire UId="45">
+      <IdentCon UId="28" />
+      <NameCon UId="35" Name="PID大火输出" />
+    </Wire>
+    <Wire UId="46">
+      <IdentCon UId="29" />
+      <NameCon UId="35" Name="控温通讯状态" />
+    </Wire>
+    <Wire UId="47">
+      <NameCon UId="35" Name="小火输出" />
+      <IdentCon UId="30" />
+    </Wire>
+    <Wire UId="48">
+      <NameCon UId="35" Name="大火输出" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="49">
+      <NameCon UId="35" Name="复位输出" />
+      <IdentCon UId="32" />
+    </Wire>
+    <Wire UId="50">
+      <NameCon UId="35" Name="自动复位失败" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="51">
+      <NameCon UId="35" Name="超温标志" />
+      <IdentCon UId="34" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="13" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="14" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="15" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="16" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>4#烧嘴控制</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="17" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="5区测量值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="5区设定值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="5#小火反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="24">
+      <Symbol>
+        <Component Name="5#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="5#自动" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="26">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="5#手动小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="5#手动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="28">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="5区PLC自动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="曲线数据" />
+        <Component Name="1-8区通讯故障" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="5#小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="5#大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="5#复位" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="5#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="34">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="5区超温标志" />
+      </Symbol>
+    </Access>
+    <Call UId="35">
+      <CallInfo Name="烧嘴控制" BlockType="FB">
+        <Instance Scope="GlobalVariable" UId="36">
+          <Component Name="烧嘴控制_DB_4" />
+        </Instance>
+        <Parameter Name="测量值" Section="Input" Type="Real" />
+        <Parameter Name="设定值" Section="Input" Type="Real" />
+        <Parameter Name="小火反馈" Section="Input" Type="Bool" />
+        <Parameter Name="故障反馈" Section="Input" Type="Bool" />
+        <Parameter Name="自动" Section="Input" Type="Bool" />
+        <Parameter Name="手动小火" Section="Input" Type="Bool" />
+        <Parameter Name="手动大火" Section="Input" Type="Bool" />
+        <Parameter Name="PID大火输出" Section="Input" Type="Bool" />
+        <Parameter Name="控温通讯状态" Section="Input" Type="Bool" />
+        <Parameter Name="小火输出" Section="Output" Type="Bool" />
+        <Parameter Name="大火输出" Section="Output" Type="Bool" />
+        <Parameter Name="复位输出" Section="Output" Type="Bool" />
+        <Parameter Name="自动复位失败" Section="Output" Type="Bool" />
+        <Parameter Name="超温标志" Section="Output" Type="Bool" />
+      </CallInfo>
+    </Call>
+  </Parts>
+  <Wires>
+    <Wire UId="37">
+      <Powerrail />
+      <NameCon UId="35" Name="en" />
+    </Wire>
+    <Wire UId="38">
+      <IdentCon UId="21" />
+      <NameCon UId="35" Name="测量值" />
+    </Wire>
+    <Wire UId="39">
+      <IdentCon UId="22" />
+      <NameCon UId="35" Name="设定值" />
+    </Wire>
+    <Wire UId="40">
+      <IdentCon UId="23" />
+      <NameCon UId="35" Name="小火反馈" />
+    </Wire>
+    <Wire UId="41">
+      <IdentCon UId="24" />
+      <NameCon UId="35" Name="故障反馈" />
+    </Wire>
+    <Wire UId="42">
+      <IdentCon UId="25" />
+      <NameCon UId="35" Name="自动" />
+    </Wire>
+    <Wire UId="43">
+      <IdentCon UId="26" />
+      <NameCon UId="35" Name="手动小火" />
+    </Wire>
+    <Wire UId="44">
+      <IdentCon UId="27" />
+      <NameCon UId="35" Name="手动大火" />
+    </Wire>
+    <Wire UId="45">
+      <IdentCon UId="28" />
+      <NameCon UId="35" Name="PID大火输出" />
+    </Wire>
+    <Wire UId="46">
+      <IdentCon UId="29" />
+      <NameCon UId="35" Name="控温通讯状态" />
+    </Wire>
+    <Wire UId="47">
+      <NameCon UId="35" Name="小火输出" />
+      <IdentCon UId="30" />
+    </Wire>
+    <Wire UId="48">
+      <NameCon UId="35" Name="大火输出" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="49">
+      <NameCon UId="35" Name="复位输出" />
+      <IdentCon UId="32" />
+    </Wire>
+    <Wire UId="50">
+      <NameCon UId="35" Name="自动复位失败" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="51">
+      <NameCon UId="35" Name="超温标志" />
+      <IdentCon UId="34" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="18" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="19" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="1A" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="1B" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>5#烧嘴控制</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="1C" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="6区测量值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="6区设定值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="4#小火反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="24">
+      <Symbol>
+        <Component Name="4#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="6#自动" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="26">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="6#手动小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="6#手动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="28">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="6区PLC自动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="曲线数据" />
+        <Component Name="1-8区通讯故障" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="4#小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="4#大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="4#复位" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="4#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="34">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="4区超温标志" />
+      </Symbol>
+    </Access>
+    <Call UId="35">
+      <CallInfo Name="烧嘴控制" BlockType="FB">
+        <Instance Scope="GlobalVariable" UId="36">
+          <Component Name="烧嘴控制_DB_5" />
+        </Instance>
+        <Parameter Name="测量值" Section="Input" Type="Real" />
+        <Parameter Name="设定值" Section="Input" Type="Real" />
+        <Parameter Name="小火反馈" Section="Input" Type="Bool" />
+        <Parameter Name="故障反馈" Section="Input" Type="Bool" />
+        <Parameter Name="自动" Section="Input" Type="Bool" />
+        <Parameter Name="手动小火" Section="Input" Type="Bool" />
+        <Parameter Name="手动大火" Section="Input" Type="Bool" />
+        <Parameter Name="PID大火输出" Section="Input" Type="Bool" />
+        <Parameter Name="控温通讯状态" Section="Input" Type="Bool" />
+        <Parameter Name="小火输出" Section="Output" Type="Bool" />
+        <Parameter Name="大火输出" Section="Output" Type="Bool" />
+        <Parameter Name="复位输出" Section="Output" Type="Bool" />
+        <Parameter Name="自动复位失败" Section="Output" Type="Bool" />
+        <Parameter Name="超温标志" Section="Output" Type="Bool" />
+      </CallInfo>
+    </Call>
+  </Parts>
+  <Wires>
+    <Wire UId="37">
+      <Powerrail />
+      <NameCon UId="35" Name="en" />
+    </Wire>
+    <Wire UId="38">
+      <IdentCon UId="21" />
+      <NameCon UId="35" Name="测量值" />
+    </Wire>
+    <Wire UId="39">
+      <IdentCon UId="22" />
+      <NameCon UId="35" Name="设定值" />
+    </Wire>
+    <Wire UId="40">
+      <IdentCon UId="23" />
+      <NameCon UId="35" Name="小火反馈" />
+    </Wire>
+    <Wire UId="41">
+      <IdentCon UId="24" />
+      <NameCon UId="35" Name="故障反馈" />
+    </Wire>
+    <Wire UId="42">
+      <IdentCon UId="25" />
+      <NameCon UId="35" Name="自动" />
+    </Wire>
+    <Wire UId="43">
+      <IdentCon UId="26" />
+      <NameCon UId="35" Name="手动小火" />
+    </Wire>
+    <Wire UId="44">
+      <IdentCon UId="27" />
+      <NameCon UId="35" Name="手动大火" />
+    </Wire>
+    <Wire UId="45">
+      <IdentCon UId="28" />
+      <NameCon UId="35" Name="PID大火输出" />
+    </Wire>
+    <Wire UId="46">
+      <IdentCon UId="29" />
+      <NameCon UId="35" Name="控温通讯状态" />
+    </Wire>
+    <Wire UId="47">
+      <NameCon UId="35" Name="小火输出" />
+      <IdentCon UId="30" />
+    </Wire>
+    <Wire UId="48">
+      <NameCon UId="35" Name="大火输出" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="49">
+      <NameCon UId="35" Name="复位输出" />
+      <IdentCon UId="32" />
+    </Wire>
+    <Wire UId="50">
+      <NameCon UId="35" Name="自动复位失败" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="51">
+      <NameCon UId="35" Name="超温标志" />
+      <IdentCon UId="34" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="1D" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="1E" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="1F" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="20" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>6#烧嘴控制</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="21" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="7区测量值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="7区设定值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="7#小火反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="24">
+      <Symbol>
+        <Component Name="7#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="7#自动" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="26">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="7#手动小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="7#手动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="28">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="7区PLC自动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="曲线数据" />
+        <Component Name="1-8区通讯故障" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="7#小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="7#大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="7#复位" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="7#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="34">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="7区超温标志" />
+      </Symbol>
+    </Access>
+    <Call UId="35">
+      <CallInfo Name="烧嘴控制" BlockType="FB">
+        <Instance Scope="GlobalVariable" UId="36">
+          <Component Name="烧嘴控制_DB_6" />
+        </Instance>
+        <Parameter Name="测量值" Section="Input" Type="Real" />
+        <Parameter Name="设定值" Section="Input" Type="Real" />
+        <Parameter Name="小火反馈" Section="Input" Type="Bool" />
+        <Parameter Name="故障反馈" Section="Input" Type="Bool" />
+        <Parameter Name="自动" Section="Input" Type="Bool" />
+        <Parameter Name="手动小火" Section="Input" Type="Bool" />
+        <Parameter Name="手动大火" Section="Input" Type="Bool" />
+        <Parameter Name="PID大火输出" Section="Input" Type="Bool" />
+        <Parameter Name="控温通讯状态" Section="Input" Type="Bool" />
+        <Parameter Name="小火输出" Section="Output" Type="Bool" />
+        <Parameter Name="大火输出" Section="Output" Type="Bool" />
+        <Parameter Name="复位输出" Section="Output" Type="Bool" />
+        <Parameter Name="自动复位失败" Section="Output" Type="Bool" />
+        <Parameter Name="超温标志" Section="Output" Type="Bool" />
+      </CallInfo>
+    </Call>
+  </Parts>
+  <Wires>
+    <Wire UId="37">
+      <Powerrail />
+      <NameCon UId="35" Name="en" />
+    </Wire>
+    <Wire UId="38">
+      <IdentCon UId="21" />
+      <NameCon UId="35" Name="测量值" />
+    </Wire>
+    <Wire UId="39">
+      <IdentCon UId="22" />
+      <NameCon UId="35" Name="设定值" />
+    </Wire>
+    <Wire UId="40">
+      <IdentCon UId="23" />
+      <NameCon UId="35" Name="小火反馈" />
+    </Wire>
+    <Wire UId="41">
+      <IdentCon UId="24" />
+      <NameCon UId="35" Name="故障反馈" />
+    </Wire>
+    <Wire UId="42">
+      <IdentCon UId="25" />
+      <NameCon UId="35" Name="自动" />
+    </Wire>
+    <Wire UId="43">
+      <IdentCon UId="26" />
+      <NameCon UId="35" Name="手动小火" />
+    </Wire>
+    <Wire UId="44">
+      <IdentCon UId="27" />
+      <NameCon UId="35" Name="手动大火" />
+    </Wire>
+    <Wire UId="45">
+      <IdentCon UId="28" />
+      <NameCon UId="35" Name="PID大火输出" />
+    </Wire>
+    <Wire UId="46">
+      <IdentCon UId="29" />
+      <NameCon UId="35" Name="控温通讯状态" />
+    </Wire>
+    <Wire UId="47">
+      <NameCon UId="35" Name="小火输出" />
+      <IdentCon UId="30" />
+    </Wire>
+    <Wire UId="48">
+      <NameCon UId="35" Name="大火输出" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="49">
+      <NameCon UId="35" Name="复位输出" />
+      <IdentCon UId="32" />
+    </Wire>
+    <Wire UId="50">
+      <NameCon UId="35" Name="自动复位失败" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="51">
+      <NameCon UId="35" Name="超温标志" />
+      <IdentCon UId="34" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="22" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="23" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="24" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="25" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>7#烧嘴控制</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="26" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="8区测量值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="8区设定值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="8#小火反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="24">
+      <Symbol>
+        <Component Name="8#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="8#自动" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="26">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="8#手动小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="8#手动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="28">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="8区PLC自动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="曲线数据" />
+        <Component Name="1-8区通讯故障" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="8#小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="8#大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="8#复位" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="8#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="34">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="8区超温标志" />
+      </Symbol>
+    </Access>
+    <Call UId="35">
+      <CallInfo Name="烧嘴控制" BlockType="FB">
+        <Instance Scope="GlobalVariable" UId="36">
+          <Component Name="烧嘴控制_DB_7" />
+        </Instance>
+        <Parameter Name="测量值" Section="Input" Type="Real" />
+        <Parameter Name="设定值" Section="Input" Type="Real" />
+        <Parameter Name="小火反馈" Section="Input" Type="Bool" />
+        <Parameter Name="故障反馈" Section="Input" Type="Bool" />
+        <Parameter Name="自动" Section="Input" Type="Bool" />
+        <Parameter Name="手动小火" Section="Input" Type="Bool" />
+        <Parameter Name="手动大火" Section="Input" Type="Bool" />
+        <Parameter Name="PID大火输出" Section="Input" Type="Bool" />
+        <Parameter Name="控温通讯状态" Section="Input" Type="Bool" />
+        <Parameter Name="小火输出" Section="Output" Type="Bool" />
+        <Parameter Name="大火输出" Section="Output" Type="Bool" />
+        <Parameter Name="复位输出" Section="Output" Type="Bool" />
+        <Parameter Name="自动复位失败" Section="Output" Type="Bool" />
+        <Parameter Name="超温标志" Section="Output" Type="Bool" />
+      </CallInfo>
+    </Call>
+  </Parts>
+  <Wires>
+    <Wire UId="37">
+      <Powerrail />
+      <NameCon UId="35" Name="en" />
+    </Wire>
+    <Wire UId="38">
+      <IdentCon UId="21" />
+      <NameCon UId="35" Name="测量值" />
+    </Wire>
+    <Wire UId="39">
+      <IdentCon UId="22" />
+      <NameCon UId="35" Name="设定值" />
+    </Wire>
+    <Wire UId="40">
+      <IdentCon UId="23" />
+      <NameCon UId="35" Name="小火反馈" />
+    </Wire>
+    <Wire UId="41">
+      <IdentCon UId="24" />
+      <NameCon UId="35" Name="故障反馈" />
+    </Wire>
+    <Wire UId="42">
+      <IdentCon UId="25" />
+      <NameCon UId="35" Name="自动" />
+    </Wire>
+    <Wire UId="43">
+      <IdentCon UId="26" />
+      <NameCon UId="35" Name="手动小火" />
+    </Wire>
+    <Wire UId="44">
+      <IdentCon UId="27" />
+      <NameCon UId="35" Name="手动大火" />
+    </Wire>
+    <Wire UId="45">
+      <IdentCon UId="28" />
+      <NameCon UId="35" Name="PID大火输出" />
+    </Wire>
+    <Wire UId="46">
+      <IdentCon UId="29" />
+      <NameCon UId="35" Name="控温通讯状态" />
+    </Wire>
+    <Wire UId="47">
+      <NameCon UId="35" Name="小火输出" />
+      <IdentCon UId="30" />
+    </Wire>
+    <Wire UId="48">
+      <NameCon UId="35" Name="大火输出" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="49">
+      <NameCon UId="35" Name="复位输出" />
+      <IdentCon UId="32" />
+    </Wire>
+    <Wire UId="50">
+      <NameCon UId="35" Name="自动复位失败" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="51">
+      <NameCon UId="35" Name="超温标志" />
+      <IdentCon UId="34" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="27" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="28" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="29" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="2A" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>8#烧嘴控制</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="2B" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="9区测量值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="9区设定值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="9#小火反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="24">
+      <Symbol>
+        <Component Name="9#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="9#自动" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="26">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="9#手动小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="9#手动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="28">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="9区PLC自动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="曲线数据" />
+        <Component Name="9-15区通讯故障" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="9#小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="9#大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="9#复位" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="9#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="34">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="9区超温标志" />
+      </Symbol>
+    </Access>
+    <Call UId="35">
+      <CallInfo Name="烧嘴控制" BlockType="FB">
+        <Instance Scope="GlobalVariable" UId="36">
+          <Component Name="烧嘴控制_DB_8" />
+        </Instance>
+        <Parameter Name="测量值" Section="Input" Type="Real" />
+        <Parameter Name="设定值" Section="Input" Type="Real" />
+        <Parameter Name="小火反馈" Section="Input" Type="Bool" />
+        <Parameter Name="故障反馈" Section="Input" Type="Bool" />
+        <Parameter Name="自动" Section="Input" Type="Bool" />
+        <Parameter Name="手动小火" Section="Input" Type="Bool" />
+        <Parameter Name="手动大火" Section="Input" Type="Bool" />
+        <Parameter Name="PID大火输出" Section="Input" Type="Bool" />
+        <Parameter Name="控温通讯状态" Section="Input" Type="Bool" />
+        <Parameter Name="小火输出" Section="Output" Type="Bool" />
+        <Parameter Name="大火输出" Section="Output" Type="Bool" />
+        <Parameter Name="复位输出" Section="Output" Type="Bool" />
+        <Parameter Name="自动复位失败" Section="Output" Type="Bool" />
+        <Parameter Name="超温标志" Section="Output" Type="Bool" />
+      </CallInfo>
+    </Call>
+  </Parts>
+  <Wires>
+    <Wire UId="37">
+      <Powerrail />
+      <NameCon UId="35" Name="en" />
+    </Wire>
+    <Wire UId="38">
+      <IdentCon UId="21" />
+      <NameCon UId="35" Name="测量值" />
+    </Wire>
+    <Wire UId="39">
+      <IdentCon UId="22" />
+      <NameCon UId="35" Name="设定值" />
+    </Wire>
+    <Wire UId="40">
+      <IdentCon UId="23" />
+      <NameCon UId="35" Name="小火反馈" />
+    </Wire>
+    <Wire UId="41">
+      <IdentCon UId="24" />
+      <NameCon UId="35" Name="故障反馈" />
+    </Wire>
+    <Wire UId="42">
+      <IdentCon UId="25" />
+      <NameCon UId="35" Name="自动" />
+    </Wire>
+    <Wire UId="43">
+      <IdentCon UId="26" />
+      <NameCon UId="35" Name="手动小火" />
+    </Wire>
+    <Wire UId="44">
+      <IdentCon UId="27" />
+      <NameCon UId="35" Name="手动大火" />
+    </Wire>
+    <Wire UId="45">
+      <IdentCon UId="28" />
+      <NameCon UId="35" Name="PID大火输出" />
+    </Wire>
+    <Wire UId="46">
+      <IdentCon UId="29" />
+      <NameCon UId="35" Name="控温通讯状态" />
+    </Wire>
+    <Wire UId="47">
+      <NameCon UId="35" Name="小火输出" />
+      <IdentCon UId="30" />
+    </Wire>
+    <Wire UId="48">
+      <NameCon UId="35" Name="大火输出" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="49">
+      <NameCon UId="35" Name="复位输出" />
+      <IdentCon UId="32" />
+    </Wire>
+    <Wire UId="50">
+      <NameCon UId="35" Name="自动复位失败" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="51">
+      <NameCon UId="35" Name="超温标志" />
+      <IdentCon UId="34" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="2C" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="2D" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="2E" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="2F" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>9#烧嘴控制</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="30" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="10区测量值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="10区设定值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="10#小火反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="24">
+      <Symbol>
+        <Component Name="10#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="10#自动" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="26">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="10#手动小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="10#手动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="28">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="10区PLC自动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="曲线数据" />
+        <Component Name="9-15区通讯故障" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="10#小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="10#大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="10#复位" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="10#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="34">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="10区超温标志" />
+      </Symbol>
+    </Access>
+    <Call UId="35">
+      <CallInfo Name="烧嘴控制" BlockType="FB">
+        <Instance Scope="GlobalVariable" UId="36">
+          <Component Name="烧嘴控制_DB_9" />
+        </Instance>
+        <Parameter Name="测量值" Section="Input" Type="Real" />
+        <Parameter Name="设定值" Section="Input" Type="Real" />
+        <Parameter Name="小火反馈" Section="Input" Type="Bool" />
+        <Parameter Name="故障反馈" Section="Input" Type="Bool" />
+        <Parameter Name="自动" Section="Input" Type="Bool" />
+        <Parameter Name="手动小火" Section="Input" Type="Bool" />
+        <Parameter Name="手动大火" Section="Input" Type="Bool" />
+        <Parameter Name="PID大火输出" Section="Input" Type="Bool" />
+        <Parameter Name="控温通讯状态" Section="Input" Type="Bool" />
+        <Parameter Name="小火输出" Section="Output" Type="Bool" />
+        <Parameter Name="大火输出" Section="Output" Type="Bool" />
+        <Parameter Name="复位输出" Section="Output" Type="Bool" />
+        <Parameter Name="自动复位失败" Section="Output" Type="Bool" />
+        <Parameter Name="超温标志" Section="Output" Type="Bool" />
+      </CallInfo>
+    </Call>
+  </Parts>
+  <Wires>
+    <Wire UId="37">
+      <Powerrail />
+      <NameCon UId="35" Name="en" />
+    </Wire>
+    <Wire UId="38">
+      <IdentCon UId="21" />
+      <NameCon UId="35" Name="测量值" />
+    </Wire>
+    <Wire UId="39">
+      <IdentCon UId="22" />
+      <NameCon UId="35" Name="设定值" />
+    </Wire>
+    <Wire UId="40">
+      <IdentCon UId="23" />
+      <NameCon UId="35" Name="小火反馈" />
+    </Wire>
+    <Wire UId="41">
+      <IdentCon UId="24" />
+      <NameCon UId="35" Name="故障反馈" />
+    </Wire>
+    <Wire UId="42">
+      <IdentCon UId="25" />
+      <NameCon UId="35" Name="自动" />
+    </Wire>
+    <Wire UId="43">
+      <IdentCon UId="26" />
+      <NameCon UId="35" Name="手动小火" />
+    </Wire>
+    <Wire UId="44">
+      <IdentCon UId="27" />
+      <NameCon UId="35" Name="手动大火" />
+    </Wire>
+    <Wire UId="45">
+      <IdentCon UId="28" />
+      <NameCon UId="35" Name="PID大火输出" />
+    </Wire>
+    <Wire UId="46">
+      <IdentCon UId="29" />
+      <NameCon UId="35" Name="控温通讯状态" />
+    </Wire>
+    <Wire UId="47">
+      <NameCon UId="35" Name="小火输出" />
+      <IdentCon UId="30" />
+    </Wire>
+    <Wire UId="48">
+      <NameCon UId="35" Name="大火输出" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="49">
+      <NameCon UId="35" Name="复位输出" />
+      <IdentCon UId="32" />
+    </Wire>
+    <Wire UId="50">
+      <NameCon UId="35" Name="自动复位失败" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="51">
+      <NameCon UId="35" Name="超温标志" />
+      <IdentCon UId="34" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="31" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="32" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="33" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="34" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>10#烧嘴控制</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="35" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="11区测量值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="11区设定值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="11#小火反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="24">
+      <Symbol>
+        <Component Name="11#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="11#自动" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="26">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="11#手动小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="11#手动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="28">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="11区PLC自动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="曲线数据" />
+        <Component Name="9-15区通讯故障" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="11#小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="11#大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="11#复位" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="11#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="34">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="11区超温标志" />
+      </Symbol>
+    </Access>
+    <Call UId="35">
+      <CallInfo Name="烧嘴控制" BlockType="FB">
+        <Instance Scope="GlobalVariable" UId="36">
+          <Component Name="烧嘴控制_DB_10" />
+        </Instance>
+        <Parameter Name="测量值" Section="Input" Type="Real" />
+        <Parameter Name="设定值" Section="Input" Type="Real" />
+        <Parameter Name="小火反馈" Section="Input" Type="Bool" />
+        <Parameter Name="故障反馈" Section="Input" Type="Bool" />
+        <Parameter Name="自动" Section="Input" Type="Bool" />
+        <Parameter Name="手动小火" Section="Input" Type="Bool" />
+        <Parameter Name="手动大火" Section="Input" Type="Bool" />
+        <Parameter Name="PID大火输出" Section="Input" Type="Bool" />
+        <Parameter Name="控温通讯状态" Section="Input" Type="Bool" />
+        <Parameter Name="小火输出" Section="Output" Type="Bool" />
+        <Parameter Name="大火输出" Section="Output" Type="Bool" />
+        <Parameter Name="复位输出" Section="Output" Type="Bool" />
+        <Parameter Name="自动复位失败" Section="Output" Type="Bool" />
+        <Parameter Name="超温标志" Section="Output" Type="Bool" />
+      </CallInfo>
+    </Call>
+  </Parts>
+  <Wires>
+    <Wire UId="37">
+      <Powerrail />
+      <NameCon UId="35" Name="en" />
+    </Wire>
+    <Wire UId="38">
+      <IdentCon UId="21" />
+      <NameCon UId="35" Name="测量值" />
+    </Wire>
+    <Wire UId="39">
+      <IdentCon UId="22" />
+      <NameCon UId="35" Name="设定值" />
+    </Wire>
+    <Wire UId="40">
+      <IdentCon UId="23" />
+      <NameCon UId="35" Name="小火反馈" />
+    </Wire>
+    <Wire UId="41">
+      <IdentCon UId="24" />
+      <NameCon UId="35" Name="故障反馈" />
+    </Wire>
+    <Wire UId="42">
+      <IdentCon UId="25" />
+      <NameCon UId="35" Name="自动" />
+    </Wire>
+    <Wire UId="43">
+      <IdentCon UId="26" />
+      <NameCon UId="35" Name="手动小火" />
+    </Wire>
+    <Wire UId="44">
+      <IdentCon UId="27" />
+      <NameCon UId="35" Name="手动大火" />
+    </Wire>
+    <Wire UId="45">
+      <IdentCon UId="28" />
+      <NameCon UId="35" Name="PID大火输出" />
+    </Wire>
+    <Wire UId="46">
+      <IdentCon UId="29" />
+      <NameCon UId="35" Name="控温通讯状态" />
+    </Wire>
+    <Wire UId="47">
+      <NameCon UId="35" Name="小火输出" />
+      <IdentCon UId="30" />
+    </Wire>
+    <Wire UId="48">
+      <NameCon UId="35" Name="大火输出" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="49">
+      <NameCon UId="35" Name="复位输出" />
+      <IdentCon UId="32" />
+    </Wire>
+    <Wire UId="50">
+      <NameCon UId="35" Name="自动复位失败" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="51">
+      <NameCon UId="35" Name="超温标志" />
+      <IdentCon UId="34" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="36" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="37" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="38" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="39" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>11#烧嘴控制</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="3A" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="12区测量值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="12区设定值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="12#小火反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="24">
+      <Symbol>
+        <Component Name="12#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="12#自动" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="26">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="12#手动小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="12#手动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="28">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="12区PLC自动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="曲线数据" />
+        <Component Name="9-15区通讯故障" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="12#小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="12#大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="12#复位" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="12#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="34">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="12区超温标志" />
+      </Symbol>
+    </Access>
+    <Call UId="35">
+      <CallInfo Name="烧嘴控制" BlockType="FB">
+        <Instance Scope="GlobalVariable" UId="36">
+          <Component Name="烧嘴控制_DB_11" />
+        </Instance>
+        <Parameter Name="测量值" Section="Input" Type="Real" />
+        <Parameter Name="设定值" Section="Input" Type="Real" />
+        <Parameter Name="小火反馈" Section="Input" Type="Bool" />
+        <Parameter Name="故障反馈" Section="Input" Type="Bool" />
+        <Parameter Name="自动" Section="Input" Type="Bool" />
+        <Parameter Name="手动小火" Section="Input" Type="Bool" />
+        <Parameter Name="手动大火" Section="Input" Type="Bool" />
+        <Parameter Name="PID大火输出" Section="Input" Type="Bool" />
+        <Parameter Name="控温通讯状态" Section="Input" Type="Bool" />
+        <Parameter Name="小火输出" Section="Output" Type="Bool" />
+        <Parameter Name="大火输出" Section="Output" Type="Bool" />
+        <Parameter Name="复位输出" Section="Output" Type="Bool" />
+        <Parameter Name="自动复位失败" Section="Output" Type="Bool" />
+        <Parameter Name="超温标志" Section="Output" Type="Bool" />
+      </CallInfo>
+    </Call>
+  </Parts>
+  <Wires>
+    <Wire UId="37">
+      <Powerrail />
+      <NameCon UId="35" Name="en" />
+    </Wire>
+    <Wire UId="38">
+      <IdentCon UId="21" />
+      <NameCon UId="35" Name="测量值" />
+    </Wire>
+    <Wire UId="39">
+      <IdentCon UId="22" />
+      <NameCon UId="35" Name="设定值" />
+    </Wire>
+    <Wire UId="40">
+      <IdentCon UId="23" />
+      <NameCon UId="35" Name="小火反馈" />
+    </Wire>
+    <Wire UId="41">
+      <IdentCon UId="24" />
+      <NameCon UId="35" Name="故障反馈" />
+    </Wire>
+    <Wire UId="42">
+      <IdentCon UId="25" />
+      <NameCon UId="35" Name="自动" />
+    </Wire>
+    <Wire UId="43">
+      <IdentCon UId="26" />
+      <NameCon UId="35" Name="手动小火" />
+    </Wire>
+    <Wire UId="44">
+      <IdentCon UId="27" />
+      <NameCon UId="35" Name="手动大火" />
+    </Wire>
+    <Wire UId="45">
+      <IdentCon UId="28" />
+      <NameCon UId="35" Name="PID大火输出" />
+    </Wire>
+    <Wire UId="46">
+      <IdentCon UId="29" />
+      <NameCon UId="35" Name="控温通讯状态" />
+    </Wire>
+    <Wire UId="47">
+      <NameCon UId="35" Name="小火输出" />
+      <IdentCon UId="30" />
+    </Wire>
+    <Wire UId="48">
+      <NameCon UId="35" Name="大火输出" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="49">
+      <NameCon UId="35" Name="复位输出" />
+      <IdentCon UId="32" />
+    </Wire>
+    <Wire UId="50">
+      <NameCon UId="35" Name="自动复位失败" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="51">
+      <NameCon UId="35" Name="超温标志" />
+      <IdentCon UId="34" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="3B" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="3C" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="3D" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="3E" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>12#烧嘴控制</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="3F" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="13区测量值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="13区设定值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="13#小火反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="24">
+      <Symbol>
+        <Component Name="13#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="13#自动" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="26">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="13#手动小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="13#手动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="28">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="13区PLC自动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="曲线数据" />
+        <Component Name="9-15区通讯故障" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="13#小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="13#大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="13#复位" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="13#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="34">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="13区超温标志" />
+      </Symbol>
+    </Access>
+    <Call UId="35">
+      <CallInfo Name="烧嘴控制" BlockType="FB">
+        <Instance Scope="GlobalVariable" UId="36">
+          <Component Name="烧嘴控制_DB_12" />
+        </Instance>
+        <Parameter Name="测量值" Section="Input" Type="Real" />
+        <Parameter Name="设定值" Section="Input" Type="Real" />
+        <Parameter Name="小火反馈" Section="Input" Type="Bool" />
+        <Parameter Name="故障反馈" Section="Input" Type="Bool" />
+        <Parameter Name="自动" Section="Input" Type="Bool" />
+        <Parameter Name="手动小火" Section="Input" Type="Bool" />
+        <Parameter Name="手动大火" Section="Input" Type="Bool" />
+        <Parameter Name="PID大火输出" Section="Input" Type="Bool" />
+        <Parameter Name="控温通讯状态" Section="Input" Type="Bool" />
+        <Parameter Name="小火输出" Section="Output" Type="Bool" />
+        <Parameter Name="大火输出" Section="Output" Type="Bool" />
+        <Parameter Name="复位输出" Section="Output" Type="Bool" />
+        <Parameter Name="自动复位失败" Section="Output" Type="Bool" />
+        <Parameter Name="超温标志" Section="Output" Type="Bool" />
+      </CallInfo>
+    </Call>
+  </Parts>
+  <Wires>
+    <Wire UId="37">
+      <Powerrail />
+      <NameCon UId="35" Name="en" />
+    </Wire>
+    <Wire UId="38">
+      <IdentCon UId="21" />
+      <NameCon UId="35" Name="测量值" />
+    </Wire>
+    <Wire UId="39">
+      <IdentCon UId="22" />
+      <NameCon UId="35" Name="设定值" />
+    </Wire>
+    <Wire UId="40">
+      <IdentCon UId="23" />
+      <NameCon UId="35" Name="小火反馈" />
+    </Wire>
+    <Wire UId="41">
+      <IdentCon UId="24" />
+      <NameCon UId="35" Name="故障反馈" />
+    </Wire>
+    <Wire UId="42">
+      <IdentCon UId="25" />
+      <NameCon UId="35" Name="自动" />
+    </Wire>
+    <Wire UId="43">
+      <IdentCon UId="26" />
+      <NameCon UId="35" Name="手动小火" />
+    </Wire>
+    <Wire UId="44">
+      <IdentCon UId="27" />
+      <NameCon UId="35" Name="手动大火" />
+    </Wire>
+    <Wire UId="45">
+      <IdentCon UId="28" />
+      <NameCon UId="35" Name="PID大火输出" />
+    </Wire>
+    <Wire UId="46">
+      <IdentCon UId="29" />
+      <NameCon UId="35" Name="控温通讯状态" />
+    </Wire>
+    <Wire UId="47">
+      <NameCon UId="35" Name="小火输出" />
+      <IdentCon UId="30" />
+    </Wire>
+    <Wire UId="48">
+      <NameCon UId="35" Name="大火输出" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="49">
+      <NameCon UId="35" Name="复位输出" />
+      <IdentCon UId="32" />
+    </Wire>
+    <Wire UId="50">
+      <NameCon UId="35" Name="自动复位失败" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="51">
+      <NameCon UId="35" Name="超温标志" />
+      <IdentCon UId="34" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="40" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="41" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="42" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="43" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>13#烧嘴控制</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="44" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="14区测量值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="14区设定值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="14#小火反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="24">
+      <Symbol>
+        <Component Name="14#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="14#自动" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="26">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="14#手动小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="14#手动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="28">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="14区PLC自动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="曲线数据" />
+        <Component Name="9-15区通讯故障" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="14#小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="14#大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="14#复位" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="14#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="34">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="14区超温标志" />
+      </Symbol>
+    </Access>
+    <Call UId="35">
+      <CallInfo Name="烧嘴控制" BlockType="FB">
+        <Instance Scope="GlobalVariable" UId="36">
+          <Component Name="烧嘴控制_DB_13" />
+        </Instance>
+        <Parameter Name="测量值" Section="Input" Type="Real" />
+        <Parameter Name="设定值" Section="Input" Type="Real" />
+        <Parameter Name="小火反馈" Section="Input" Type="Bool" />
+        <Parameter Name="故障反馈" Section="Input" Type="Bool" />
+        <Parameter Name="自动" Section="Input" Type="Bool" />
+        <Parameter Name="手动小火" Section="Input" Type="Bool" />
+        <Parameter Name="手动大火" Section="Input" Type="Bool" />
+        <Parameter Name="PID大火输出" Section="Input" Type="Bool" />
+        <Parameter Name="控温通讯状态" Section="Input" Type="Bool" />
+        <Parameter Name="小火输出" Section="Output" Type="Bool" />
+        <Parameter Name="大火输出" Section="Output" Type="Bool" />
+        <Parameter Name="复位输出" Section="Output" Type="Bool" />
+        <Parameter Name="自动复位失败" Section="Output" Type="Bool" />
+        <Parameter Name="超温标志" Section="Output" Type="Bool" />
+      </CallInfo>
+    </Call>
+  </Parts>
+  <Wires>
+    <Wire UId="37">
+      <Powerrail />
+      <NameCon UId="35" Name="en" />
+    </Wire>
+    <Wire UId="38">
+      <IdentCon UId="21" />
+      <NameCon UId="35" Name="测量值" />
+    </Wire>
+    <Wire UId="39">
+      <IdentCon UId="22" />
+      <NameCon UId="35" Name="设定值" />
+    </Wire>
+    <Wire UId="40">
+      <IdentCon UId="23" />
+      <NameCon UId="35" Name="小火反馈" />
+    </Wire>
+    <Wire UId="41">
+      <IdentCon UId="24" />
+      <NameCon UId="35" Name="故障反馈" />
+    </Wire>
+    <Wire UId="42">
+      <IdentCon UId="25" />
+      <NameCon UId="35" Name="自动" />
+    </Wire>
+    <Wire UId="43">
+      <IdentCon UId="26" />
+      <NameCon UId="35" Name="手动小火" />
+    </Wire>
+    <Wire UId="44">
+      <IdentCon UId="27" />
+      <NameCon UId="35" Name="手动大火" />
+    </Wire>
+    <Wire UId="45">
+      <IdentCon UId="28" />
+      <NameCon UId="35" Name="PID大火输出" />
+    </Wire>
+    <Wire UId="46">
+      <IdentCon UId="29" />
+      <NameCon UId="35" Name="控温通讯状态" />
+    </Wire>
+    <Wire UId="47">
+      <NameCon UId="35" Name="小火输出" />
+      <IdentCon UId="30" />
+    </Wire>
+    <Wire UId="48">
+      <NameCon UId="35" Name="大火输出" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="49">
+      <NameCon UId="35" Name="复位输出" />
+      <IdentCon UId="32" />
+    </Wire>
+    <Wire UId="50">
+      <NameCon UId="35" Name="自动复位失败" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="51">
+      <NameCon UId="35" Name="超温标志" />
+      <IdentCon UId="34" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="45" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="46" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="47" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="48" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>14#烧嘴控制</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="49" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="15区测量值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="信号数据" />
+        <Component Name="15区设定值" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="15#小火反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="24">
+      <Symbol>
+        <Component Name="15#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="15#自动" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="26">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="15#手动小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="15#手动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="28">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="15区PLC自动大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="曲线数据" />
+        <Component Name="9-15区通讯故障" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="15#小火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="15#大火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="15#复位" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="15#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="34">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="15区超温标志" />
+      </Symbol>
+    </Access>
+    <Call UId="35">
+      <CallInfo Name="烧嘴控制" BlockType="FB">
+        <Instance Scope="GlobalVariable" UId="36">
+          <Component Name="烧嘴控制_DB_14" />
+        </Instance>
+        <Parameter Name="测量值" Section="Input" Type="Real" />
+        <Parameter Name="设定值" Section="Input" Type="Real" />
+        <Parameter Name="小火反馈" Section="Input" Type="Bool" />
+        <Parameter Name="故障反馈" Section="Input" Type="Bool" />
+        <Parameter Name="自动" Section="Input" Type="Bool" />
+        <Parameter Name="手动小火" Section="Input" Type="Bool" />
+        <Parameter Name="手动大火" Section="Input" Type="Bool" />
+        <Parameter Name="PID大火输出" Section="Input" Type="Bool" />
+        <Parameter Name="控温通讯状态" Section="Input" Type="Bool" />
+        <Parameter Name="小火输出" Section="Output" Type="Bool" />
+        <Parameter Name="大火输出" Section="Output" Type="Bool" />
+        <Parameter Name="复位输出" Section="Output" Type="Bool" />
+        <Parameter Name="自动复位失败" Section="Output" Type="Bool" />
+        <Parameter Name="超温标志" Section="Output" Type="Bool" />
+      </CallInfo>
+    </Call>
+  </Parts>
+  <Wires>
+    <Wire UId="37">
+      <Powerrail />
+      <NameCon UId="35" Name="en" />
+    </Wire>
+    <Wire UId="38">
+      <IdentCon UId="21" />
+      <NameCon UId="35" Name="测量值" />
+    </Wire>
+    <Wire UId="39">
+      <IdentCon UId="22" />
+      <NameCon UId="35" Name="设定值" />
+    </Wire>
+    <Wire UId="40">
+      <IdentCon UId="23" />
+      <NameCon UId="35" Name="小火反馈" />
+    </Wire>
+    <Wire UId="41">
+      <IdentCon UId="24" />
+      <NameCon UId="35" Name="故障反馈" />
+    </Wire>
+    <Wire UId="42">
+      <IdentCon UId="25" />
+      <NameCon UId="35" Name="自动" />
+    </Wire>
+    <Wire UId="43">
+      <IdentCon UId="26" />
+      <NameCon UId="35" Name="手动小火" />
+    </Wire>
+    <Wire UId="44">
+      <IdentCon UId="27" />
+      <NameCon UId="35" Name="手动大火" />
+    </Wire>
+    <Wire UId="45">
+      <IdentCon UId="28" />
+      <NameCon UId="35" Name="PID大火输出" />
+    </Wire>
+    <Wire UId="46">
+      <IdentCon UId="29" />
+      <NameCon UId="35" Name="控温通讯状态" />
+    </Wire>
+    <Wire UId="47">
+      <NameCon UId="35" Name="小火输出" />
+      <IdentCon UId="30" />
+    </Wire>
+    <Wire UId="48">
+      <NameCon UId="35" Name="大火输出" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="49">
+      <NameCon UId="35" Name="复位输出" />
+      <IdentCon UId="32" />
+    </Wire>
+    <Wire UId="50">
+      <NameCon UId="35" Name="自动复位失败" />
+      <IdentCon UId="33" />
+    </Wire>
+    <Wire UId="51">
+      <NameCon UId="35" Name="超温标志" />
+      <IdentCon UId="34" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="4A" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="4B" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="4C" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="4D" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>15#烧嘴控制</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="4E" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="1#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="2#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="3#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="24">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="4#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="5#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="26">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="6#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="7#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="28">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="8#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="9#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="10#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="11#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="12#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="13#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="34">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="14#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="35">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="15#自动复位失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="36">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="烧嘴复位失败标志" />
+      </Symbol>
+    </Access>
+    <Part Name="Contact" UId="37" />
+    <Part Name="Contact" UId="38" />
+    <Part Name="Contact" UId="39" />
+    <Part Name="Contact" UId="40" />
+    <Part Name="Contact" UId="41" />
+    <Part Name="Contact" UId="42" />
+    <Part Name="Contact" UId="43" />
+    <Part Name="Contact" UId="44" />
+    <Part Name="Contact" UId="45" />
+    <Part Name="Contact" UId="46" />
+    <Part Name="Contact" UId="47" />
+    <Part Name="Contact" UId="48" />
+    <Part Name="Contact" UId="49" />
+    <Part Name="Contact" UId="50" />
+    <Part Name="Contact" UId="51" />
+    <Part Name="O" UId="52">
+      <TemplateValue Name="Card" Type="Cardinality">15</TemplateValue>
+    </Part>
+    <Part Name="Coil" UId="53" />
+  </Parts>
+  <Wires>
+    <Wire UId="54">
+      <Powerrail />
+      <NameCon UId="37" Name="in" />
+      <NameCon UId="38" Name="in" />
+      <NameCon UId="39" Name="in" />
+      <NameCon UId="40" Name="in" />
+      <NameCon UId="41" Name="in" />
+      <NameCon UId="42" Name="in" />
+      <NameCon UId="43" Name="in" />
+      <NameCon UId="44" Name="in" />
+      <NameCon UId="45" Name="in" />
+      <NameCon UId="46" Name="in" />
+      <NameCon UId="47" Name="in" />
+      <NameCon UId="48" Name="in" />
+      <NameCon UId="49" Name="in" />
+      <NameCon UId="50" Name="in" />
+      <NameCon UId="51" Name="in" />
+    </Wire>
+    <Wire UId="55">
+      <IdentCon UId="21" />
+      <NameCon UId="37" Name="operand" />
+    </Wire>
+    <Wire UId="56">
+      <NameCon UId="37" Name="out" />
+      <NameCon UId="52" Name="in1" />
+    </Wire>
+    <Wire UId="57">
+      <IdentCon UId="22" />
+      <NameCon UId="38" Name="operand" />
+    </Wire>
+    <Wire UId="58">
+      <NameCon UId="38" Name="out" />
+      <NameCon UId="52" Name="in2" />
+    </Wire>
+    <Wire UId="59">
+      <IdentCon UId="23" />
+      <NameCon UId="39" Name="operand" />
+    </Wire>
+    <Wire UId="60">
+      <NameCon UId="39" Name="out" />
+      <NameCon UId="52" Name="in3" />
+    </Wire>
+    <Wire UId="61">
+      <IdentCon UId="24" />
+      <NameCon UId="40" Name="operand" />
+    </Wire>
+    <Wire UId="62">
+      <NameCon UId="40" Name="out" />
+      <NameCon UId="52" Name="in4" />
+    </Wire>
+    <Wire UId="63">
+      <IdentCon UId="25" />
+      <NameCon UId="41" Name="operand" />
+    </Wire>
+    <Wire UId="64">
+      <NameCon UId="41" Name="out" />
+      <NameCon UId="52" Name="in5" />
+    </Wire>
+    <Wire UId="65">
+      <IdentCon UId="26" />
+      <NameCon UId="42" Name="operand" />
+    </Wire>
+    <Wire UId="66">
+      <NameCon UId="42" Name="out" />
+      <NameCon UId="52" Name="in6" />
+    </Wire>
+    <Wire UId="67">
+      <IdentCon UId="27" />
+      <NameCon UId="43" Name="operand" />
+    </Wire>
+    <Wire UId="68">
+      <NameCon UId="43" Name="out" />
+      <NameCon UId="52" Name="in7" />
+    </Wire>
+    <Wire UId="69">
+      <IdentCon UId="28" />
+      <NameCon UId="44" Name="operand" />
+    </Wire>
+    <Wire UId="70">
+      <NameCon UId="44" Name="out" />
+      <NameCon UId="52" Name="in8" />
+    </Wire>
+    <Wire UId="71">
+      <IdentCon UId="29" />
+      <NameCon UId="45" Name="operand" />
+    </Wire>
+    <Wire UId="72">
+      <NameCon UId="45" Name="out" />
+      <NameCon UId="52" Name="in9" />
+    </Wire>
+    <Wire UId="73">
+      <IdentCon UId="30" />
+      <NameCon UId="46" Name="operand" />
+    </Wire>
+    <Wire UId="74">
+      <NameCon UId="46" Name="out" />
+      <NameCon UId="52" Name="in10" />
+    </Wire>
+    <Wire UId="75">
+      <IdentCon UId="31" />
+      <NameCon UId="47" Name="operand" />
+    </Wire>
+    <Wire UId="76">
+      <NameCon UId="47" Name="out" />
+      <NameCon UId="52" Name="in11" />
+    </Wire>
+    <Wire UId="77">
+      <IdentCon UId="32" />
+      <NameCon UId="48" Name="operand" />
+    </Wire>
+    <Wire UId="78">
+      <NameCon UId="48" Name="out" />
+      <NameCon UId="52" Name="in12" />
+    </Wire>
+    <Wire UId="79">
+      <IdentCon UId="33" />
+      <NameCon UId="49" Name="operand" />
+    </Wire>
+    <Wire UId="80">
+      <NameCon UId="49" Name="out" />
+      <NameCon UId="52" Name="in13" />
+    </Wire>
+    <Wire UId="81">
+      <IdentCon UId="34" />
+      <NameCon UId="50" Name="operand" />
+    </Wire>
+    <Wire UId="82">
+      <NameCon UId="50" Name="out" />
+      <NameCon UId="52" Name="in14" />
+    </Wire>
+    <Wire UId="83">
+      <IdentCon UId="35" />
+      <NameCon UId="51" Name="operand" />
+    </Wire>
+    <Wire UId="84">
+      <NameCon UId="51" Name="out" />
+      <NameCon UId="52" Name="in15" />
+    </Wire>
+    <Wire UId="85">
+      <NameCon UId="52" Name="out" />
+      <NameCon UId="53" Name="in" />
+    </Wire>
+    <Wire UId="86">
+      <IdentCon UId="36" />
+      <NameCon UId="53" Name="operand" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="4F" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="50" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="51" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="52" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>烧嘴复位失败标志</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="53" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="1#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="2#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="3#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="24">
+      <Symbol>
+        <Component Name="4#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="5#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="26">
+      <Symbol>
+        <Component Name="6#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="7#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="28">
+      <Symbol>
+        <Component Name="8#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="9#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="10#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="11#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="12#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="13#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="34">
+      <Symbol>
+        <Component Name="14#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="35">
+      <Symbol>
+        <Component Name="15#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="36">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="控温超温标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="37">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="报警脉冲" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="38">
+      <Symbol>
+        <Component Name="蜂鸣器" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="39">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="1区超温标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="40">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="2区超温标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="41">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="3区超温标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="42">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="4区超温标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="43">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="5区超温标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="44">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="6区超温标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="45">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="7区超温标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="46">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="8区超温标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="47">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="9区超温标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="48">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="10区超温标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="49">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="11区超温标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="50">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="12区超温标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="51">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="13区超温标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="52">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="14区超温标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="53">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="15区超温标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="54">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="控温超温标志" />
+      </Symbol>
+    </Access>
+    <Part Name="Contact" UId="55" />
+    <Part Name="Contact" UId="56" />
+    <Part Name="Contact" UId="57" />
+    <Part Name="Contact" UId="58" />
+    <Part Name="Contact" UId="59" />
+    <Part Name="Contact" UId="60" />
+    <Part Name="Contact" UId="61" />
+    <Part Name="Contact" UId="62" />
+    <Part Name="Contact" UId="63" />
+    <Part Name="Contact" UId="64" />
+    <Part Name="Contact" UId="65" />
+    <Part Name="Contact" UId="66" />
+    <Part Name="Contact" UId="67" />
+    <Part Name="Contact" UId="68" />
+    <Part Name="Contact" UId="69" />
+    <Part Name="Contact" UId="70" />
+    <Part Name="O" UId="71">
+      <TemplateValue Name="Card" Type="Cardinality">16</TemplateValue>
+    </Part>
+    <Part Name="PBox" UId="72" />
+    <Part Name="SCoil" UId="73" />
+    <Part Name="Contact" UId="74" />
+    <Part Name="Contact" UId="75" />
+    <Part Name="Contact" UId="76" />
+    <Part Name="Contact" UId="77" />
+    <Part Name="Contact" UId="78" />
+    <Part Name="Contact" UId="79" />
+    <Part Name="Contact" UId="80" />
+    <Part Name="Contact" UId="81" />
+    <Part Name="Contact" UId="82" />
+    <Part Name="Contact" UId="83" />
+    <Part Name="Contact" UId="84" />
+    <Part Name="Contact" UId="85" />
+    <Part Name="Contact" UId="86" />
+    <Part Name="Contact" UId="87" />
+    <Part Name="Contact" UId="88" />
+    <Part Name="O" UId="89">
+      <TemplateValue Name="Card" Type="Cardinality">15</TemplateValue>
+    </Part>
+    <Part Name="Coil" UId="90" />
+  </Parts>
+  <Wires>
+    <Wire UId="91">
+      <Powerrail />
+      <NameCon UId="55" Name="in" />
+      <NameCon UId="56" Name="in" />
+      <NameCon UId="57" Name="in" />
+      <NameCon UId="58" Name="in" />
+      <NameCon UId="59" Name="in" />
+      <NameCon UId="60" Name="in" />
+      <NameCon UId="61" Name="in" />
+      <NameCon UId="62" Name="in" />
+      <NameCon UId="63" Name="in" />
+      <NameCon UId="64" Name="in" />
+      <NameCon UId="65" Name="in" />
+      <NameCon UId="66" Name="in" />
+      <NameCon UId="67" Name="in" />
+      <NameCon UId="68" Name="in" />
+      <NameCon UId="69" Name="in" />
+      <NameCon UId="70" Name="in" />
+      <NameCon UId="74" Name="in" />
+      <NameCon UId="75" Name="in" />
+      <NameCon UId="76" Name="in" />
+      <NameCon UId="77" Name="in" />
+      <NameCon UId="78" Name="in" />
+      <NameCon UId="79" Name="in" />
+      <NameCon UId="80" Name="in" />
+      <NameCon UId="81" Name="in" />
+      <NameCon UId="82" Name="in" />
+      <NameCon UId="83" Name="in" />
+      <NameCon UId="84" Name="in" />
+      <NameCon UId="85" Name="in" />
+      <NameCon UId="86" Name="in" />
+      <NameCon UId="87" Name="in" />
+      <NameCon UId="88" Name="in" />
+    </Wire>
+    <Wire UId="92">
+      <IdentCon UId="21" />
+      <NameCon UId="55" Name="operand" />
+    </Wire>
+    <Wire UId="93">
+      <NameCon UId="55" Name="out" />
+      <NameCon UId="71" Name="in1" />
+    </Wire>
+    <Wire UId="94">
+      <IdentCon UId="22" />
+      <NameCon UId="56" Name="operand" />
+    </Wire>
+    <Wire UId="95">
+      <NameCon UId="56" Name="out" />
+      <NameCon UId="71" Name="in2" />
+    </Wire>
+    <Wire UId="96">
+      <IdentCon UId="23" />
+      <NameCon UId="57" Name="operand" />
+    </Wire>
+    <Wire UId="97">
+      <NameCon UId="57" Name="out" />
+      <NameCon UId="71" Name="in3" />
+    </Wire>
+    <Wire UId="98">
+      <IdentCon UId="24" />
+      <NameCon UId="58" Name="operand" />
+    </Wire>
+    <Wire UId="99">
+      <NameCon UId="58" Name="out" />
+      <NameCon UId="71" Name="in4" />
+    </Wire>
+    <Wire UId="100">
+      <IdentCon UId="25" />
+      <NameCon UId="59" Name="operand" />
+    </Wire>
+    <Wire UId="101">
+      <NameCon UId="59" Name="out" />
+      <NameCon UId="71" Name="in5" />
+    </Wire>
+    <Wire UId="102">
+      <IdentCon UId="26" />
+      <NameCon UId="60" Name="operand" />
+    </Wire>
+    <Wire UId="103">
+      <NameCon UId="60" Name="out" />
+      <NameCon UId="71" Name="in6" />
+    </Wire>
+    <Wire UId="104">
+      <IdentCon UId="27" />
+      <NameCon UId="61" Name="operand" />
+    </Wire>
+    <Wire UId="105">
+      <NameCon UId="61" Name="out" />
+      <NameCon UId="71" Name="in7" />
+    </Wire>
+    <Wire UId="106">
+      <IdentCon UId="28" />
+      <NameCon UId="62" Name="operand" />
+    </Wire>
+    <Wire UId="107">
+      <NameCon UId="62" Name="out" />
+      <NameCon UId="71" Name="in8" />
+    </Wire>
+    <Wire UId="108">
+      <IdentCon UId="29" />
+      <NameCon UId="63" Name="operand" />
+    </Wire>
+    <Wire UId="109">
+      <NameCon UId="63" Name="out" />
+      <NameCon UId="71" Name="in9" />
+    </Wire>
+    <Wire UId="110">
+      <IdentCon UId="30" />
+      <NameCon UId="64" Name="operand" />
+    </Wire>
+    <Wire UId="111">
+      <NameCon UId="64" Name="out" />
+      <NameCon UId="71" Name="in10" />
+    </Wire>
+    <Wire UId="112">
+      <IdentCon UId="31" />
+      <NameCon UId="65" Name="operand" />
+    </Wire>
+    <Wire UId="113">
+      <NameCon UId="65" Name="out" />
+      <NameCon UId="71" Name="in11" />
+    </Wire>
+    <Wire UId="114">
+      <IdentCon UId="32" />
+      <NameCon UId="66" Name="operand" />
+    </Wire>
+    <Wire UId="115">
+      <NameCon UId="66" Name="out" />
+      <NameCon UId="71" Name="in12" />
+    </Wire>
+    <Wire UId="116">
+      <IdentCon UId="33" />
+      <NameCon UId="67" Name="operand" />
+    </Wire>
+    <Wire UId="117">
+      <NameCon UId="67" Name="out" />
+      <NameCon UId="71" Name="in13" />
+    </Wire>
+    <Wire UId="118">
+      <IdentCon UId="34" />
+      <NameCon UId="68" Name="operand" />
+    </Wire>
+    <Wire UId="119">
+      <NameCon UId="68" Name="out" />
+      <NameCon UId="71" Name="in14" />
+    </Wire>
+    <Wire UId="120">
+      <IdentCon UId="35" />
+      <NameCon UId="69" Name="operand" />
+    </Wire>
+    <Wire UId="121">
+      <NameCon UId="69" Name="out" />
+      <NameCon UId="71" Name="in15" />
+    </Wire>
+    <Wire UId="122">
+      <IdentCon UId="36" />
+      <NameCon UId="70" Name="operand" />
+    </Wire>
+    <Wire UId="123">
+      <NameCon UId="70" Name="out" />
+      <NameCon UId="71" Name="in16" />
+    </Wire>
+    <Wire UId="124">
+      <NameCon UId="71" Name="out" />
+      <NameCon UId="72" Name="in" />
+    </Wire>
+    <Wire UId="125">
+      <IdentCon UId="37" />
+      <NameCon UId="72" Name="bit" />
+    </Wire>
+    <Wire UId="126">
+      <NameCon UId="72" Name="out" />
+      <NameCon UId="73" Name="in" />
+    </Wire>
+    <Wire UId="127">
+      <IdentCon UId="38" />
+      <NameCon UId="73" Name="operand" />
+    </Wire>
+    <Wire UId="128">
+      <IdentCon UId="39" />
+      <NameCon UId="74" Name="operand" />
+    </Wire>
+    <Wire UId="129">
+      <NameCon UId="74" Name="out" />
+      <NameCon UId="89" Name="in1" />
+    </Wire>
+    <Wire UId="130">
+      <IdentCon UId="40" />
+      <NameCon UId="75" Name="operand" />
+    </Wire>
+    <Wire UId="131">
+      <NameCon UId="75" Name="out" />
+      <NameCon UId="89" Name="in2" />
+    </Wire>
+    <Wire UId="132">
+      <IdentCon UId="41" />
+      <NameCon UId="76" Name="operand" />
+    </Wire>
+    <Wire UId="133">
+      <NameCon UId="76" Name="out" />
+      <NameCon UId="89" Name="in3" />
+    </Wire>
+    <Wire UId="134">
+      <IdentCon UId="42" />
+      <NameCon UId="77" Name="operand" />
+    </Wire>
+    <Wire UId="135">
+      <NameCon UId="77" Name="out" />
+      <NameCon UId="89" Name="in4" />
+    </Wire>
+    <Wire UId="136">
+      <IdentCon UId="43" />
+      <NameCon UId="78" Name="operand" />
+    </Wire>
+    <Wire UId="137">
+      <NameCon UId="78" Name="out" />
+      <NameCon UId="89" Name="in5" />
+    </Wire>
+    <Wire UId="138">
+      <IdentCon UId="44" />
+      <NameCon UId="79" Name="operand" />
+    </Wire>
+    <Wire UId="139">
+      <NameCon UId="79" Name="out" />
+      <NameCon UId="89" Name="in6" />
+    </Wire>
+    <Wire UId="140">
+      <IdentCon UId="45" />
+      <NameCon UId="80" Name="operand" />
+    </Wire>
+    <Wire UId="141">
+      <NameCon UId="80" Name="out" />
+      <NameCon UId="89" Name="in7" />
+    </Wire>
+    <Wire UId="142">
+      <IdentCon UId="46" />
+      <NameCon UId="81" Name="operand" />
+    </Wire>
+    <Wire UId="143">
+      <NameCon UId="81" Name="out" />
+      <NameCon UId="89" Name="in8" />
+    </Wire>
+    <Wire UId="144">
+      <IdentCon UId="47" />
+      <NameCon UId="82" Name="operand" />
+    </Wire>
+    <Wire UId="145">
+      <NameCon UId="82" Name="out" />
+      <NameCon UId="89" Name="in9" />
+    </Wire>
+    <Wire UId="146">
+      <IdentCon UId="48" />
+      <NameCon UId="83" Name="operand" />
+    </Wire>
+    <Wire UId="147">
+      <NameCon UId="83" Name="out" />
+      <NameCon UId="89" Name="in10" />
+    </Wire>
+    <Wire UId="148">
+      <IdentCon UId="49" />
+      <NameCon UId="84" Name="operand" />
+    </Wire>
+    <Wire UId="149">
+      <NameCon UId="84" Name="out" />
+      <NameCon UId="89" Name="in11" />
+    </Wire>
+    <Wire UId="150">
+      <IdentCon UId="50" />
+      <NameCon UId="85" Name="operand" />
+    </Wire>
+    <Wire UId="151">
+      <NameCon UId="85" Name="out" />
+      <NameCon UId="89" Name="in12" />
+    </Wire>
+    <Wire UId="152">
+      <IdentCon UId="51" />
+      <NameCon UId="86" Name="operand" />
+    </Wire>
+    <Wire UId="153">
+      <NameCon UId="86" Name="out" />
+      <NameCon UId="89" Name="in13" />
+    </Wire>
+    <Wire UId="154">
+      <IdentCon UId="52" />
+      <NameCon UId="87" Name="operand" />
+    </Wire>
+    <Wire UId="155">
+      <NameCon UId="87" Name="out" />
+      <NameCon UId="89" Name="in14" />
+    </Wire>
+    <Wire UId="156">
+      <IdentCon UId="53" />
+      <NameCon UId="88" Name="operand" />
+    </Wire>
+    <Wire UId="157">
+      <NameCon UId="88" Name="out" />
+      <NameCon UId="89" Name="in15" />
+    </Wire>
+    <Wire UId="158">
+      <NameCon UId="89" Name="out" />
+      <NameCon UId="90" Name="in" />
+    </Wire>
+    <Wire UId="159">
+      <IdentCon UId="54" />
+      <NameCon UId="90" Name="operand" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="54" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="55" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="56" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="57" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>烧嘴报警</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="58" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="消音复位" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="消音按" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="烧嘴无熄火" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="24">
+      <Symbol>
+        <Component Name="蜂鸣器" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="蜂鸣器" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="26">
+      <Symbol>
+        <Component Name="数字量信号" />
+        <Component Name="消音按" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="1#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="28">
+      <Symbol>
+        <Component Name="2#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="3#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="4#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="5#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="6#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="7#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="34">
+      <Symbol>
+        <Component Name="8#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="35">
+      <Symbol>
+        <Component Name="9#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="36">
+      <Symbol>
+        <Component Name="10#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="37">
+      <Symbol>
+        <Component Name="11#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="38">
+      <Symbol>
+        <Component Name="12#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="39">
+      <Symbol>
+        <Component Name="13#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="40">
+      <Symbol>
+        <Component Name="14#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="41">
+      <Symbol>
+        <Component Name="15#故障反馈" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="42">
+      <Symbol>
+        <Component Name="烧嘴无熄火" />
+      </Symbol>
+    </Access>
+    <Part Name="Contact" UId="43" />
+    <Part Name="Contact" UId="44" />
+    <Part Name="Contact" UId="45" />
+    <Part Name="O" UId="46">
+      <TemplateValue Name="Card" Type="Cardinality">3</TemplateValue>
+    </Part>
+    <Part Name="Contact" UId="47" />
+    <Part Name="RCoil" UId="48" />
+    <Part Name="RCoil" UId="49" />
+    <Part Name="Contact" UId="50">
+      <Negated Name="operand" />
+    </Part>
+    <Part Name="Contact" UId="51">
+      <Negated Name="operand" />
+    </Part>
+    <Part Name="Contact" UId="52">
+      <Negated Name="operand" />
+    </Part>
+    <Part Name="Contact" UId="53">
+      <Negated Name="operand" />
+    </Part>
+    <Part Name="Contact" UId="54">
+      <Negated Name="operand" />
+    </Part>
+    <Part Name="Contact" UId="55">
+      <Negated Name="operand" />
+    </Part>
+    <Part Name="Contact" UId="56">
+      <Negated Name="operand" />
+    </Part>
+    <Part Name="Contact" UId="57">
+      <Negated Name="operand" />
+    </Part>
+    <Part Name="Contact" UId="58">
+      <Negated Name="operand" />
+    </Part>
+    <Part Name="Contact" UId="59">
+      <Negated Name="operand" />
+    </Part>
+    <Part Name="Contact" UId="60">
+      <Negated Name="operand" />
+    </Part>
+    <Part Name="Contact" UId="61">
+      <Negated Name="operand" />
+    </Part>
+    <Part Name="Contact" UId="62">
+      <Negated Name="operand" />
+    </Part>
+    <Part Name="Contact" UId="63">
+      <Negated Name="operand" />
+    </Part>
+    <Part Name="Contact" UId="64">
+      <Negated Name="operand" />
+    </Part>
+    <Part Name="Coil" UId="65" />
+  </Parts>
+  <Wires>
+    <Wire UId="66">
+      <Powerrail />
+      <NameCon UId="43" Name="in" />
+      <NameCon UId="44" Name="in" />
+      <NameCon UId="45" Name="in" />
+      <NameCon UId="50" Name="in" />
+    </Wire>
+    <Wire UId="67">
+      <IdentCon UId="21" />
+      <NameCon UId="43" Name="operand" />
+    </Wire>
+    <Wire UId="68">
+      <NameCon UId="43" Name="out" />
+      <NameCon UId="46" Name="in1" />
+    </Wire>
+    <Wire UId="69">
+      <IdentCon UId="22" />
+      <NameCon UId="44" Name="operand" />
+    </Wire>
+    <Wire UId="70">
+      <NameCon UId="44" Name="out" />
+      <NameCon UId="46" Name="in2" />
+    </Wire>
+    <Wire UId="71">
+      <IdentCon UId="23" />
+      <NameCon UId="45" Name="operand" />
+    </Wire>
+    <Wire UId="72">
+      <NameCon UId="45" Name="out" />
+      <NameCon UId="46" Name="in3" />
+    </Wire>
+    <Wire UId="73">
+      <NameCon UId="46" Name="out" />
+      <NameCon UId="47" Name="in" />
+    </Wire>
+    <Wire UId="74">
+      <IdentCon UId="24" />
+      <NameCon UId="47" Name="operand" />
+    </Wire>
+    <Wire UId="75">
+      <NameCon UId="47" Name="out" />
+      <NameCon UId="48" Name="in" />
+      <NameCon UId="49" Name="in" />
+    </Wire>
+    <Wire UId="76">
+      <IdentCon UId="25" />
+      <NameCon UId="48" Name="operand" />
+    </Wire>
+    <Wire UId="77">
+      <IdentCon UId="26" />
+      <NameCon UId="49" Name="operand" />
+    </Wire>
+    <Wire UId="78">
+      <IdentCon UId="27" />
+      <NameCon UId="50" Name="operand" />
+    </Wire>
+    <Wire UId="79">
+      <NameCon UId="50" Name="out" />
+      <NameCon UId="51" Name="in" />
+    </Wire>
+    <Wire UId="80">
+      <IdentCon UId="28" />
+      <NameCon UId="51" Name="operand" />
+    </Wire>
+    <Wire UId="81">
+      <NameCon UId="51" Name="out" />
+      <NameCon UId="52" Name="in" />
+    </Wire>
+    <Wire UId="82">
+      <IdentCon UId="29" />
+      <NameCon UId="52" Name="operand" />
+    </Wire>
+    <Wire UId="83">
+      <NameCon UId="52" Name="out" />
+      <NameCon UId="53" Name="in" />
+    </Wire>
+    <Wire UId="84">
+      <IdentCon UId="30" />
+      <NameCon UId="53" Name="operand" />
+    </Wire>
+    <Wire UId="85">
+      <NameCon UId="53" Name="out" />
+      <NameCon UId="54" Name="in" />
+    </Wire>
+    <Wire UId="86">
+      <IdentCon UId="31" />
+      <NameCon UId="54" Name="operand" />
+    </Wire>
+    <Wire UId="87">
+      <NameCon UId="54" Name="out" />
+      <NameCon UId="55" Name="in" />
+    </Wire>
+    <Wire UId="88">
+      <IdentCon UId="32" />
+      <NameCon UId="55" Name="operand" />
+    </Wire>
+    <Wire UId="89">
+      <NameCon UId="55" Name="out" />
+      <NameCon UId="56" Name="in" />
+    </Wire>
+    <Wire UId="90">
+      <IdentCon UId="33" />
+      <NameCon UId="56" Name="operand" />
+    </Wire>
+    <Wire UId="91">
+      <NameCon UId="56" Name="out" />
+      <NameCon UId="57" Name="in" />
+    </Wire>
+    <Wire UId="92">
+      <IdentCon UId="34" />
+      <NameCon UId="57" Name="operand" />
+    </Wire>
+    <Wire UId="93">
+      <NameCon UId="57" Name="out" />
+      <NameCon UId="58" Name="in" />
+    </Wire>
+    <Wire UId="94">
+      <IdentCon UId="35" />
+      <NameCon UId="58" Name="operand" />
+    </Wire>
+    <Wire UId="95">
+      <NameCon UId="58" Name="out" />
+      <NameCon UId="59" Name="in" />
+    </Wire>
+    <Wire UId="96">
+      <IdentCon UId="36" />
+      <NameCon UId="59" Name="operand" />
+    </Wire>
+    <Wire UId="97">
+      <NameCon UId="59" Name="out" />
+      <NameCon UId="60" Name="in" />
+    </Wire>
+    <Wire UId="98">
+      <IdentCon UId="37" />
+      <NameCon UId="60" Name="operand" />
+    </Wire>
+    <Wire UId="99">
+      <NameCon UId="60" Name="out" />
+      <NameCon UId="61" Name="in" />
+    </Wire>
+    <Wire UId="100">
+      <IdentCon UId="38" />
+      <NameCon UId="61" Name="operand" />
+    </Wire>
+    <Wire UId="101">
+      <NameCon UId="61" Name="out" />
+      <NameCon UId="62" Name="in" />
+    </Wire>
+    <Wire UId="102">
+      <IdentCon UId="39" />
+      <NameCon UId="62" Name="operand" />
+    </Wire>
+    <Wire UId="103">
+      <NameCon UId="62" Name="out" />
+      <NameCon UId="63" Name="in" />
+    </Wire>
+    <Wire UId="104">
+      <IdentCon UId="40" />
+      <NameCon UId="63" Name="operand" />
+    </Wire>
+    <Wire UId="105">
+      <NameCon UId="63" Name="out" />
+      <NameCon UId="64" Name="in" />
+    </Wire>
+    <Wire UId="106">
+      <IdentCon UId="41" />
+      <NameCon UId="64" Name="operand" />
+    </Wire>
+    <Wire UId="107">
+      <NameCon UId="64" Name="out" />
+      <NameCon UId="65" Name="in" />
+    </Wire>
+    <Wire UId="108">
+      <IdentCon UId="42" />
+      <NameCon UId="65" Name="operand" />
+    </Wire>
+  </Wires>
+</FlgNet></NetworkSource>
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="59" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="5A" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="5B" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="5C" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text>消音</Text>
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <SW.Blocks.CompileUnit ID="5D" CompositionName="CompileUnits">
+        <AttributeList>
+          <NetworkSource />
+          <ProgrammingLanguage>LAD</ProgrammingLanguage>
+        </AttributeList>
+        <ObjectList>
+          <MultilingualText ID="5E" CompositionName="Comment">
+            <ObjectList>
+              <MultilingualTextItem ID="5F" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+          <MultilingualText ID="60" CompositionName="Title">
+            <ObjectList>
+              <MultilingualTextItem ID="61" CompositionName="Items">
+                <AttributeList>
+                  <Culture>zh-CN</Culture>
+                  <Text />
+                </AttributeList>
+              </MultilingualTextItem>
+            </ObjectList>
+          </MultilingualText>
+        </ObjectList>
+      </SW.Blocks.CompileUnit>
+      <MultilingualText ID="62" CompositionName="Title">
+        <ObjectList>
+          <MultilingualTextItem ID="63" CompositionName="Items">
+            <AttributeList>
+              <Culture>zh-CN</Culture>
+              <Text />
+            </AttributeList>
+          </MultilingualTextItem>
+        </ObjectList>
+      </MultilingualText>
+    </ObjectList>
+  </SW.Blocks.FC>
+</Document>
