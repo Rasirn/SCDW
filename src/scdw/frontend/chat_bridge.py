@@ -27,10 +27,14 @@ class StreamingChat(CliChat):
         super().__init__(*args, **kwargs)
         self.messages.insert(0, {"role": "system", "content": _SYSTEM_PROMPT})
 
+    def reset_conversation(self) -> None:
+        """清除用户、模型和工具历史，仅保留系统身份。"""
+        self.messages[:] = self.messages[:1]
+
     async def run_stream(self, query: str, mode: str = "thinking", cancel_event: Any = None) -> AsyncGenerator[dict[str, Any], None]:
         await self._process_query(query)
         tia_prompt = await self._tia_context_prompt()
-        yield {"type": "turn_start", "mode": mode}
+        yield {"type": "turn_start", "mode": mode, "round": 0}
         try:
             for round_index in range(MAX_TOOL_ROUNDS + 1):
                 tools = await ToolManager.get_all_tools(self.clients)
@@ -40,8 +44,11 @@ class StreamingChat(CliChat):
                     if event["type"] == "stream_end": result = event["result"]
                     elif event["type"] == "stream_cancelled":
                         yield {"type": "cancelled"}; return
-                    else: yield event
+                    else:
+                        event["round"] = round_index
+                        yield event
                 if result is None:
+                    yield {"type": "stream_error", "message": "模型流异常结束，未返回 stream_end。"}
                     return
                 assistant = {"role": "assistant", "content": result.content or None}
                 if result.reasoning_content: assistant["reasoning_content"] = result.reasoning_content
@@ -57,14 +64,14 @@ class StreamingChat(CliChat):
                     calls.append(SimpleNamespace(id=call["id"], function=function))
                     try: arguments = json.loads(function.arguments)
                     except Exception: arguments = function.arguments
-                    yield {"type": "tool_call_start", "id": call["id"], "name": function.name,
+                    yield {"type": "tool_call_start", "id": call["id"], "name": function.name, "round": round_index,
                            "display_name": TOOL_DISPLAY_NAMES.get(function.name, function.name), "arguments": arguments}
                 started = time.monotonic()
                 response = SimpleNamespace(message=SimpleNamespace(tool_calls=calls))
                 tool_results = await ToolManager.execute_tool_requests(self.clients, response)
                 for item in tool_results:
                     text = item.get("content", "")
-                    yield {"type": "tool_result", "id": item.get("tool_call_id", ""), "content": text,
+                    yield {"type": "tool_result", "id": item.get("tool_call_id", ""), "content": text, "round": round_index,
                            "success": not text.lstrip().lower().startswith(("error", "错误", "失败")),
                            "elapsed_ms": round((time.monotonic() - started) * 1000)}
                     self.messages.append(item)

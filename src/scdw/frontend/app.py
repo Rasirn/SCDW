@@ -50,17 +50,25 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
         await websocket.send_json({"type": "init_error", "message": _init_error or "MACtrl 尚未就绪"}); return
     chat = StreamingChat(doc_client=_template.doc_client, clients=_template.clients, deepseek_service=_template.deepseek_service)
     active: asyncio.Task | None = None; cancel = asyncio.Event(); current_turn = ""
+    send_lock = asyncio.Lock()
+    async def send_event(payload: dict) -> None:
+        async with send_lock:
+            await websocket.send_json(payload)
     async def run_turn(query: str, mode: str, turn_id: str) -> None:
         async with _tool_lock:
             async for event in chat.run_stream(query, mode, cancel):
-                event["turn_id"] = turn_id; await websocket.send_json(event)
-    await websocket.send_json({"type": "ready"})
+                event["turn_id"] = turn_id; await send_event(event)
+    await send_event({"type": "ready"})
     try:
         while True:
             msg = await websocket.receive_json(); kind = msg.get("type")
             if kind == "cancel": cancel.set(); await websocket.send_json({"type":"cancel_requested", "turn_id":current_turn}); continue
             if kind == "clear":
-                cancel.set(); chat.messages[1:] = []; await websocket.send_json({"type":"cleared"}); continue
+                cancel.set()
+                if active and not active.done():
+                    try: await active
+                    except asyncio.CancelledError: pass
+                chat.reset_conversation(); current_turn = ""; await send_event({"type":"cleared"}); continue
             if kind != "query": continue
             if active and not active.done():
                 await websocket.send_json({"type":"error", "message":"当前回合仍在处理。", "turn_id":msg.get("turn_id")}); continue
