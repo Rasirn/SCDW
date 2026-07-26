@@ -22,26 +22,31 @@ _template: StreamingChat | None = None; _init_error: str | None = None; _tool_lo
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     global _template, _init_error
-    try:
-        async with AsyncExitStack() as stack:
+    _template = None; _init_error = None
+    async with AsyncExitStack() as stack:
+        try:
             client = await stack.enter_async_context(MCPClient(command=sys.executable, args=[str(PROJECT_ROOT / "mcp_server.py")]))
             _template = StreamingChat(doc_client=client, clients={"doc_client": client}, deepseek_service=DeepSeekProvider())
-            yield
-    except Exception as exc:
-        _init_error = str(exc); yield
+        except Exception as exc:
+            _init_error = str(exc)
+        yield
 
 app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
 async def root() -> HTMLResponse:
     html = (STATIC_DIR / "index.html").read_text(encoding="utf-8")
-    return HTMLResponse(html.replace("</head>", f"<script>window.BACKEND_PORT={PORT}</script></head>", 1))
+    return HTMLResponse(html.replace("</head>", f"<script>window.BACKEND_PORT={PORT}</script></head>", 1), headers={"Cache-Control":"no-store, no-cache, must-revalidate"})
+
+@app.get("/health")
+async def health() -> dict:
+    return {"server":"running", "ready":_template is not None and _init_error is None, "init_error":_init_error}
 
 @app.get("/static/{asset_path:path}")
 async def asset(asset_path: str):
     path = (STATIC_DIR / asset_path).resolve()
     if STATIC_DIR.resolve() not in path.parents or not path.is_file(): raise HTTPException(404)
-    return FileResponse(path)
+    return FileResponse(path, headers={"Cache-Control":"no-store, no-cache, must-revalidate"})
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket) -> None:

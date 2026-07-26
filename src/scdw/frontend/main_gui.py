@@ -16,6 +16,8 @@ import sys
 import time
 import threading
 import webbrowser
+import urllib.request
+import urllib.error
 from pathlib import Path
 
 # ── 支持直接执行本文件与包方式执行 ──────────────────────────────────────────────
@@ -62,9 +64,10 @@ def _wait_for_server(timeout: float = 30.0) -> bool:
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         try:
-            with socket.create_connection(("127.0.0.1", PORT), timeout=0.5):
-                return True
-        except OSError:
+            with urllib.request.urlopen(f"http://127.0.0.1:{PORT}/health", timeout=0.5) as response:
+                if response.status == 200:
+                    return True
+        except (OSError, urllib.error.URLError):
             time.sleep(0.25)
     return False
 
