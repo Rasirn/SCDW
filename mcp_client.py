@@ -1,91 +1,21 @@
-import sys
+"""SCDW MCP Client 兼容入口与调试工具。"""
+import argparse
 import asyncio
-from typing import Optional, Any
-from contextlib import AsyncExitStack
-from mcp import ClientSession, StdioServerParameters, types
-from mcp.client.stdio import stdio_client
+import sys
+from pathlib import Path
 
 
-class MCPClient:
-    def __init__(
-        self,
-        command: str,
-        args: list[str],
-        env: Optional[dict] = None,
-    ):
-        self._command = command
-        self._args = args
-        self._env = env
-        self._session: Optional[ClientSession] = None
-        self._exit_stack: AsyncExitStack = AsyncExitStack()
-
-    async def connect(self):
-        server_params = StdioServerParameters(
-            command=self._command,
-            args=self._args,
-            env=self._env,
-        )
-        stdio_transport = await self._exit_stack.enter_async_context(
-            stdio_client(server_params)
-        )
-        _stdio, _write = stdio_transport
-        self._session = await self._exit_stack.enter_async_context(
-            ClientSession(_stdio, _write)
-        )
-        await self._session.initialize()
-
-    def session(self) -> ClientSession:
-        if self._session is None:
-            raise ConnectionError(
-                "Client session not initialized or cache not populated. Call connect_to_server first."
-            )
-        return self._session
-
-    async def list_tools(self) -> list[types.Tool]:
-        result = await self.session().list_tools()
-        return result.tools
-
-    async def call_tool(
-        self, tool_name: str, tool_input: dict
-    ) -> types.CallToolResult | None:
-        return await self.session().call_tool(tool_name,tool_input)
-
-    async def list_prompts(self) -> list[types.Prompt]:
-        # TODO: Return a list of prompts defined by the MCP server
-        return []
-
-    async def get_prompt(self, prompt_name, args: dict[str, str]):
-        # TODO: Get a particular prompt defined by the MCP server
-        return []
-
-    async def read_resource(self, uri: str) -> Any:
-        # TODO: Read a resource, parse the contents and return it
-        return []
-
-    async def cleanup(self):
-        await self._exit_stack.aclose()
-        self._session = None
-
-    async def __aenter__(self):
-        await self.connect()
-        return self
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.cleanup()
-
-
-# For testing
-async def main():
-    async with MCPClient(
-        # If using Python without UV, update command to 'python' and remove "run" from args.
-        command="python",
-        args=["mcp_server.py"],
-    ) as _client:
-        result = await _client.list_tools()
-        print(result)
+def main() -> None:
+    """连接本仓库 MCP Server 并打印可用工具。"""
+    parser = argparse.ArgumentParser(description="列出 SCDW MCP Server 的工具")
+    parser.parse_args()
+    src_dir = Path(__file__).resolve().parent / "src"
+    sys.path.insert(0, str(src_dir))
+    from scdw.mcp.client import main as run_client
+    if sys.platform == "win32":
+        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+    asyncio.run(run_client())
 
 
 if __name__ == "__main__":
-    if sys.platform == "win32":
-        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
-    asyncio.run(main())
+    main()

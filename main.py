@@ -1,66 +1,23 @@
-import asyncio
+"""SCDW 命令行兼容入口。"""
+import argparse
 import sys
-import os
-from dotenv import load_dotenv
-from contextlib import AsyncExitStack
-
-from mcp_client import MCPClient
-from core.deepseek import Deepseek
-
-from core.cli_chat import CliChat
-from core.cli import CliApp
-
-load_dotenv()
-
-# DeepSeek Config
-deepseek_model = os.getenv("DEEPEEK_MODEL", "deepseek-chat")
-deepseek_api_key = os.getenv("DEEPSEEK_API_KEY", "")
-
-assert deepseek_model, "Error: DEEPSEEK_MODEL cannot be empty. Update .env"
-assert deepseek_api_key, (
-    "Error: DEEPSEEK_API_KEY cannot be empty. Update .env"
-)
+from pathlib import Path
 
 
-async def main():
-    # 使用 DeepSeek 创建服务实例
-    deepseek_service = Deepseek(api_key=deepseek_api_key,model=deepseek_model)
+def _bootstrap() -> None:
+    src_dir = Path(__file__).resolve().parent / "src"
+    if str(src_dir) not in sys.path:
+        sys.path.insert(0, str(src_dir))
 
-    server_scripts = sys.argv[1:]
-    clients = {}
 
-    command, args = (
-        ("uv", ["run", "mcp_server.py"])
-        if os.getenv("USE_UV", "0") == "1"
-        else ("python", ["mcp_server.py"])
-    )
-
-    async with AsyncExitStack() as stack:
-        doc_client = await stack.enter_async_context(
-            MCPClient(command=command, args=args)
-        )
-        clients["doc_client"] = doc_client
-
-        for i, server_script in enumerate(server_scripts):
-            client_id = f"client_{i}_{server_script}"
-            client = await stack.enter_async_context(
-                MCPClient(command="uv", args=["run", server_script])
-            )
-            clients[client_id] = client
-
-        # 使用 DeepSeek 服务初始化 CliChat
-        chat = CliChat(
-            doc_client=doc_client,
-            clients=clients,
-            deepseek_service=deepseek_service,  # 使用 DeepSeek 服务
-        )
-
-        cli = CliApp(chat)
-        await cli.initialize()
-        await cli.run()
+def main() -> None:
+    """显示帮助或启动交互式 CLI。"""
+    parser = argparse.ArgumentParser(description="SCDW PLC 智能编程助手命令行入口")
+    parser.parse_args()
+    _bootstrap()
+    from scdw.cli.entry import main as run_cli
+    run_cli()
 
 
 if __name__ == "__main__":
-    if sys.platform == "win32":
-        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
-    asyncio.run(main())
+    main()

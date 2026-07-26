@@ -1,16 +1,55 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
 [project]
-name = "app"
+name = "scdw-plc-generator"
 version = "0.1.0"
-description = "Add your description here"
+description = "面向 TIA Portal Openness 的 PLC 智能编程研究工具"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "anthropic>=0.51.0",
     "mcp[cli]>=1.8.0",
+    "openai>=1.0.0",
+    "openpyxl>=3.1.0",
     "prompt-toolkit>=3.0.51",
+    "pydantic>=2.0.0",
     "python-dotenv>=1.1.0",
-    # ── frontend (GUI) ──────────────────────────────────────────────────
-    "fastapi>=0.115.0",
-    "uvicorn[standard]>=0.29.0",
-    "pywebview>=4.4.0",
 ]
+
+[project.optional-dependencies]
+llm = ["anthropic>=0.51.0"]
+ui = [
+    "fastapi>=0.115.0",
+    "pywebview>=4.4.0",
+    "uvicorn[standard]>=0.29.0",
+]
+tia = ["pythonnet>=3.0.0"]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-timeout>=2.3.0",
+]
+
+[project.scripts]
+scdw-cli = "scdw.cli.entry:main"
+scdw-mcp = "scdw.mcp.server:main"
+scdw-mcp-client = "scdw.mcp.client:main"
+scdw-gui = "scdw.frontend.main_gui:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/scdw"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra"
+markers = [
+    "unit: 不依赖 TIA Portal 的快速单元测试",
+    "integration: 集成测试",
+    "tia: 真实 TIA Portal Openness 测试",
+    "slow: 耗时较长的测试",
+    "requires_tia: 需要 TIA Portal、PublicAPI 和 pythonnet",
+    "requires_network: 需要网络服务",
+    "requires_model: 需要真实模型 API",
+]
+timeout = 120

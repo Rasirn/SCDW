@@ -1,28 +1,18 @@
-# -*- coding: utf-8 -*-
-"""
-mcp_server.py
-TIA Portal MCP 服务器入口。
+"""SCDW MCP Server 兼容入口。"""
+import argparse
+import sys
+from pathlib import Path
 
-职责：
-  1. 创建 FastMCP 实例
-  2. 从 core/tools.py 注册所有 TIA 工具
-  3. 启动 MCP 服务
 
-工具实现逻辑位于 core/tools.py（register_mcp_tools 函数），
-openness 接口位于 openness/ 目录，
-数据解析位于 data/xlsx_reader.py。
-"""
-from mcp.server.fastmcp import FastMCP
+def main() -> None:
+    """显示帮助或启动 stdio MCP 服务。"""
+    parser = argparse.ArgumentParser(description="启动 SCDW TIA Portal MCP Server")
+    parser.parse_args()
+    src_dir = Path(__file__).resolve().parent / "src"
+    sys.path.insert(0, str(src_dir))
+    from scdw.mcp.server import main as run_server
+    run_server()
 
-from core.tools import register_mcp_tools
 
-# ── MCP 服务器实例 ─────────────────────────────────────────────────────────────
-mcp = FastMCP("TIA_MCP", log_level="INFO")
-
-# ── 注册所有工具 ───────────────────────────────────────────────────────────────
-register_mcp_tools(mcp)
-
-# ── 启动 ──────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    mcp.run()
-
+    main()
