@@ -1,3 +1,5 @@
+const logoPlaceholder=document.querySelector('.brand svg');
+if(logoPlaceholder){const logo=document.createElement('img');logo.className='brand-logo';logo.src='/assets/logo/mac_logo.png';logo.alt='MACtrl Logo';logo.width=60;logo.height=60;logo.style.objectFit='contain';logo.style.display='block';logoPlaceholder.replaceWith(logo)}
 const input=document.querySelector('#input'), send=document.querySelector('#send'), stop=document.querySelector('#stop');
 window.MACTRL_BUILD_ID='6ba7af4';
 console.info(`[MACtrl] frontend build ${window.MACTRL_BUILD_ID}`);

@@ -21,6 +21,7 @@ from scdw.frontend.events import to_json_safe, validate_event_payload
 from scdw.llm.providers.deepseek import DeepSeekProvider
 from scdw.mcp.client import MCPClient
 from scdw.common.run_logging import get_run_logger
+from scdw.common.resources import mac_logo_path
 
 PORT = int(os.environ.get("FRONTEND_PORT", "17788"))
 STATIC_DIR = Path(__file__).parent / "static"
@@ -79,6 +80,15 @@ async def asset(asset_path: str):
     if STATIC_DIR.resolve() not in path.parents or not path.is_file():
         raise HTTPException(404)
     return FileResponse(path, headers={"Cache-Control": "no-store, no-cache, must-revalidate"})
+
+
+@app.get("/assets/logo/mac_logo.png")
+async def mac_logo() -> FileResponse:
+    """提供 GUI 主 Logo，路径由统一资源模块解析。"""
+    path = mac_logo_path()
+    if not path.is_file():
+        raise HTTPException(404, "MACtrl Logo 资源不存在")
+    return FileResponse(path, media_type="image/png", headers={"Cache-Control": "no-store, no-cache, must-revalidate"})
 
 
 @app.websocket("/ws")

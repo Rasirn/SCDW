@@ -19,6 +19,7 @@ class TiaContext:
     """只包含可安全传出 Openness 线程的上下文信息。"""
     connected: bool = False
     process_id: int | None = None
+    owned_process_id: int | None = None
     connection_mode: str = TiaConnectionMode.DETACHED.value
     owns_tia_process: bool = False
     owns_project: bool = False

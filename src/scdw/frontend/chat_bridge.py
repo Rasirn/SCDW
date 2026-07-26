@@ -39,6 +39,8 @@ class StreamingChat(CliChat):
         await self._process_query(query)
         tia_prompt = await self._tia_context_prompt()
         yield {"type": "turn_start", "mode": mode, "round": 0}
+        mutation_ledger: set[tuple[str, str]] = set()
+        mutating_tools = {"init_tia_project", "close_tia_session", "detach_tia_session", "add_plc_to_project"}
         try:
             for round_index in range(MAX_TOOL_ROUNDS + 1):
                 run_logger.log_event("llm_round_started", component="chat", round=round_index, history_size=len(self.messages))
@@ -67,6 +69,18 @@ class StreamingChat(CliChat):
                 calls = []
                 for call in result.tool_calls:
                     function = SimpleNamespace(name=call["function"]["name"], arguments=call["function"]["arguments"])
+                    try:
+                        canonical = json.dumps(json.loads(function.arguments), ensure_ascii=False, sort_keys=True)
+                    except Exception:
+                        canonical = function.arguments or "{}"
+                    fingerprint = (function.name, canonical)
+                    if function.name in mutating_tools and fingerprint in mutation_ledger:
+                        item = {"role": "tool", "tool_call_id": call["id"], "content": json.dumps({"success": False, "code": "DUPLICATE_MUTATING_TOOL_CALL", "message": "同一回合已执行相同的破坏性工具调用。", "retryable": False, "needs_user_action": False}, ensure_ascii=False)}
+                        self.messages.append(item)
+                        yield {"type": "tool_result", "id": call["id"], "content": item["content"], "round": round_index, "success": False, "elapsed_ms": 0}
+                        continue
+                    if function.name in mutating_tools:
+                        mutation_ledger.add(fingerprint)
                     calls.append(SimpleNamespace(id=call["id"], function=function))
                     try: arguments = json.loads(function.arguments)
                     except Exception: arguments = function.arguments

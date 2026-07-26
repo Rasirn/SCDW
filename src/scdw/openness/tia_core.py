@@ -9,6 +9,7 @@ import os
 import shutil
 import sys
 import tempfile
+import time
 from typing import Any, Optional
 
 # ── 默认 Public API 目录 ──────────────────────────────────────────────────────
@@ -102,10 +103,24 @@ def create_project(tia, project_root: str, project_name: str, overwrite: bool = 
             raise RuntimeError(
                 f"项目目录已存在：{project_dir}。请将 overwrite=True 以覆盖。"
             )
-        shutil.rmtree(project_dir, ignore_errors=False)
+        _delete_project_directory_after_unlock(project_dir)
 
     os.makedirs(project_root, exist_ok=True)
     return tia.Projects.Create(DirectoryInfo(project_root), project_name)
+
+
+def _delete_project_directory_after_unlock(project_dir: str, timeout: float = 8.0) -> None:
+    """有界等待项目文件解锁后删除目录，统一转换占用错误。"""
+    deadline = time.monotonic() + timeout
+    last_error: OSError | None = None
+    while time.monotonic() < deadline:
+        try:
+            shutil.rmtree(project_dir)
+            return
+        except (PermissionError, OSError) as exc:
+            last_error = exc
+            time.sleep(0.15)
+    raise RuntimeError("PROJECT_FILES_LOCKED") from last_error
 
 
 def save_project(project) -> None:

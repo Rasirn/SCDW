@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import shutil
 import tempfile
+import os
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
@@ -28,10 +30,69 @@ class TiaSessionManager:
     executor: TiaOpennessExecutor = field(default_factory=TiaOpennessExecutor)
     context: TiaContext = field(default_factory=TiaContext)
 
-    def run(self, operation: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
+    def run(self, operation: Callable[..., Any], *args: Any, operation_name: str | None = None, **kwargs: Any) -> Any:
         """在 Openness 专用线程执行操作。不要将返回的 .NET 对象传到线程外。"""
-        get_run_logger().log_event("tia_operation_requested", component="tia", operation=getattr(operation, "__name__", type(operation).__name__), context_before=self.context.serialise())
+        get_run_logger().log_event("tia_operation_requested", component="tia", operation=operation_name or getattr(operation, "__name__", type(operation).__name__), context_before=self.context.serialise())
         return self.executor.run(operation, *args, **kwargs)
+
+    @staticmethod
+    def project_paths(project_root: str | Path, project_name: str) -> tuple[Path, Path]:
+        """规范化项目目录及 .ap17 文件路径。"""
+        directory = Path(project_root).expanduser().resolve() / project_name
+        return directory, directory / f"{project_name}.ap17"
+
+    @staticmethod
+    def project_preflight(project_root: str | Path, project_name: str, overwrite: bool) -> dict[str, Any]:
+        """只做文件系统预检，确保目录冲突不会启动 TIA。"""
+        directory, project_file = TiaSessionManager.project_paths(project_root, project_name)
+        if directory.exists() and not overwrite:
+            return {"success": False, "code": "PROJECT_DIRECTORY_EXISTS", "retryable": False,
+                    "needs_user_action": True, "data": {"project_path": str(project_file)}}
+        return {"success": True, "code": "OK", "data": {"project_dir": str(directory), "project_path": str(project_file)}}
+
+    def _is_project_open_elsewhere(self, project_file: Path) -> dict[str, Any] | None:
+        target = str(project_file.resolve()).casefold()
+        for process in self.list_processes():
+            path = process.get("project_path")
+            if path and str(Path(path).resolve()).casefold() == target:
+                return process
+        return None
+
+    def preflight_create_project(self, project_root: str | Path, project_name: str, overwrite: bool) -> dict[str, Any]:
+        """在替换任何会话前检查目录和外部 TIA 占用。"""
+        result = self.project_preflight(project_root, project_name, overwrite)
+        if not result["success"]:
+            return result
+        directory, project_file = self.project_paths(project_root, project_name)
+        if overwrite and directory.exists():
+            process = self._is_project_open_elsewhere(project_file)
+            owned_current = self.context.connection_mode == TiaConnectionMode.OWNED.value and self._same_path(self.context.project_path, str(project_file))
+            if process and not owned_current:
+                return {"success": False, "code": "PROJECT_OPEN_IN_TIA", "retryable": False,
+                        "needs_user_action": True, "data": {"process_id": process.get("process_id"), "project_path": str(project_file)}}
+        return result
+
+    def run_project_operation(self, operation_name: str, operation: Callable[[Any], Any]) -> Any:
+        """在 Openness 专用线程内完成整个项目操作，不泄漏 .NET 对象。"""
+        def invoke() -> Any:
+            project = self.require_project()
+            return operation(project)
+        return self.run(invoke, operation_name=operation_name)
+
+    def run_plc_operation(self, operation_name: str, device_name: str, operation: Callable[[Any, Any], Any]) -> Any:
+        """在专用线程内定位 PLC Software 并执行完整 Openness 操作。"""
+        def invoke() -> Any:
+            project = self.require_project()
+            return operation(project, self.get_plc_software(device_name))
+        return self.run(invoke, operation_name=operation_name)
+
+    def add_plc(self, order_number: str, device_name: str, device_item_name: str) -> None:
+        """在线程内新增 PLC 并更新仅供会话内部使用的注册表。"""
+        from .tia_hardware import add_plc_device
+        def invoke(project: Any) -> None:
+            device, plc_software = add_plc_device(project, order_number, device_name, device_item_name)
+            self.register_device(device_name, device, plc_software)
+        self.run_project_operation("add_plc", invoke)
 
     def list_processes(self) -> list[dict[str, Any]]:
         """重新枚举运行中的 TIA 进程。"""
@@ -39,7 +100,21 @@ class TiaSessionManager:
 
     def is_alive(self) -> bool:
         """验证当前 PID 仍存在；已失效时清理会话引用。"""
-        if self.tia is None or self.context.process_id is None:
+        if self.tia is None:
+            return False
+        if self.context.connection_mode == TiaConnectionMode.OWNED.value:
+            try:
+                self.run(lambda: list(self.tia.Projects))
+                if self.context.owned_process_id is not None:
+                    if not any(p.get("process_id") == self.context.owned_process_id for p in self.list_processes()):
+                        raise TiaSessionError("TIA_OWNED_SESSION_LOST")
+                return True
+            except Exception as exc:
+                get_run_logger().log_exception("TIA_OWNED_SESSION_LOST", exc, component="tia", context=self.context.serialise())
+                # 仅记录诊断；所有权信息留给显式恢复或关闭路径。
+                self.context.last_connection_error = str(exc)
+                return False
+        if self.context.process_id is None:
             return False
         try:
             alive = any(p.get("process_id") == self.context.process_id for p in self.list_processes())
@@ -98,16 +173,45 @@ class TiaSessionManager:
             get_run_logger().log_exception("tia_attach_failed", exc, component="tia", process_id=process_id, project_path=project_path)
             raise
 
+    def recover_owned_session(self, process_id: int | None = None) -> dict[str, Any]:
+        """仅恢复本程序已拥有的同一 TIA，绝不将其降级为附着会话。"""
+        pid = process_id or self.context.owned_process_id
+        if pid is None or self.context.connection_mode != TiaConnectionMode.OWNED.value:
+            raise TiaSessionError("TIA_OWNED_SESSION_LOST")
+        def operation() -> dict[str, Any]:
+            self.tia = attach_tia_process(pid)
+            self.context.connected = True
+            self.context.process_id = pid
+            self.context.owned_process_id = pid
+            self.context.connection_mode = TiaConnectionMode.OWNED.value
+            self.context.owns_tia_process = True
+            return self._refresh_context_on_thread(project_path=self.context.project_path)
+        return self.run(operation)
+
     def start(self, with_ui: bool = False) -> Any:
         """启动由本程序拥有的 TIA 实例。"""
         def operation() -> Any:
             if self.tia is None:
+                before = {item.get("process_id") for item in list_running_tia_processes()}
                 self.tia = start_tia_portal(with_ui=with_ui)
+                process_id = self._detect_owned_process_on_thread(before)
                 self.context = TiaContext(connected=True, connection_mode=TiaConnectionMode.OWNED.value,
+                                          process_id=process_id, owned_process_id=process_id,
                                           owns_tia_process=True, executor_thread_id=self.executor.thread_id)
             return self.tia
         get_run_logger().log_event("tia_start_requested", component="tia", with_ui=with_ui)
         return self.run(operation)
+
+    def _detect_owned_process_on_thread(self, before: set[Any], timeout: float = 5.0) -> int | None:
+        """通过创建前后进程快照追踪本次 owned TIA 的 PID。"""
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            candidates = [p for p in list_running_tia_processes() if p.get("process_id") not in before]
+            if len(candidates) == 1:
+                return int(candidates[0]["process_id"])
+            time.sleep(0.1)
+        get_run_logger().log_event("tia_owned_pid_unresolved", component="tia", before=list(before))
+        return None
 
     def create_project(self, project_root: str | Path, project_name: str, overwrite: bool = False) -> Any:
         """创建本程序拥有的工程。"""
@@ -117,7 +221,8 @@ class TiaSessionManager:
             self._refresh_context_on_thread(project_name=project_name)
             return self.project
         get_run_logger().log_event("tia_create_project_requested", component="tia", project_root=str(project_root), project_name=project_name, overwrite=overwrite)
-        self.start()
+        if self.tia is None or self.context.connection_mode != TiaConnectionMode.OWNED.value:
+            raise TiaSessionError("PROJECT_CREATE_REQUIRES_OWNED_SESSION")
         return self.run(operation)
 
     def _select_project_on_thread(self, projects: list[dict[str, Any]], project_name: str | None, project_path: str | None) -> dict[str, Any] | None:
@@ -231,6 +336,9 @@ class TiaSessionManager:
         return str(self.temp_dir)
 
     def _dispose_current_for_replace(self) -> None:
+        if self.context.connection_mode == TiaConnectionMode.OWNED.value:
+            self.close_owned_session(save=True)
+            return
         if self.tia is not None:
             try:
                 self.tia.Dispose()
@@ -269,10 +377,35 @@ class TiaSessionManager:
                 save_project(self.project)
             if self.project is not None and hasattr(self.project, "Close"):
                 self.project.Close()
+            self.project = None
+            self.devices.clear()
+            self._close_owned_process_on_thread()
             if self.tia is not None:
                 self.tia.Dispose()
         finally:
             self._invalidate("")
+
+    def _close_owned_process_on_thread(self, timeout: float = 8.0) -> None:
+        """关闭本程序创建的 TIA 进程；绝不匹配或关闭外部附着进程。"""
+        pid = self.context.owned_process_id
+        if pid is None:
+            return
+        try:
+            from Siemens.Engineering import TiaPortal  # type: ignore
+            for process in TiaPortal.GetProcesses():
+                current = getattr(process, "Id", getattr(process, "ProcessId", None))
+                if current is not None and int(current) == pid:
+                    process.Dispose()
+                    break
+        except Exception as exc:
+            get_run_logger().log_exception("tia_owned_process_close_failed", exc, component="tia", owned_process_id=pid)
+            raise
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            if not any(item.get("process_id") == pid for item in list_running_tia_processes()):
+                return
+            time.sleep(0.1)
+        raise TiaSessionError("TIA_OWNED_PROCESS_CLOSE_TIMEOUT")
 
     def close(self, save: bool = True) -> None:
         """兼容旧入口：按所有权关闭或断开。"""

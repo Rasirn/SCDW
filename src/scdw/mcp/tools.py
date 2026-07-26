@@ -209,6 +209,12 @@ def _cleanup_session() -> None:
     _session.close(save=True)
 
 
+def _tool_error(code: str, message: str, *, retryable: bool = False, needs_user_action: bool = False, data: dict | None = None) -> str:
+    """返回给模型的安全结构化错误；完整异常仅写入运行日志。"""
+    return json.dumps({"success": False, "code": code, "message": message, "retryable": retryable,
+                       "needs_user_action": needs_user_action, "data": data or {}}, ensure_ascii=False)
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # MCP 工具注册
 # ══════════════════════════════════════════════════════════════════════════════
@@ -284,6 +290,7 @@ def register_mcp_tools(mcp) -> None:
     def refresh_tia_context() -> str:
         try:
             if not _session.is_alive():
+                return _tool_error("TIA_SESSION_LOST", "当前 TIA 会话无效；请由用户明确选择重新连接或新建工程。", needs_user_action=True)
                 processes = _session.list_processes()
                 if len(processes) == 1:
                     _session.attach(process_id=processes[0]["process_id"])
@@ -330,11 +337,14 @@ def register_mcp_tools(mcp) -> None:
         overwrite: bool = False,
     ) -> str:
         """创建新 TIA 项目，初始化工具会话。"""
-        _cleanup_session()
         try:
             from scdw.openness.tia_core import load_tia_api, set_default_api_dir
             set_default_api_dir(api_dir)
             load_tia_api(api_dir)
+            preflight = _session.preflight_create_project(project_root, project_name, overwrite)
+            if not preflight["success"]:
+                return json.dumps(preflight, ensure_ascii=False)
+            _cleanup_session()
 
             _session.start(with_ui=with_ui)
             _session.create_project(project_root, project_name, overwrite=overwrite)
@@ -364,6 +374,7 @@ def register_mcp_tools(mcp) -> None:
             )
         except Exception as exc:
             _cleanup_session()
+            return _tool_error("PROJECT_CREATE_FAILED", "创建 TIA 工程失败。", data={"detail": str(exc)})
             return f"❌ 创建项目失败：{exc}\n{traceback.format_exc()}"
 
     # ── 2. close_tia_session ──────────────────────────────────────────────────
@@ -373,10 +384,9 @@ def register_mcp_tools(mcp) -> None:
     )
     def close_tia_session() -> str:
         """保存并关闭 TIA 会话。"""
-        if _session.project is None:
+        if not _session.context.connected:
             return "ℹ️ 当前没有活动的 TIA 会话。"
         try:
-            save_project(_session.project)
             _cleanup_session()
             return "✅ TIA 项目已保存并关闭，会话已释放。"
         except Exception as exc:
@@ -406,12 +416,8 @@ def register_mcp_tools(mcp) -> None:
         if "/V" not in order_number:
             return "❌ CPU订货号缺少版本信息，请补全版本号，如 /V4.5。完整格式示例：OrderNumber:6ES7 214-1BG40-0XB0/V4.5"
         try:
-            _check_session()
             item_name = device_item_name or device_name
-            device, plc_software = add_plc_device(
-                _session.project, order_number, device_name, item_name
-            )
-            _session.register_device(device_name, device, plc_software)
+            _session.add_plc(order_number, device_name, item_name)
             return (
                 f"✅ 已添加 PLC 设备\n"
                 f"  名称：{device_name}\n"
@@ -448,13 +454,10 @@ def register_mcp_tools(mcp) -> None:
             else:
                 item_path = json.loads(rack_item_path) if str(rack_item_path).strip() else None
             name = module_name or f"Module_{slot_number}"
-            result = add_module_to_rack(
-                _session.project,
-                device_name,
-                module_type_id,
-                slot_number,
-                name,
-                rack_item_path=item_path,
+            result = _session.run_project_operation(
+                "add_module", lambda project: add_module_to_rack(
+                    project, device_name, module_type_id, slot_number, name, rack_item_path=item_path
+                )
             )
             return (
                 f"✅ 已在 {device_name} 的槽位 {slot_number} 插入模块\n"
@@ -497,8 +500,8 @@ def register_mcp_tools(mcp) -> None:
                 if t.get("name") and t.get("address")
             ]
 
-            plc_sw = _get_plc_software(device_name)
-            create_tag_table_with_tags(plc_sw, table_name, tag_specs)
+            _session.run_plc_operation("create_tag_table", device_name,
+                                       lambda _project, plc_sw: create_tag_table_with_tags(plc_sw, table_name, tag_specs))
 
             return (
                 f"✅ 变量表 '{table_name}' 已创建，成功添加 {len(tag_specs)} 个变量。"
@@ -547,9 +550,9 @@ def register_mcp_tools(mcp) -> None:
                 if v.get("name") and v.get("data_type")
             ]
 
-            plc_sw = _get_plc_software(device_name)
             temp_dir = _ensure_temp_dir()
-            _openness_create_global_db(plc_sw, temp_dir, db_name, db_number, db_vars)
+            _session.run_plc_operation("create_global_db", device_name,
+                                       lambda _project, plc_sw: _openness_create_global_db(plc_sw, temp_dir, db_name, db_number, db_vars))
 
             return (
                 f"✅ 全局 DB '{db_name}' (DB{db_number}) 已创建，"
@@ -582,10 +585,10 @@ def register_mcp_tools(mcp) -> None:
         """导入 SCL 程序块到 PLC。"""
         try:
             _check_session()
-            plc_sw = _get_plc_software(device_name)
             temp_dir = _ensure_temp_dir()
             from scdw.openness.tia_blocks import import_scl_block as _import_scl
-            _import_scl(plc_sw, temp_dir, block_name, scl_code)
+            _session.run_plc_operation("import_scl", device_name,
+                                       lambda _project, plc_sw: _import_scl(plc_sw, temp_dir, block_name, scl_code))
             return f"✅ SCL 程序块 '{block_name}' 已成功导入到 {device_name}。"
         except Exception as exc:
             return f"❌ 导入 SCL 块失败：{exc}"
@@ -834,9 +837,9 @@ def register_mcp_tools(mcp) -> None:
                 )
 
             # ── 导入 TIA Portal ──────────────────────────────────────────────
-            plc_sw = _get_plc_software(device_name)
             temp_dir = _ensure_temp_dir()
-            import_lad_xml_block(plc_sw, temp_dir, block_name, xml_content)
+            _session.run_plc_operation("import_lad", device_name,
+                                       lambda _project, plc_sw: import_lad_xml_block(plc_sw, temp_dir, block_name, xml_content))
 
             net_count = xml_content.count("SW.Blocks.CompileUnit") // 2
             return (
@@ -932,9 +935,9 @@ def register_mcp_tools(mcp) -> None:
             # 去掉时间戳后缀（格式：块名_YYYYMMDD_HHMMSS）
             import re as _re2
             block_name = _re2.sub(r'_\d{8}_\d{6}$', '', block_name)
-            plc_sw = _get_plc_software(device_name)
             temp_dir = _ensure_temp_dir()
-            import_lad_xml_block(plc_sw, temp_dir, block_name, xml_content)
+            _session.run_plc_operation("import_lad_file", device_name,
+                                       lambda _project, plc_sw: import_lad_xml_block(plc_sw, temp_dir, block_name, xml_content))
             net_count = xml_content.count("SW.Blocks.CompileUnit") // 2
             return (
                 f"✅ LAD 程序块 '{block_name}' 已从文件导入到 {device_name}，共 {net_count} 个网络。\n"
@@ -957,9 +960,8 @@ def register_mcp_tools(mcp) -> None:
         """编译 PLC 软件并保存项目。"""
         try:
             _check_session()
-            plc_sw = _get_plc_software(device_name)
-            result = compile_plc(plc_sw)
-            save_project(_session.project)
+            result = _session.run_plc_operation("compile_and_save", device_name,
+                                                lambda project, plc_sw: (compile_plc(plc_sw), save_project(project))[0])
 
             status = "✅ 编译成功" if result.success else "⚠️ 编译有错误"
             lines = [f"{status}，项目已保存。", result.summary()]
@@ -988,8 +990,8 @@ def register_mcp_tools(mcp) -> None:
         """仅编译 PLC 软件，返回编译结果（不保存）。"""
         try:
             _check_session()
-            plc_sw = _get_plc_software(device_name)
-            result = compile_plc(plc_sw)
+            result = _session.run_plc_operation("compile_check", device_name,
+                                                lambda _project, plc_sw: compile_plc(plc_sw))
 
             status = "✅ 编译通过，无错误" if result.success else "⚠️ 编译有错误，需要修正"
             lines = [status, result.summary()]
@@ -1015,8 +1017,8 @@ def register_mcp_tools(mcp) -> None:
         """删除 PLC 中的指定程序块。"""
         try:
             _check_session()
-            plc_sw = _get_plc_software(device_name)
-            found = delete_block(plc_sw, block_name)
+            found = _session.run_plc_operation("delete_block", device_name,
+                                               lambda _project, plc_sw: delete_block(plc_sw, block_name))
             if found:
                 return f"✅ 程序块 '{block_name}' 已从 {device_name} 中删除。"
             else:
@@ -1262,9 +1264,9 @@ def register_mcp_tools(mcp) -> None:
             if info is None:
                 return f"❌ 未找到模板「{template_name}」，请先调用 list_plc_templates 确认模板名称。"
             xml_content = info.file_path.read_text(encoding="utf-8")
-            plc_sw = _get_plc_software(device_name)
             temp_dir = _ensure_temp_dir()
-            import_lad_xml_block(plc_sw, temp_dir, info.block_name or template_name, xml_content)
+            _session.run_plc_operation("import_template", device_name,
+                                       lambda _project, plc_sw: import_lad_xml_block(plc_sw, temp_dir, info.block_name or template_name, xml_content))
             return (
                 f"✅ 模板「{template_name}」（{info.block_type} {info.block_name}）已成功导入到 {device_name}。\n"
                 f"💡 如需验证，调用 compile_check(device_name=\"{device_name}\") 检查编译结果。"

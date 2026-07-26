@@ -1,0 +1,3 @@
+- 2026-07-27T07:37:40.337439+08:00 `turn_started`：{"component": "frontend", "conversation_id": "fb3ee2e95bde4a64a4b2eb1adc491bf1", "turn_id": "cc7be5f4-efcb-4f9f-8dbd-82a72939b4a7", "mode": "thinking", "query": {"inline": "你好", "sha256": "0922515335495b677fa44d53bcf0f33d9fbfc8fda4aba447afa805f0f206a8b9", "length": 4}}
+- 2026-07-27T07:37:45.764845+08:00 `deepseek_stream_finished`：{"component": "llm", "finish_reason": "stop", "content_length": 420, "reasoning_length": 130, "tool_call_count": 0}
+- 2026-07-27T07:37:45.765845+08:00 `turn_completed`：{"component": "frontend", "conversation_id": "fb3ee2e95bde4a64a4b2eb1adc491bf1", "turn_id": "cc7be5f4-efcb-4f9f-8dbd-82a72939b4a7", "terminal_sent": true}
