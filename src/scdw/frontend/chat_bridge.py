@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import time
+from dataclasses import asdict
 from types import SimpleNamespace
 from typing import Any, AsyncGenerator
 
@@ -10,6 +11,7 @@ from scdw.cli.cli_chat import CliChat
 from scdw.mcp.tool_manager import ToolManager
 from scdw.common.exceptions import LlmToolCallError
 from scdw.llm.providers.deepseek import MAX_TOOL_ROUNDS, LlmStreamResult
+from scdw.common.run_logging import get_run_logger
 
 _SYSTEM_PROMPT = """你是 MACtrl，由厦门大学 MAC 实验室与四川电网合作研发的 TIA Portal 智控助手。
 你协助 PLC 工程师完成需求分析、工程检查、程序生成、程序块导入、编译诊断和修改建议。可按规则调用 MCP 工具，但不得编造工具结果。执行任何 TIA 写入操作前必须使用当前工程上下文。"""
@@ -32,11 +34,14 @@ class StreamingChat(CliChat):
         self.messages[:] = self.messages[:1]
 
     async def run_stream(self, query: str, mode: str = "thinking", cancel_event: Any = None) -> AsyncGenerator[dict[str, Any], None]:
+        run_logger = get_run_logger()
+        run_logger.log_event("chat_bridge_query", component="chat", mode=mode, query=run_logger.save_payload("chat_query", query), history_size=len(self.messages))
         await self._process_query(query)
         tia_prompt = await self._tia_context_prompt()
         yield {"type": "turn_start", "mode": mode, "round": 0}
         try:
             for round_index in range(MAX_TOOL_ROUNDS + 1):
+                run_logger.log_event("llm_round_started", component="chat", round=round_index, history_size=len(self.messages))
                 tools = await ToolManager.get_all_tools(self.clients)
                 messages = ([{"role": "system", "content": tia_prompt}] if tia_prompt else []) + list(self.messages)
                 result: LlmStreamResult | None = None
@@ -46,6 +51,7 @@ class StreamingChat(CliChat):
                         yield {"type": "cancelled"}; return
                     else:
                         event["round"] = round_index
+                        run_logger.log_event("llm_stream_event", component="chat", round=round_index, event_type=event.get("type"), payload=run_logger.save_payload("llm_event", event))
                         yield event
                 if result is None:
                     yield {"type": "stream_error", "message": "模型流异常结束，未返回 stream_end。"}
@@ -55,7 +61,7 @@ class StreamingChat(CliChat):
                 if result.tool_calls: assistant["tool_calls"] = result.tool_calls
                 self.messages.append(assistant)
                 if result.finish_reason != "tool_calls":
-                    yield {"type": "turn_end", "usage": result.usage.__dict__}; return
+                    yield {"type": "turn_end", "usage": asdict(result.usage)}; return
                 if round_index == MAX_TOOL_ROUNDS:
                     raise LlmToolCallError(f"工具调用达到上限 {MAX_TOOL_ROUNDS}。")
                 calls = []
@@ -75,7 +81,9 @@ class StreamingChat(CliChat):
                            "success": not text.lstrip().lower().startswith(("error", "错误", "失败")),
                            "elapsed_ms": round((time.monotonic() - started) * 1000)}
                     self.messages.append(item)
+                    run_logger.log_event("tool_result_received", component="chat", round=round_index, tool_call_id=item.get("tool_call_id"), result=run_logger.save_payload("tool_result", item))
                 if cancel_event is not None and cancel_event.is_set():
                     yield {"type": "cancelled"}; return
         except Exception as exc:
+            run_logger.log_exception("chat_bridge_failed", exc, component="chat")
             yield {"type": "stream_error", "message": str(exc)}

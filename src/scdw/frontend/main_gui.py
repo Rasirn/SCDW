@@ -47,6 +47,8 @@ def _run_server() -> None:
     if sys.platform == "win32":
         asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
+    from scdw.common.run_logging import get_run_logger
+    get_run_logger().log_event("backend_thread_started", component="gui", port=PORT)
     import uvicorn
     from scdw.frontend.app import app  # 在设置端口后导入应用
 
@@ -74,11 +76,16 @@ def _wait_for_server(timeout: float = 30.0) -> bool:
 
 # ── main ──────────────────────────────────────────────────────────────────────
 def main() -> None:
+    from scdw.common.run_logging import RunLogManager, set_run_logger
+    run_logger = RunLogManager.create_run(frontend_port=PORT)
+    set_run_logger(run_logger)
+    run_logger.log_event("gui_launch_requested", url=URL)
     # Start backend server
     server_thread = threading.Thread(target=_run_server, daemon=True, name="uvicorn")
     server_thread.start()
 
     if not _wait_for_server():
+        run_logger.log_event("backend_start_timeout", port=PORT)
         print("[MACtrl] 服务未能在 30 秒内启动。", file=sys.stderr)
         sys.exit(1)
 
@@ -98,8 +105,10 @@ def main() -> None:
             background_color="#f4f6f8",
         )
         webview.start()
+        run_logger.log_event("gui_window_closed")
 
     except ImportError:
+        run_logger.log_event("pywebview_unavailable", url=URL)
         # Fallback: open in the system browser
         print(
             f"[MACtrl] 未安装 pywebview，改用浏览器：{URL}",
@@ -111,6 +120,8 @@ def main() -> None:
             server_thread.join()
         except KeyboardInterrupt:
             pass
+    finally:
+        run_logger.close()
 
 
 if __name__ == "__main__":

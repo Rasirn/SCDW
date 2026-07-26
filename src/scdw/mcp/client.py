@@ -1,10 +1,12 @@
 import sys
 import asyncio
+import os
 from pathlib import Path
 from typing import Optional, Any
 from contextlib import AsyncExitStack
 from mcp import ClientSession, StdioServerParameters, types
 from mcp.client.stdio import stdio_client
+from scdw.common.run_logging import get_run_logger
 
 
 class MCPClient:
@@ -21,10 +23,15 @@ class MCPClient:
         self._exit_stack: AsyncExitStack = AsyncExitStack()
 
     async def connect(self):
+        run_logger = get_run_logger()
+        run_logger.log_event("mcp_connect_started", component="mcp_client", command=self._command, args=self._args)
+        child_env = dict(os.environ)
+        if self._env:
+            child_env.update(self._env)
         server_params = StdioServerParameters(
             command=self._command,
             args=self._args,
-            env=self._env,
+            env=child_env,
         )
         stdio_transport = await self._exit_stack.enter_async_context(
             stdio_client(server_params)
@@ -34,6 +41,7 @@ class MCPClient:
             ClientSession(_stdio, _write)
         )
         await self._session.initialize()
+        run_logger.log_event("mcp_connect_succeeded", component="mcp_client")
 
     def session(self) -> ClientSession:
         if self._session is None:
@@ -49,7 +57,16 @@ class MCPClient:
     async def call_tool(
         self, tool_name: str, tool_input: dict
     ) -> types.CallToolResult | None:
-        return await self.session().call_tool(tool_name,tool_input)
+        run_logger = get_run_logger()
+        payload = run_logger.save_payload(f"tool_request_{tool_name}", tool_input)
+        run_logger.log_event("mcp_tool_call_started", component="mcp_client", tool_name=tool_name, payload=payload)
+        try:
+            result = await self.session().call_tool(tool_name, tool_input)
+            run_logger.log_event("mcp_tool_call_finished", component="mcp_client", tool_name=tool_name, result=run_logger.save_payload(f"tool_result_{tool_name}", str(result)))
+            return result
+        except Exception as exc:
+            run_logger.log_exception("mcp_tool_call_failed", exc, component="mcp_client", tool_name=tool_name)
+            raise
 
     async def list_prompts(self) -> list[types.Prompt]:
         # TODO: Return a list of prompts defined by the MCP server
@@ -64,6 +81,7 @@ class MCPClient:
         return []
 
     async def cleanup(self):
+        get_run_logger().log_event("mcp_cleanup_started", component="mcp_client")
         await self._exit_stack.aclose()
         self._session = None
 

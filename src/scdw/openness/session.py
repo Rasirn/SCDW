@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from scdw.common.exceptions import TiaSessionError
+from scdw.common.run_logging import get_run_logger
 
 from .context import TiaConnectionMode, TiaContext
 from .discovery import attach_tia_process, discover_plc_devices, list_open_projects, list_running_tia_processes
@@ -29,6 +30,7 @@ class TiaSessionManager:
 
     def run(self, operation: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
         """在 Openness 专用线程执行操作。不要将返回的 .NET 对象传到线程外。"""
+        get_run_logger().log_event("tia_operation_requested", component="tia", operation=getattr(operation, "__name__", type(operation).__name__), context_before=self.context.serialise())
         return self.executor.run(operation, *args, **kwargs)
 
     def list_processes(self) -> list[dict[str, Any]]:
@@ -88,7 +90,13 @@ class TiaSessionManager:
                                       owns_tia_process=False, owns_project=False,
                                       executor_thread_id=self.executor.thread_id)
             return self._refresh_context_on_thread(project_path=project_path)
-        return self.run(operation)
+        try:
+            result = self.run(operation)
+            get_run_logger().log_event("tia_attach_succeeded", component="tia", process_id=process_id, project_path=project_path, context_after=result)
+            return result
+        except Exception as exc:
+            get_run_logger().log_exception("tia_attach_failed", exc, component="tia", process_id=process_id, project_path=project_path)
+            raise
 
     def start(self, with_ui: bool = False) -> Any:
         """启动由本程序拥有的 TIA 实例。"""
@@ -98,6 +106,7 @@ class TiaSessionManager:
                 self.context = TiaContext(connected=True, connection_mode=TiaConnectionMode.OWNED.value,
                                           owns_tia_process=True, executor_thread_id=self.executor.thread_id)
             return self.tia
+        get_run_logger().log_event("tia_start_requested", component="tia", with_ui=with_ui)
         return self.run(operation)
 
     def create_project(self, project_root: str | Path, project_name: str, overwrite: bool = False) -> Any:
@@ -107,6 +116,7 @@ class TiaSessionManager:
             self.context.owns_project = True
             self._refresh_context_on_thread(project_name=project_name)
             return self.project
+        get_run_logger().log_event("tia_create_project_requested", component="tia", project_root=str(project_root), project_name=project_name, overwrite=overwrite)
         self.start()
         return self.run(operation)
 
@@ -164,8 +174,11 @@ class TiaSessionManager:
         try:
             if not self.is_alive():
                 raise TiaSessionError("TIA Portal 连接已失效。")
-            return self.run(self._refresh_context_on_thread)
+            result = self.run(self._refresh_context_on_thread)
+            get_run_logger().log_event("tia_context_refreshed", component="tia", context_after=result)
+            return result
         except Exception as exc:
+            get_run_logger().log_exception("tia_context_refresh_failed", exc, component="tia")
             self._invalidate(str(exc))
             raise TiaSessionError(f"刷新 TIA 上下文失败：{exc}") from exc
 
@@ -242,7 +255,9 @@ class TiaSessionManager:
                     self.tia.Dispose()
             finally:
                 self._invalidate("")
+        get_run_logger().log_event("tia_detach_requested", component="tia", save=save, context_before=self.context.serialise())
         self.run(operation)
+        get_run_logger().log_event("tia_detached", component="tia", context_after=self.context.serialise())
 
     def close_owned_session(self, save: bool = True) -> None:
         """保存并关闭仅由本程序创建的工程及 TIA。"""

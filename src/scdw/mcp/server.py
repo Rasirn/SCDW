@@ -15,6 +15,7 @@ openness 接口位于 openness/ 目录，
 from mcp.server.fastmcp import FastMCP
 
 from scdw.mcp.tools import register_mcp_tools
+from scdw.common.run_logging import get_run_logger
 
 # ── MCP 服务器实例 ─────────────────────────────────────────────────────────────
 mcp = FastMCP("TIA_MCP", log_level="INFO")
@@ -25,6 +26,7 @@ register_mcp_tools(mcp)
 
 def main() -> None:
     """启动 stdio MCP 服务。"""
+    get_run_logger().log_event("mcp_server_started", component="mcp_server")
     mcp.run()
 
 # ── 启动 ──────────────────────────────────────────────────────────────────────

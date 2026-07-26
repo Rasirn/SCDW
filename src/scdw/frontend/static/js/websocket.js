@@ -20,5 +20,8 @@ window.MACtrlSocket = (() => {
   function disconnect() { generation++; if(retryTimer)clearTimeout(retryTimer);retryTimer=null;if(socket){socket.close();socket=null}setState('disconnected'); }
   function isReady() { return state==='ready'&&socket?.readyState===WebSocket.OPEN; }
   window.addEventListener('beforeunload',disconnect,{once:true});
-  return { connect, disconnect, send, isReady, isOpen:()=>socket?.readyState===WebSocket.OPEN, getState:()=>state, onStateChange:fn=>{listeners.add(fn);return()=>listeners.delete(fn)}, buildUrl:url };
+  function log(level, message, details) { return send({type:'client_log', level, message, details}); }
+  window.addEventListener('error', event => log('error', event.message, {source:event.filename, line:event.lineno, column:event.colno}), true);
+  window.addEventListener('unhandledrejection', event => log('error', 'unhandledrejection', {reason:String(event.reason)}));
+  return { connect, disconnect, send, log, isReady, isOpen:()=>socket?.readyState===WebSocket.OPEN, getState:()=>state, onStateChange:fn=>{listeners.add(fn);return()=>listeners.delete(fn)}, buildUrl:url };
 })();

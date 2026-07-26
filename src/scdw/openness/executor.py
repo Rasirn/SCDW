@@ -5,6 +5,7 @@ from concurrent.futures import Future, ThreadPoolExecutor
 import ctypes
 from threading import Lock, get_ident
 from typing import Any, Callable
+from scdw.common.run_logging import get_run_logger
 
 
 class TiaOpennessExecutor:
@@ -24,13 +25,22 @@ class TiaOpennessExecutor:
         """同步执行任务；异常会原样返回给调用方。"""
         def invoke() -> Any:
             with self._lock:
+                run_logger = get_run_logger()
+                operation = getattr(function, "__name__", type(function).__name__)
+                run_logger.log_event("tia_executor_started", component="tia", operation=operation)
                 # Openness 通过 COM 与 Portal 交互；工作线程必须初始化为 STA。
                 try:
                     ctypes.windll.ole32.CoInitializeEx(None, 0x2)
                 except Exception:
                     pass
                 self._thread_id = get_ident()
-                return function(*args, **kwargs)
+                try:
+                    result = function(*args, **kwargs)
+                    run_logger.log_event("tia_executor_succeeded", component="tia", operation=operation, executor_thread_id=self._thread_id)
+                    return result
+                except Exception as exc:
+                    run_logger.log_exception("tia_executor_failed", exc, component="tia", operation=operation, executor_thread_id=self._thread_id)
+                    raise
 
         future: Future[Any] = self._pool.submit(invoke)
         return future.result()

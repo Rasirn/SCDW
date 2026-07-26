@@ -6,6 +6,7 @@ PACKAGE_DIR = Path(__file__).resolve().parents[1]
 SRC_DIR = PACKAGE_DIR.parent
 PROJECT_ROOT = SRC_DIR.parent
 DATA_DIR = PROJECT_ROOT / "data"
+LOGS_DIR = DATA_DIR / "logs"
 RAG_DATA_DIR = DATA_DIR / "rag"
 RAG_TEMPLATES_DIR = RAG_DATA_DIR / "templates"
 GENERATED_DIR = DATA_DIR / "generated"

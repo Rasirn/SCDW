@@ -16,6 +16,7 @@ from scdw.common.exceptions import (
     LlmRateLimitError, LlmResponseError, LlmTimeoutError,
 )
 from scdw.common.paths import PROJECT_ROOT
+from scdw.common.run_logging import get_run_logger
 
 # 本地开发阶段沿用原项目密钥。不得在日志、异常、测试结果或文档中输出该值。
 DEFAULT_MODEL = DEEPSEEK_DEFAULT_MODEL
@@ -76,6 +77,7 @@ class DeepSeekProvider:
             raise LlmAuthenticationError("未读取到 DeepSeek API Key，请检查项目 .env 配置。")
         self.client = client or OpenAI(api_key=resolved_key, base_url=DEEPSEEK_BASE_URL, timeout=timeout)
         self.async_client = None if client is not None else AsyncOpenAI(api_key=resolved_key, base_url=DEEPSEEK_BASE_URL, timeout=timeout)
+        get_run_logger().log_event("deepseek_provider_initialized", component="llm", model=self.model, timeout=timeout, injected_client=client is not None)
 
     async def stream_chat(self, messages: list[dict[str, Any]], *, tools: list[dict[str, Any]] | None = None,
                           mode: str = "thinking", cancel_event: Any = None) -> AsyncIterator[dict[str, Any]]:
@@ -83,6 +85,8 @@ class DeepSeekProvider:
         if mode not in {"thinking", "fast"}:
             raise LlmResponseError("无效模式，仅支持 thinking 或 fast。")
         model = DEFAULT_MODEL if mode == "thinking" else FAST_MODEL
+        run_logger = get_run_logger()
+        run_logger.log_event("deepseek_stream_started", component="llm", model=model, mode=mode, message_count=len(messages), tool_count=len(tools or []))
         params: dict[str, Any] = {"model": model, "messages": list(messages), "stream": True,
                                   "stream_options": {"include_usage": True},
                                   "extra_body": {"thinking": {"type": "enabled" if mode == "thinking" else "disabled"}}}
@@ -103,12 +107,17 @@ class DeepSeekProvider:
             async for chunk in stream:
                 if cancel_event is not None and cancel_event.is_set():
                     await stream.close()
+                    run_logger.log_event("deepseek_stream_cancelled", component="llm")
                     yield {"type": "stream_cancelled"}
                     return
                 raw_usage = getattr(chunk, "usage", None)
                 if raw_usage is not None:
                     usage = LlmUsage(getattr(raw_usage, "prompt_tokens", None), getattr(raw_usage, "completion_tokens", None), getattr(raw_usage, "total_tokens", None))
-                    yield {"type": "usage", "usage": usage}
+                    yield {"type": "usage", "usage": {
+                        "prompt_tokens": usage.prompt_tokens,
+                        "completion_tokens": usage.completion_tokens,
+                        "total_tokens": usage.total_tokens,
+                    }}
                 for choice in getattr(chunk, "choices", []) or []:
                     delta = choice.delta
                     part_reasoning = getattr(delta, "reasoning_content", None)
@@ -134,8 +143,10 @@ class DeepSeekProvider:
             if reasoning_open: yield {"type": "reasoning_end"}
             if answer_open: yield {"type": "answer_end"}
             result = LlmStreamResult(content, reasoning, [calls[k] for k in sorted(calls)], finish_reason, model, usage)
+            run_logger.log_event("deepseek_stream_finished", component="llm", finish_reason=finish_reason, content_length=len(content), reasoning_length=len(reasoning), tool_call_count=len(calls))
             yield {"type": "stream_end", "result": result}
         except Exception as exc:
+            run_logger.log_exception("deepseek_stream_failed", exc, component="llm", model=model)
             raise self._map_error(exc)[0] from exc
 
     @staticmethod

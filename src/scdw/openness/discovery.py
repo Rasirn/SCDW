@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from .tia_core import load_tia_api, net_to_python
+from scdw.common.run_logging import get_run_logger
 
 
 def _value(obj: Any, *names: str, default: Any = None) -> Any:
@@ -44,6 +45,7 @@ def list_running_tia_processes() -> list[dict[str, Any]]:
             "acquisition_time": datetime.now(timezone.utc).isoformat(),
             "attached_session_count": _value(process, "AttachedSessionsCount", "AttachedSessionCount", default=0),
         })
+    get_run_logger().log_event("tia_processes_discovered", component="tia", processes=result)
     return result
 
 
