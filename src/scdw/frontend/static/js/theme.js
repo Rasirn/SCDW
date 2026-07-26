@@ -1,0 +1,1 @@
+window.applyTheme=()=>{const v=localStorage.getItem('mactrl-theme')||'system';document.documentElement.dataset.theme=v==='system'?(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'):v};window.applyTheme();matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{if((localStorage.getItem('mactrl-theme')||'system')==='system')applyTheme()});

@@ -76,7 +76,7 @@ def main() -> None:
     server_thread.start()
 
     if not _wait_for_server():
-        print("[MAC-TIACompleter] Server failed to start within 30 s.", file=sys.stderr)
+        print("[MACtrl] 服务未能在 30 秒内启动。", file=sys.stderr)
         sys.exit(1)
 
     # Try pywebview for a floating native window
@@ -84,22 +84,22 @@ def main() -> None:
         import webview  # type: ignore[import]
 
         webview.create_window(
-            title="MAC-TIACompleter",
+            title="MACtrl · TIA 智控助手",
             url=URL,
-            width=440,
-            height=700,
-            min_size=(360, 500),
-            on_top=True,
+            width=1280,
+            height=820,
+            min_size=(920, 660),
+            on_top=False,
             resizable=True,
             frameless=False,
-            background_color="#0d0d14",
+            background_color="#f4f6f8",
         )
         webview.start()
 
     except ImportError:
         # Fallback: open in the system browser
         print(
-            f"[MAC-TIACompleter] pywebview not found – opening in browser: {URL}",
+            f"[MACtrl] 未安装 pywebview，改用浏览器：{URL}",
             file=sys.stderr,
         )
         webbrowser.open(URL)

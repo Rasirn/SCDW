@@ -1,170 +1,75 @@
-"""
-frontend/app.py
+"""MACtrl 的 FastAPI 静态页和单连接流式 WebSocket 服务。"""
+from __future__ import annotations
 
-FastAPI application that:
-  - Serves the frontend HTML (with injected port)
-  - Provides a /ws WebSocket endpoint that streams chat events
-  - Manages the MCP client lifecycle via FastAPI lifespan
-"""
 import asyncio
-import json
 import os
 import sys
 from contextlib import AsyncExitStack, asynccontextmanager
 from pathlib import Path
-from typing import Optional
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse, HTMLResponse
 
-# ── 路径初始化 ────────────────────────────────────────────────────────────────
-# 文件路径：<项目根>/src/scdw/frontend/app.py。
-# 保留项目根常量供 .env、根目录兼容 MCP 入口和静态资源定位使用。
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-SRC_DIR = PROJECT_ROOT / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from dotenv import load_dotenv
-load_dotenv(PROJECT_ROOT / ".env")
-
-from scdw.mcp.client import MCPClient
-from scdw.llm.providers.deepseek import DeepSeekProvider
+if str(PROJECT_ROOT / "src") not in sys.path: sys.path.insert(0, str(PROJECT_ROOT / "src"))
 from scdw.frontend.chat_bridge import StreamingChat
+from scdw.llm.providers.deepseek import DeepSeekProvider
+from scdw.mcp.client import MCPClient
 
-# ── config ────────────────────────────────────────────────────────────────────
-PORT: int = int(os.environ.get("FRONTEND_PORT", "17788"))
-STATIC_DIR = Path(__file__).parent / "static"
+PORT = int(os.environ.get("FRONTEND_PORT", "17788")); STATIC_DIR = Path(__file__).parent / "static"
+_template: StreamingChat | None = None; _init_error: str | None = None; _tool_lock = asyncio.Lock()
 
-# ── shared state ──────────────────────────────────────────────────────────────
-_chat: Optional[StreamingChat] = None
-_init_error: Optional[str] = None
-_query_lock: Optional[asyncio.Lock] = None
-
-
-# ── lifespan: start MCP clients, build chat instance ─────────────────────────
 @asynccontextmanager
-async def lifespan(application: FastAPI):
-    global _chat, _init_error, _query_lock
-
-    _query_lock = asyncio.Lock()
-
-    from scdw.common.config import get_deepseek_model
-    deepseek_model = get_deepseek_model()
-
-    mcp_server_path = str(PROJECT_ROOT / "mcp_server.py")
-
+async def lifespan(_: FastAPI):
+    global _template, _init_error
     try:
         async with AsyncExitStack() as stack:
-            doc_client: MCPClient = await stack.enter_async_context(
-                # Use sys.executable so the subprocess uses the same interpreter
-                # (important inside Conda / venv environments)
-                MCPClient(command=sys.executable, args=[mcp_server_path])
-            )
-            clients = {"doc_client": doc_client}
-
-            deepseek_service = DeepSeekProvider(model=deepseek_model)
-
-            _chat = StreamingChat(
-                doc_client=doc_client,
-                clients=clients,
-                deepseek_service=deepseek_service,
-            )
-
-            yield   # server is running
-
+            client = await stack.enter_async_context(MCPClient(command=sys.executable, args=[str(PROJECT_ROOT / "mcp_server.py")]))
+            _template = StreamingChat(doc_client=client, clients={"doc_client": client}, deepseek_service=DeepSeekProvider())
+            yield
     except Exception as exc:
-        import traceback
-        _init_error = traceback.format_exc()
-        print(f"[MAC-TIACompleter] Lifespan error:\n{_init_error}", flush=True)
-        yield
+        _init_error = str(exc); yield
 
-
-# ── app ───────────────────────────────────────────────────────────────────────
 app = FastAPI(lifespan=lifespan)
-
 
 @app.get("/")
 async def root() -> HTMLResponse:
-    """Serve the frontend HTML with the backend port injected."""
     html = (STATIC_DIR / "index.html").read_text(encoding="utf-8")
-    inject = f'<script>window.BACKEND_PORT = {PORT};</script>'
-    html = html.replace("</head>", f"{inject}\n</head>", 1)
-    return HTMLResponse(html)
+    return HTMLResponse(html.replace("</head>", f"<script>window.BACKEND_PORT={PORT}</script></head>", 1))
 
+@app.get("/static/{asset_path:path}")
+async def asset(asset_path: str):
+    path = (STATIC_DIR / asset_path).resolve()
+    if STATIC_DIR.resolve() not in path.parents or not path.is_file(): raise HTTPException(404)
+    return FileResponse(path)
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket) -> None:
     await websocket.accept()
-
-    # ── guard: initialization failed ─────────────────────────────────────────
-    if _init_error:
-        await websocket.send_json({
-            "type": "init_error",
-            "message": f"Agent 初始化失败:\n{_init_error}",
-        })
-        # Keep WS open so the frontend can display the error persistently
-        try:
-            while True:
-                await asyncio.sleep(30)
-        except (WebSocketDisconnect, Exception):
-            pass
-        return
-
-    if _chat is None:
-        await websocket.send_json({
-            "type": "init_error",
-            "message": "Agent 尚未就绪，请稍候几秒后刷新页面。",
-        })
-        await websocket.close()
-        return
-
-    # ── notify client that backend is ready ──────────────────────────────────
+    if _init_error or _template is None:
+        await websocket.send_json({"type": "init_error", "message": _init_error or "MACtrl 尚未就绪"}); return
+    chat = StreamingChat(doc_client=_template.doc_client, clients=_template.clients, deepseek_service=_template.deepseek_service)
+    active: asyncio.Task | None = None; cancel = asyncio.Event(); current_turn = ""
+    async def run_turn(query: str, mode: str, turn_id: str) -> None:
+        async with _tool_lock:
+            async for event in chat.run_stream(query, mode, cancel):
+                event["turn_id"] = turn_id; await websocket.send_json(event)
     await websocket.send_json({"type": "ready"})
-
     try:
         while True:
-            raw = await websocket.receive_text()
-            try:
-                msg = json.loads(raw)
-            except json.JSONDecodeError:
-                continue
-
-            msg_type = msg.get("type", "")
-
-            # ── clear conversation history ────────────────────────────────────
-            if msg_type == "clear":
-                # Keep only the system prompt (first message) to preserve identity
-                if _chat.messages and _chat.messages[0].get("role") == "system":
-                    _chat.messages[1:] = []
-                else:
-                    _chat.messages.clear()
-                await websocket.send_json({"type": "cleared"})
-                continue
-
-            if msg_type != "query":
-                continue
-
-            query = msg.get("content", "").strip()
-            if not query:
-                continue
-
-            # ── run query (one at a time via lock) ────────────────────────────
-            if _query_lock.locked():
-                await websocket.send_json({
-                    "type": "error",
-                    "message": "正在处理上一条消息，请稍候。",
-                })
-                continue
-
-            async with _query_lock:
-                async for event in _chat.run_stream(query):
-                    await websocket.send_json(event)
-
+            msg = await websocket.receive_json(); kind = msg.get("type")
+            if kind == "cancel": cancel.set(); await websocket.send_json({"type":"cancel_requested", "turn_id":current_turn}); continue
+            if kind == "clear":
+                cancel.set(); chat.messages[1:] = []; await websocket.send_json({"type":"cleared"}); continue
+            if kind != "query": continue
+            if active and not active.done():
+                await websocket.send_json({"type":"error", "message":"当前回合仍在处理。", "turn_id":msg.get("turn_id")}); continue
+            mode = msg.get("mode", "thinking")
+            if mode not in {"thinking", "fast"}:
+                await websocket.send_json({"type":"error", "message":"无效模式。", "turn_id":msg.get("turn_id")}); continue
+            query = str(msg.get("content", "")).strip()
+            if not query: continue
+            current_turn = str(msg.get("turn_id") or f"turn-{asyncio.get_running_loop().time():.6f}"); cancel = asyncio.Event()
+            active = asyncio.create_task(run_turn(query, mode, current_turn))
     except WebSocketDisconnect:
-        pass
-    except Exception as exc:
-        try:
-            await websocket.send_json({"type": "error", "message": str(exc)})
-        except Exception:
-            pass
+        cancel.set()

@@ -5,9 +5,9 @@ import json
 import os
 import time
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any, AsyncIterator, Callable
 
-from openai import OpenAI
+from openai import AsyncOpenAI, OpenAI
 from dotenv import load_dotenv
 
 from scdw.common.config import DEEPSEEK_BASE_URL, DEEPSEEK_DEFAULT_MODEL, DEEPSEEK_FAST_MODEL
@@ -43,6 +43,21 @@ class LlmResponse:
 
     @property
     def message(self) -> Any:
+        return self.raw_choice.message if self.raw_choice is not None else None
+
+
+@dataclass(frozen=True)
+class LlmStreamResult:
+    """一次真实流式响应聚合后的完整结果。"""
+    content: str
+    reasoning_content: str
+    tool_calls: list[dict[str, Any]]
+    finish_reason: str | None
+    model: str
+    usage: LlmUsage
+
+    @property
+    def message(self) -> Any:
         """兼容旧 Chat/MCP 调用方使用的 ``response.message``。"""
         return self.raw_choice.message if self.raw_choice is not None else None
 
@@ -60,6 +75,68 @@ class DeepSeekProvider:
         if not resolved_key and client is None:
             raise LlmAuthenticationError("未读取到 DeepSeek API Key，请检查项目 .env 配置。")
         self.client = client or OpenAI(api_key=resolved_key, base_url=DEEPSEEK_BASE_URL, timeout=timeout)
+        self.async_client = None if client is not None else AsyncOpenAI(api_key=resolved_key, base_url=DEEPSEEK_BASE_URL, timeout=timeout)
+
+    async def stream_chat(self, messages: list[dict[str, Any]], *, tools: list[dict[str, Any]] | None = None,
+                          mode: str = "thinking", cancel_event: Any = None) -> AsyncIterator[dict[str, Any]]:
+        """消费 DeepSeek 真实流；事件中的 delta 未经定时器伪造。"""
+        if mode not in {"thinking", "fast"}:
+            raise LlmResponseError("无效模式，仅支持 thinking 或 fast。")
+        model = DEFAULT_MODEL if mode == "thinking" else FAST_MODEL
+        params: dict[str, Any] = {"model": model, "messages": list(messages), "stream": True,
+                                  "stream_options": {"include_usage": True},
+                                  "extra_body": {"thinking": {"type": "enabled" if mode == "thinking" else "disabled"}}}
+        if mode == "thinking":
+            params["extra_body"]["reasoning_effort"] = "high"
+        if tools:
+            params["tools"] = tools
+        client = self.async_client
+        if client is None:
+            raise LlmResponseError("注入的测试客户端不支持异步真实流。")
+        stream = await client.chat.completions.create(**params)
+        reasoning = content = ""
+        calls: dict[int, dict[str, Any]] = {}
+        finish_reason = None
+        usage = LlmUsage()
+        reasoning_open = answer_open = False
+        try:
+            async for chunk in stream:
+                if cancel_event is not None and cancel_event.is_set():
+                    await stream.close()
+                    yield {"type": "stream_cancelled"}
+                    return
+                raw_usage = getattr(chunk, "usage", None)
+                if raw_usage is not None:
+                    usage = LlmUsage(getattr(raw_usage, "prompt_tokens", None), getattr(raw_usage, "completion_tokens", None), getattr(raw_usage, "total_tokens", None))
+                    yield {"type": "usage", "usage": usage}
+                for choice in getattr(chunk, "choices", []) or []:
+                    delta = choice.delta
+                    part_reasoning = getattr(delta, "reasoning_content", None)
+                    if part_reasoning:
+                        if not reasoning_open:
+                            reasoning_open = True; yield {"type": "reasoning_start"}
+                        reasoning += part_reasoning; yield {"type": "reasoning_delta", "content": part_reasoning}
+                    part_content = getattr(delta, "content", None)
+                    if part_content:
+                        if reasoning_open:
+                            reasoning_open = False; yield {"type": "reasoning_end"}
+                        if not answer_open:
+                            answer_open = True; yield {"type": "answer_start"}
+                        content += part_content; yield {"type": "answer_delta", "content": part_content}
+                    for item in getattr(delta, "tool_calls", None) or []:
+                        index = int(getattr(item, "index", 0)); call = calls.setdefault(index, {"id": "", "type": "function", "function": {"name": "", "arguments": ""}})
+                        call["id"] += getattr(item, "id", "") or ""
+                        function = getattr(item, "function", None)
+                        if function:
+                            call["function"]["name"] += getattr(function, "name", "") or ""
+                            call["function"]["arguments"] += getattr(function, "arguments", "") or ""
+                    finish_reason = getattr(choice, "finish_reason", None) or finish_reason
+            if reasoning_open: yield {"type": "reasoning_end"}
+            if answer_open: yield {"type": "answer_end"}
+            result = LlmStreamResult(content, reasoning, [calls[k] for k in sorted(calls)], finish_reason, model, usage)
+            yield {"type": "stream_end", "result": result}
+        except Exception as exc:
+            raise self._map_error(exc)[0] from exc
 
     @staticmethod
     def _normalise_model(model: str | None) -> str:
