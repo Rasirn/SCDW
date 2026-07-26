@@ -76,3 +76,6 @@ DEEPSEEK_MODEL=deepseek-chat
 - LAD XML 需基于模板生成并执行 `compile_check`；不应直接用于生产控制逻辑。
 
 详细开发流程见 [开发指南](docs/开发指南.md)，当前调用关系见 [当前代码基线](docs/当前代码基线.md)。
+# 已打开 TIA 的连接
+
+可先启动 TIA 并打开工程，再使用 MCP 工具 `list_tia_processes` 与 `connect_to_open_tia` 附着。多实例时必须指定 PID；附着后的 `detach_tia_session` 不会关闭用户 TIA 或工程。真实诊断命令和限制见 [连接已有 TIA 测试报告](docs/连接已有TIA测试报告.md)。

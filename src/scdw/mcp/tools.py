@@ -190,6 +190,7 @@ _session = TiaSessionManager()
 
 def _check_session() -> None:
     """检查 TIA 会话是否已初始化，否则抛出 RuntimeError。"""
+    _session.ensure_current_context()
     _session.require_project()
 
 
@@ -262,6 +263,56 @@ def register_mcp_tools(mcp) -> None:
     )
     from scdw.xlsx.reader import read_plc_project_xlsx
 
+    @mcp.tool(name="list_tia_processes", description="列出运行中的 TIA Portal，不会附着或修改任何工程。")
+    def list_tia_processes() -> str:
+        try:
+            return json.dumps(_session.list_processes(), ensure_ascii=False, indent=2)
+        except Exception as exc:
+            return f"获取 TIA 进程失败：{exc}"
+
+    @mcp.tool(name="connect_to_open_tia", description="附着到用户已打开的 TIA，自动发现当前工程和 PLC；多实例时必须指定进程 ID。")
+    def connect_to_open_tia(process_id: int | None = None, project_path: str = "", auto_select: bool = True) -> str:
+        try:
+            if not auto_select and process_id is None:
+                return "已禁止自动选择，请提供 process_id。"
+            context = _session.attach(process_id=process_id, project_path=project_path or None)
+            return "已连接到 TIA Portal\n" + json.dumps(context, ensure_ascii=False, indent=2)
+        except Exception as exc:
+            return f"连接已打开 TIA 失败：{exc}。首次附着时请确认 TIA 弹出的 Openness 访问授权窗口。"
+
+    @mcp.tool(name="refresh_tia_context", description="重新扫描 TIA、工程和 PLC。用户在 TIA 中打开或切换工程后调用。")
+    def refresh_tia_context() -> str:
+        try:
+            if not _session.is_alive():
+                processes = _session.list_processes()
+                if len(processes) == 1:
+                    _session.attach(process_id=processes[0]["process_id"])
+                else:
+                    return "当前没有有效 TIA 会话；请使用 connect_to_open_tia 明确连接。"
+            return json.dumps(_session.refresh_context(), ensure_ascii=False, indent=2)
+        except Exception as exc:
+            return f"刷新 TIA 上下文失败：{exc}"
+
+    @mcp.tool(name="get_tia_context", description="返回当前 TIA 连接、工程、PLC 和上下文版本摘要，不修改工程。")
+    def get_tia_context() -> str:
+        return json.dumps(_session.get_context_summary(), ensure_ascii=False, indent=2)
+
+    @mcp.tool(name="select_tia_project", description="当一个 TIA 中有多个工程时，按工程名称或完整路径明确选择目标工程。")
+    def select_tia_project(project_name: str = "", project_path: str = "") -> str:
+        try:
+            return json.dumps(_session.select_project(project_name or None, project_path or None), ensure_ascii=False, indent=2)
+        except Exception as exc:
+            return f"选择 TIA 工程失败：{exc}"
+
+    @mcp.tool(name="detach_tia_session", description="仅断开 AI 的 Openness 连接；不会关闭或保存用户打开的 TIA 和工程。")
+    def detach_tia_session() -> str:
+        try:
+            attached = _session.context.connection_mode == "attached"
+            _session.detach(save=False)
+            return "已断开 Openness 连接。" + ("用户的 TIA 和工程保持打开。" if attached else "")
+        except Exception as exc:
+            return f"断开 TIA 会话失败：{exc}"
+
     # ── 1. init_tia_project ───────────────────────────────────────────────────
     @mcp.tool(
         name="init_tia_project",
@@ -285,11 +336,8 @@ def register_mcp_tools(mcp) -> None:
             set_default_api_dir(api_dir)
             load_tia_api(api_dir)
 
-            tia = start_tia_portal(with_ui=with_ui)
-            project = create_project(tia, project_root, project_name, overwrite=overwrite)
-
-            _session.tia = tia
-            _session.project = project
+            _session.start(with_ui=with_ui)
+            _session.create_project(project_root, project_name, overwrite=overwrite)
 
             # ── 清理上轮生成的临时 XML ──────────────────────────────────────
             try:

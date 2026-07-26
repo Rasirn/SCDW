@@ -14,6 +14,18 @@ class Chat:
     async def _process_query(self, query: str):
         self.messages.append({"role": "user", "content": query})
 
+    async def _tia_context_prompt(self) -> str | None:
+        """获取本轮临时 TIA 摘要；失败不影响普通对话。"""
+        for client in self.clients.values():
+            try:
+                result = await client.call_tool("refresh_tia_context", {})
+                texts = [item.text for item in getattr(result, "content", []) if hasattr(item, "text")]
+                if texts:
+                    return "当前 TIA 状态（仅本轮有效）：\n" + "\n".join(texts)
+            except Exception:
+                continue
+        return None
+
     async def run(
         self,
         query: str,
@@ -22,11 +34,12 @@ class Chat:
 
         # 1. 添加用户消息
         await self._process_query(query)
+        tia_prompt = await self._tia_context_prompt()
 
         for tool_round in range(MAX_TOOL_ROUNDS + 1):
             # 2. 获取 AI 响应
             response = self.deepseek_service.chat(
-                messages=self.messages,
+                messages=([{"role": "system", "content": tia_prompt}] if tia_prompt else []) + self.messages,
                 tools=await ToolManager.get_all_tools(self.clients),
             )
 

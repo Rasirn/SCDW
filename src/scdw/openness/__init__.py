@@ -56,6 +56,9 @@ from .tia_compiler import (
     compile_plc,
 )
 from .session import TiaSessionManager
+from .context import TiaConnectionMode, TiaContext
+from .discovery import attach_tia_process, list_running_tia_processes
+from .executor import TiaOpennessExecutor
 from .environment import check_tia_environment
 
 __all__ = [
@@ -95,4 +98,10 @@ __all__ = [
     # tia_compiler
     "CompileResult",
     "compile_plc",
+    "TiaSessionManager",
+    "TiaConnectionMode",
+    "TiaContext",
+    "TiaOpennessExecutor",
+    "list_running_tia_processes",
+    "attach_tia_process",
 ]

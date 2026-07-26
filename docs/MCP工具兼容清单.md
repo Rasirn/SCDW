@@ -13,3 +13,6 @@
 | RAG | `list_plc_templates`、`search_plc_templates`、`get_plc_template` |
 
 实际 MCP Client 已通过 stdio 列出上述 18 个工具。不存在接口破坏或新增废弃包装。
+# 已有 TIA 连接工具
+
+新增只读/会话工具：`list_tia_processes`、`connect_to_open_tia`、`refresh_tia_context`、`get_tia_context`、`select_tia_project`、`detach_tia_session`。原有 `init_tia_project` 保持用于新建工程；导入、标签、DB 和编译工具会在调用前刷新上下文。

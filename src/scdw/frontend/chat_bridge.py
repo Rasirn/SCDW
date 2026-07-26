@@ -93,6 +93,7 @@ class StreamingChat(CliChat):
     async def run_stream(self, query: str) -> AsyncGenerator[dict, None]:
         # Process query: handles @resource mentions, /commands, builds message
         await self._process_query(query)
+        tia_prompt = await self._tia_context_prompt()
 
         loop = asyncio.get_event_loop()
 
@@ -103,7 +104,7 @@ class StreamingChat(CliChat):
 
                 # Gather tools and build a snapshot of current messages
                 tools = await ToolManager.get_all_tools(self.clients)
-                messages_snapshot = list(self.messages)
+                messages_snapshot = ([{"role": "system", "content": tia_prompt}] if tia_prompt else []) + list(self.messages)
 
                 # Blocking OpenAI/DeepSeek call – run in thread pool so the
                 # event loop (and WebSocket writes) remain responsive
