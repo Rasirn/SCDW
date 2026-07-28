@@ -9,6 +9,7 @@ core/tools.py
 import json
 import os
 import traceback
+from pathlib import Path
 from typing import Dict, List, Optional
 
 from scdw.mcp.client import MCPClient
@@ -17,7 +18,7 @@ from mcp.types import CallToolResult, Tool, TextContent
 import openai.types.chat.chat_completion as Message
 
 from pydantic import Field
-from scdw.common.paths import RAG_GENERATED_DIR
+from scdw.common.paths import GENERATED_DIR, PROJECT_ROOT, RAG_GENERATED_DIR
 from scdw.openness.session import TiaSessionManager
 from scdw.rag.retriever import (
     TemplateLibrary,
@@ -215,6 +216,31 @@ def _tool_error(code: str, message: str, *, retryable: bool = False, needs_user_
                        "needs_user_action": needs_user_action, "data": data or {}}, ensure_ascii=False)
 
 
+def _list_workspace_directory(directory: str, recursive: bool, max_entries: int) -> dict:
+    """List a project-local directory without exposing paths outside this workspace."""
+    root = PROJECT_ROOT.resolve()
+    requested = (Path(directory).expanduser() if directory else GENERATED_DIR).resolve()
+    try:
+        relative = requested.relative_to(root)
+    except ValueError:
+        return {"success": False, "code": "PATH_NOT_ALLOWED", "message": "directory must be inside the project workspace"}
+    if not requested.exists():
+        return {"success": False, "code": "DIRECTORY_NOT_FOUND", "message": "directory does not exist", "directory": str(relative).replace("\\", "/")}
+    if not requested.is_dir():
+        return {"success": False, "code": "NOT_A_DIRECTORY", "message": "path is not a directory", "directory": str(relative).replace("\\", "/")}
+    limit = min(max(1, max_entries), 500)
+    iterator = requested.rglob("*") if recursive else requested.iterdir()
+    entries = []
+    for child in sorted(iterator, key=lambda value: (not value.is_dir(), value.name.lower())):
+        if len(entries) >= limit:
+            break
+        try:
+            entries.append({"path": str(child.relative_to(requested)).replace("\\", "/"), "type": "directory" if child.is_dir() else "file", "size": None if child.is_dir() else child.stat().st_size})
+        except OSError:
+            continue
+    return {"success": True, "directory": str(relative).replace("\\", "/"), "entries": entries, "truncated": len(entries) == limit}
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # MCP 工具注册
 # ══════════════════════════════════════════════════════════════════════════════
@@ -268,6 +294,9 @@ def register_mcp_tools(mcp) -> None:
         delete_block,
     )
     from scdw.xlsx.reader import read_plc_project_xlsx
+    # XML Artifact lifecycle tools intentionally live in their own module.
+    from scdw.mcp.xml_artifact_tools import register_xml_artifact_tools
+    register_xml_artifact_tools(mcp, _session)
 
     @mcp.tool(name="list_tia_processes", description="列出运行中的 TIA Portal，不会附着或修改任何工程。")
     def list_tia_processes() -> str:
@@ -331,7 +360,10 @@ def register_mcp_tools(mcp) -> None:
     )
     def init_tia_project(
         project_name: str,
-        project_root: str,
+        project_root: str = Field(
+            default=str(GENERATED_DIR),
+            description="新项目保存根目录；未指定时默认 E:\\PlcProject\\Code\\PLC\\SCDW\\data\\generated。创建前请用 list_workspace_files 检查项目名冲突。",
+        ),
         api_dir: str = r"E:\PlcProject\SoftWares\Siemens\Automation\Portal V17\PublicAPI\V17",
         with_ui: bool = True,
         overwrite: bool = False,
@@ -376,6 +408,18 @@ def register_mcp_tools(mcp) -> None:
             _cleanup_session()
             return _tool_error("PROJECT_CREATE_FAILED", "创建 TIA 工程失败。", data={"detail": str(exc)})
             return f"❌ 创建项目失败：{exc}\n{traceback.format_exc()}"
+
+    @mcp.tool(
+        name="list_workspace_files",
+        description="列出项目工作区内指定目录的文件和子目录，用于检查项目名或输出文件是否冲突。directory 默认为 data/generated；可选 recursive 和 max_entries。只读，不访问工作区外路径。",
+    )
+    def list_workspace_files(directory: str = "", recursive: bool = False, max_entries: int = 200) -> str:
+        """Return a bounded, project-local directory listing."""
+        try:
+            return json.dumps(_list_workspace_directory(directory, recursive, max_entries), ensure_ascii=False, sort_keys=True)
+        except Exception as exc:
+            traceback.print_exc()
+            return _tool_error("INTERNAL_ERROR", "无法列出目录")
 
     # ── 2. close_tia_session ──────────────────────────────────────────────────
     @mcp.tool(

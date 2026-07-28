@@ -12,4 +12,4 @@ def test_mcp_tools_register_without_tia_connection():
     tools = mcp._tool_manager.list_tools()
     names = [tool.name for tool in tools]
     assert len(names) == len(set(names))
-    assert {"init_tia_project", "compile_check", "search_plc_templates", "list_tia_processes", "connect_to_open_tia", "detach_tia_session"}.issubset(names)
+    assert {"init_tia_project", "compile_check", "search_plc_templates", "list_tia_processes", "connect_to_open_tia", "detach_tia_session", "list_workspace_files"}.issubset(names)
