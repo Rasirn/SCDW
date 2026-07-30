@@ -54,3 +54,15 @@ def test_tool_arguments_are_collapsed_and_defensively_summarized():
     assert 'id="run-status"' in html
     assert 'id="new-content"' in html
     assert 'id="resend"' in html
+
+
+@pytest.mark.unit
+def test_layout_uses_named_grid_areas_for_stable_composer_placement():
+    source = (STATIC / "css/layout.css").read_text(encoding="utf-8")
+
+    assert "grid-template-areas:" in source
+    assert '"header" "context" "status" "messages" "composer"' in source
+    assert "#run-status{grid-area:status}" in source
+    assert "#messages{grid-area:messages;min-height:0;min-width:0}" in source
+    assert "#app>footer{grid-area:composer}" in source
+    assert "grid-template-rows:auto auto auto 1fr auto" not in source
