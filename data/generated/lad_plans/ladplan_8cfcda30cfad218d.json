@@ -1,0 +1,145 @@
+{
+  "artifacts": {},
+  "auxiliary_fbs": [],
+  "block_dependency_order": [
+    "FC_BurnerAlarm"
+  ],
+  "closed_at": "2026-07-30T14:38:13.187764Z",
+  "conversation_id": "burner_alarm_202412",
+  "created_at": "2026-07-30T14:37:35.442663Z",
+  "current_block": "FC_BurnerAlarm",
+  "current_network": "main_combined_logic",
+  "instance_dbs": [],
+  "interface_change_log": [],
+  "interface_plan": {
+    "FC_BurnerAlarm": {
+      "Constant": [],
+      "InOut": [],
+      "Input": [],
+      "Output": [],
+      "Return": [
+        "Ret_Val:Void"
+      ],
+      "Temp": []
+    }
+  },
+  "main_fc": {
+    "artifact_id": null,
+    "artifact_version": null,
+    "block_name": "FC_BurnerAlarm",
+    "block_type": "FC",
+    "compile_result": null,
+    "compiled_at": null,
+    "import_result": null,
+    "imported_at": null,
+    "interface": {
+      "Constant": [],
+      "InOut": [],
+      "Input": [],
+      "Output": [],
+      "Return": [
+        "Ret_Val:Void"
+      ],
+      "Temp": []
+    },
+    "logic_scope": [
+      "烧嘴报警程序：",
+      "Network 1（故障报警）：将%I0.1\"1#故障反馈\"、%I0.4\"2#故障反馈\"、%I0.7\"3#故障反馈\"、%I1.2\"4#故障反馈\"、%I1.5\"5#故障反馈\"、%I2.2\"6#故障反馈\"和%I2.5\"7#故障反馈\"共7个常开触点并联，汇总信号接入P_TRIG上升沿检测，存储变量\"内部数据\".\"报警脉冲\"，检测到任意故障反馈上升沿时置位%Q4.7\"蜂鸣器\"",
+      "Network 2（超温标志汇总）：将\"数字量信号\".\"区1超温标志\"、\"数字量信号\".\"区2超温标志\"、\"数字量信号\".\"区3超温标志\"、\"数字量信号\".\"区4超温标志\"、\"数字量信号\".\"区5超温标志\"和\"数字量信号\".\"区6超温标志\"共6个常开触点并联，任意一个接通时驱动\"内部数据\".\"控温超温标志\"",
+      "全部逻辑在主FC（FC_BurnerAlarm）中完成"
+    ],
+    "responsibility": "组织无状态组合逻辑并直接调用需要跨扫描状态的辅助FB",
+    "status": "planned",
+    "verified_version": null
+  },
+  "main_fc_reason": "主块选择FC，因为组合逻辑和调度本身不需要跨扫描Static状态；仅将确有状态的职责提取到辅助FB。",
+  "networks": [
+    {
+      "artifact_id": null,
+      "artifact_version": null,
+      "block_name": "FC_BurnerAlarm",
+      "comment": "将无明确扫描依赖且可合并的条件、判断和动作集中表达；OR条件使用同一Network的并联支路。",
+      "compile_result": null,
+      "compiled_at": null,
+      "depends_on": [],
+      "import_result": null,
+      "imported_at": null,
+      "instruction_chain": [
+        "evaluate input conditions",
+        "merge parallel branches",
+        "drive result coil"
+      ],
+      "instructions": [
+        "OR",
+        "Coil"
+      ],
+      "knowledge_ids": [
+        "shell.fc_block.v17",
+        "instruction.comparison_or_chain.v17",
+        "network_text.title_comment.v17"
+      ],
+      "main_branch": [
+        "烧嘴报警程序：",
+        "Network 1（故障报警）：将%I0.1\"1#故障反馈\"、%I0.4\"2#故障反馈\"、%I0.7\"3#故障反馈\"、%I1.2\"4#故障反馈\"、%I1.5\"5#故障反馈\"、%I2.2\"6#故障反馈\"和%I2.5\"7#故障反馈\"共7个常开触点并联，汇总信号接入P_TRIG上升沿检测，存储变量\"内部数据\".\"报警脉冲\"，检测到任意故障反馈上升沿时置位%Q4.7\"蜂鸣器\"",
+        "Network 2（超温标志汇总）：将\"数字量信号\".\"区1超温标志\"、\"数字量信号\".\"区2超温标志\"、\"数字量信号\".\"区3超温标志\"、\"数字量信号\".\"区4超温标志\"、\"数字量信号\".\"区5超温标志\"和\"数字量信号\".\"区6超温标志\"共6个常开触点并联，任意一个接通时驱动\"内部数据\".\"控温超温标志\"",
+        "全部逻辑在主FC（FC_BurnerAlarm）中完成"
+      ],
+      "network_key": "main_combined_logic",
+      "parallel_branches": [
+        [
+          "烧嘴报警程序："
+        ],
+        [
+          "Network 1（故障报警）：将%I0.1\"1#故障反馈\"、%I0.4\"2#故障反馈\"、%I0.7\"3#故障反馈\"、%I1.2\"4#故障反馈\"、%I1.5\"5#故障反馈\"、%I2.2\"6#故障反馈\"和%I2.5\"7#故障反馈\"共7个常开触点并联，汇总信号接入P_TRIG上升沿检测，存储变量\"内部数据\".\"报警脉冲\"，检测到任意故障反馈上升沿时置位%Q4.7\"蜂鸣器\""
+        ],
+        [
+          "Network 2（超温标志汇总）：将\"数字量信号\".\"区1超温标志\"、\"数字量信号\".\"区2超温标志\"、\"数字量信号\".\"区3超温标志\"、\"数字量信号\".\"区4超温标志\"、\"数字量信号\".\"区5超温标志\"和\"数字量信号\".\"区6超温标志\"共6个常开触点并联，任意一个接通时驱动\"内部数据\".\"控温超温标志\""
+        ],
+        [
+          "全部逻辑在主FC（FC_BurnerAlarm）中完成"
+        ]
+      ],
+      "purpose": "普通组合逻辑、条件判断、计算、转换和无状态控制",
+      "required_capabilities": [
+        "fc_shell",
+        "coil",
+        "network_title",
+        "network_comment",
+        "topology.parallel"
+      ],
+      "selected_knowledge_ids": [
+        "shell.fc_block.v17",
+        "instruction.comparison_or_chain.v17",
+        "network_text.title_comment.v17"
+      ],
+      "split_reason": null,
+      "status": "planned",
+      "title": "组合条件与业务动作",
+      "topology": {
+        "description": "Alternative conditions merge before one action.",
+        "kind": "parallel"
+      },
+      "uncovered_capabilities": [],
+      "variables": [
+        "condition_1",
+        "condition_2",
+        "condition_3",
+        "condition_4",
+        "result"
+      ],
+      "verified_version": null
+    }
+  ],
+  "plan_id": "ladplan_8cfcda30cfad218d",
+  "replaced_by": "ladplan_088684a4cc5d073e",
+  "requirements": "烧嘴报警程序：\nNetwork 1（故障报警）：将%I0.1\"1#故障反馈\"、%I0.4\"2#故障反馈\"、%I0.7\"3#故障反馈\"、%I1.2\"4#故障反馈\"、%I1.5\"5#故障反馈\"、%I2.2\"6#故障反馈\"和%I2.5\"7#故障反馈\"共7个常开触点并联，汇总信号接入P_TRIG上升沿检测，存储变量\"内部数据\".\"报警脉冲\"，检测到任意故障反馈上升沿时置位%Q4.7\"蜂鸣器\"。\nNetwork 2（超温标志汇总）：将\"数字量信号\".\"区1超温标志\"、\"数字量信号\".\"区2超温标志\"、\"数字量信号\".\"区3超温标志\"、\"数字量信号\".\"区4超温标志\"、\"数字量信号\".\"区5超温标志\"和\"数字量信号\".\"区6超温标志\"共6个常开触点并联，任意一个接通时驱动\"内部数据\".\"控温超温标志\"。\n全部逻辑在主FC（FC_BurnerAlarm）中完成。",
+  "status": "replaced",
+  "step_status": {
+    "artifact_creation": "planned",
+    "network_generation": "planned",
+    "planning": "planned"
+  },
+  "target_device": "PLC_1",
+  "updated_at": "2026-07-30T14:38:13.187764Z",
+  "verification_history": []
+}

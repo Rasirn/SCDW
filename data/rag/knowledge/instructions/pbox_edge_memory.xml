@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Exact FlgNet extracted from TIA V17 export: 报警.xml, Network 1. -->
+<FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="1-8区读取失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="22">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="控温通讯故障脉冲1" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="23">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="1-8区通讯故障标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="24">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="1-8区读取成功" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="25">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="控温通讯故障脉冲2" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="26">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="1-8区通讯故障标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="27">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="9-15区读取失败" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="28">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="控温通讯故障脉冲3" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="29">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="9-15区通讯故障标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="30">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="9-15区读取成功" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="31">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="控温通讯故障脉冲4" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="32">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="9-15区通讯故障标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="33">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="1-8区通讯故障标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="TypedConstant" UId="34">
+      <Constant>
+        <ConstantValue>T#3m</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="35">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="9-15区通讯故障标志" />
+      </Symbol>
+    </Access>
+    <Access Scope="TypedConstant" UId="36">
+      <Constant>
+        <ConstantValue>T#3m</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="GlobalVariable" UId="37">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="1-8区通讯延时定时器" />
+        <Component Name="Q" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="38">
+      <Symbol>
+        <Component Name="曲线数据" />
+        <Component Name="1-8区通讯故障" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="39">
+      <Symbol>
+        <Component Name="内部数据" />
+        <Component Name="9-15区通讯延时定时器" />
+        <Component Name="Q" />
+      </Symbol>
+    </Access>
+    <Access Scope="GlobalVariable" UId="40">
+      <Symbol>
+        <Component Name="曲线数据" />
+        <Component Name="9-15区通讯故障" />
+      </Symbol>
+    </Access>
+    <Part Name="Contact" UId="41" />
+    <Part Name="PBox" UId="42" />
+    <Part Name="SCoil" UId="43" />
+    <Part Name="Contact" UId="44" />
+    <Part Name="PBox" UId="45" />
+    <Part Name="RCoil" UId="46" />
+    <Part Name="Contact" UId="47" />
+    <Part Name="PBox" UId="48" />
+    <Part Name="SCoil" UId="49" />
+    <Part Name="Contact" UId="50" />
+    <Part Name="PBox" UId="51" />
+    <Part Name="RCoil" UId="52" />
+    <Part Name="Contact" UId="53" />
+    <Part Name="TON" Version="1.0" UId="54">
+      <Instance Scope="GlobalVariable" UId="55">
+        <Component Name="内部数据" />
+        <Component Name="1-8区通讯延时定时器" />
+      </Instance>
+      <TemplateValue Name="time_type" Type="Type">Time</TemplateValue>
+    </Part>
+    <Part Name="Contact" UId="56" />
+    <Part Name="TON" Version="1.0" UId="57">
+      <Instance Scope="GlobalVariable" UId="58">
+        <Component Name="内部数据" />
+        <Component Name="9-15区通讯延时定时器" />
+      </Instance>
+      <TemplateValue Name="time_type" Type="Type">Time</TemplateValue>
+    </Part>
+    <Part Name="Contact" UId="59" />
+    <Part Name="Coil" UId="60" />
+    <Part Name="Contact" UId="61" />
+    <Part Name="Coil" UId="62" />
+  </Parts>
+  <Wires>
+    <Wire UId="65">
+      <Powerrail />
+      <NameCon UId="41" Name="in" />
+      <NameCon UId="44" Name="in" />
+      <NameCon UId="47" Name="in" />
+      <NameCon UId="50" Name="in" />
+      <NameCon UId="53" Name="in" />
+      <NameCon UId="56" Name="in" />
+      <NameCon UId="59" Name="in" />
+      <NameCon UId="61" Name="in" />
+    </Wire>
+    <Wire UId="66">
+      <IdentCon UId="21" />
+      <NameCon UId="41" Name="operand" />
+    </Wire>
+    <Wire UId="67">
+      <NameCon UId="41" Name="out" />
+      <NameCon UId="42" Name="in" />
+    </Wire>
+    <Wire UId="68">
+      <IdentCon UId="22" />
+      <NameCon UId="42" Name="bit" />
+    </Wire>
+    <Wire UId="69">
+      <NameCon UId="42" Name="out" />
+      <NameCon UId="43" Name="in" />
+    </Wire>
+    <Wire UId="70">
+      <IdentCon UId="23" />
+      <NameCon UId="43" Name="operand" />
+    </Wire>
+    <Wire UId="71">
+      <IdentCon UId="24" />
+      <NameCon UId="44" Name="operand" />
+    </Wire>
+    <Wire UId="72">
+      <NameCon UId="44" Name="out" />
+      <NameCon UId="45" Name="in" />
+    </Wire>
+    <Wire UId="73">
+      <IdentCon UId="25" />
+      <NameCon UId="45" Name="bit" />
+    </Wire>
+    <Wire UId="74">
+      <NameCon UId="45" Name="out" />
+      <NameCon UId="46" Name="in" />
+    </Wire>
+    <Wire UId="75">
+      <IdentCon UId="26" />
+      <NameCon UId="46" Name="operand" />
+    </Wire>
+    <Wire UId="76">
+      <IdentCon UId="27" />
+      <NameCon UId="47" Name="operand" />
+    </Wire>
+    <Wire UId="77">
+      <NameCon UId="47" Name="out" />
+      <NameCon UId="48" Name="in" />
+    </Wire>
+    <Wire UId="78">
+      <IdentCon UId="28" />
+      <NameCon UId="48" Name="bit" />
+    </Wire>
+    <Wire UId="79">
+      <NameCon UId="48" Name="out" />
+      <NameCon UId="49" Name="in" />
+    </Wire>
+    <Wire UId="80">
+      <IdentCon UId="29" />
+      <NameCon UId="49" Name="operand" />
+    </Wire>
+    <Wire UId="81">
+      <IdentCon UId="30" />
+      <NameCon UId="50" Name="operand" />
+    </Wire>
+    <Wire UId="82">
+      <NameCon UId="50" Name="out" />
+      <NameCon UId="51" Name="in" />
+    </Wire>
+    <Wire UId="83">
+      <IdentCon UId="31" />
+      <NameCon UId="51" Name="bit" />
+    </Wire>
+    <Wire UId="84">
+      <NameCon UId="51" Name="out" />
+      <NameCon UId="52" Name="in" />
+    </Wire>
+    <Wire UId="85">
+      <IdentCon UId="32" />
+      <NameCon UId="52" Name="operand" />
+    </Wire>
+    <Wire UId="86">
+      <IdentCon UId="33" />
+      <NameCon UId="53" Name="operand" />
+    </Wire>
+    <Wire UId="87">
+      <NameCon UId="53" Name="out" />
+      <NameCon UId="54" Name="IN" />
+    </Wire>
+    <Wire UId="88">
+      <IdentCon UId="34" />
+      <NameCon UId="54" Name="PT" />
+    </Wire>
+    <Wire UId="89">
+      <NameCon UId="54" Name="ET" />
+      <OpenCon UId="63" />
+    </Wire>
+    <Wire UId="90">
+      <IdentCon UId="35" />
+      <NameCon UId="56" Name="operand" />
+    </Wire>
+    <Wire UId="91">
+      <NameCon UId="56" Name="out" />
+      <NameCon UId="57" Name="IN" />
+    </Wire>
+    <Wire UId="92">
+      <IdentCon UId="36" />
+      <NameCon UId="57" Name="PT" />
+    </Wire>
+    <Wire UId="93">
+      <NameCon UId="57" Name="ET" />
+      <OpenCon UId="64" />
+    </Wire>
+    <Wire UId="94">
+      <IdentCon UId="37" />
+      <NameCon UId="59" Name="operand" />
+    </Wire>
+    <Wire UId="95">
+      <NameCon UId="59" Name="out" />
+      <NameCon UId="60" Name="in" />
+    </Wire>
+    <Wire UId="96">
+      <IdentCon UId="38" />
+      <NameCon UId="60" Name="operand" />
+    </Wire>
+    <Wire UId="97">
+      <IdentCon UId="39" />
+      <NameCon UId="61" Name="operand" />
+    </Wire>
+    <Wire UId="98">
+      <NameCon UId="61" Name="out" />
+      <NameCon UId="62" Name="in" />
+    </Wire>
+    <Wire UId="99">
+      <IdentCon UId="40" />
+      <NameCon UId="62" Name="operand" />
+    </Wire>
+  </Wires>
+</FlgNet>

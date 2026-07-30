@@ -10,6 +10,8 @@ from mcp.server.fastmcp import FastMCP
 from scdw.lad_generation import LadPlanService
 from scdw.mcp.lad_runtime_tools import register_lad_runtime_tools
 from scdw.mcp.xml_artifact_tools import register_xml_artifact_tools
+from scdw.openness.tia_blocks import DBVariable, create_global_db
+from scdw.openness.tia_tags import TagSpec, create_tag_table_with_tags
 from scdw.xml_workspace import XmlArtifactService
 
 
@@ -66,9 +68,38 @@ def test_tia_artifact_fb_instance_db_and_incremental_main_fc(temporary_tia_proje
         "block_dependency_order": [fb_name, db_name, fc_name],
         "interface_plan": {fb_name: {"Static": ["State:Bool"]}, fc_name: {}},
         "networks": [
-            {"network_key": "fb_state", "block_name": fb_name, "title": "状态保持", "comment": "辅助FB状态程序段。", "purpose": "状态", "knowledge_ids": ["network_text.title_comment.v17"]},
-            {"network_key": "call_fb", "block_name": fc_name, "title": "调用辅助FB", "comment": "使用真实背景DB调用辅助FB。", "purpose": "FB调用", "knowledge_ids": ["call.fb_global_instance.v17"], "depends_on": ["fb_state"]},
-            {"network_key": "main_logic", "block_name": fc_name, "title": "主FC组合逻辑", "comment": "第二个逐步追加的主FC程序段。", "purpose": "组合逻辑", "knowledge_ids": ["network_text.title_comment.v17"], "depends_on": ["call_fb"]},
+            {
+                "network_key": "fb_state", "block_name": fb_name, "title": "状态保持",
+                "comment": "辅助FB状态程序段。", "purpose": "状态保持",
+                "main_branch": ["Powerrail -> Coil(State)"], "parallel_branches": [],
+                "instructions": ["Coil"], "variables": ["State"],
+                "required_capabilities": ["coil", "topology.series", "network_title", "network_comment"],
+                "selected_knowledge_ids": ["topology.series_contact_coil.v17", "network_text.title_comment.v17"],
+                "instruction_chain": ["enable state coil", "write State"],
+                "topology": {"kind": "series", "description": "Power flow drives the FB state coil."},
+            },
+            {
+                "network_key": "call_fb", "block_name": fc_name, "title": "调用辅助FB",
+                "comment": "使用真实背景DB调用辅助FB。", "purpose": "FB调用",
+                "main_branch": ["Powerrail -> Call(FB, instance DB)"], "parallel_branches": [],
+                "instructions": ["Call"], "variables": [fb_name, db_name],
+                "required_capabilities": ["fb_call", "global_instance_db", "parameter_binding", "topology.series", "network_title", "network_comment"],
+                "selected_knowledge_ids": ["call.fb_global_instance.v17", "topology.series_contact_coil.v17", "network_text.title_comment.v17"],
+                "instruction_chain": ["enable call", "bind global instance DB", "invoke FB"],
+                "topology": {"kind": "series", "description": "Power flow enables an FB Call bound to a global instance DB."},
+                "depends_on": ["fb_state"],
+            },
+            {
+                "network_key": "main_logic", "block_name": fc_name, "title": "主FC组合逻辑",
+                "comment": "第二个逐步追加的主FC程序段。", "purpose": "组合逻辑",
+                "main_branch": ["Powerrail -> Coil(Dummy)"], "parallel_branches": [],
+                "instructions": ["Coil"], "variables": ["Dummy"],
+                "required_capabilities": ["coil", "topology.series", "network_title", "network_comment"],
+                "selected_knowledge_ids": ["topology.series_contact_coil.v17", "network_text.title_comment.v17"],
+                "instruction_chain": ["enable output coil", "write Dummy"],
+                "topology": {"kind": "series", "description": "Power flow drives the main FC output coil."},
+                "depends_on": ["call_fb"],
+            },
         ],
     }
     plan = plans.create_from_planning(planning, requirements="真实Step 3最小闭环", conversation_id="tia-integration", target_device=device)
@@ -101,3 +132,62 @@ def test_tia_artifact_fb_instance_db_and_incremental_main_fc(temporary_tia_proje
     networks = artifacts.list_networks(main["artifact_id"], main_v3)
     assert [item["network_key"] for item in networks] == ["call_fb", "main_logic"]
     assert all(item["status"] == "verified" for item in networks)
+
+
+def test_tia_imports_reviewed_contact_or_pbox_scoil_renderer(temporary_tia_project, tmp_path):
+    """Reproduce the 20260730 burner-alarm import failure in an isolated project."""
+    session, _, _ = temporary_tia_project
+    device = "SCDW_ALARM_PLC"
+    order_number = os.getenv("SCDW_TEST_CPU", "OrderNumber:6ES7 214-1BG40-0XB0/V4.4")
+    session.add_plc(order_number, device, device)
+
+    tags = [
+        TagSpec(f"故障反馈{index}", "Bool", address)
+        for index, address in enumerate(("%I0.1", "%I0.4", "%I0.7", "%I1.2", "%I1.5", "%I2.2", "%I2.5"), 1)
+    ]
+    tags.append(TagSpec("蜂鸣器", "Bool", "%Q4.7"))
+    session.run_plc_operation(
+        "seed_burner_alarm_symbols",
+        device,
+        lambda _project, plc: (
+            create_tag_table_with_tags(plc, "SCDW_ALARM_TAGS", tags),
+            create_global_db(plc, str(tmp_path), "内部数据", 3, [DBVariable("报警脉冲", "Bool")]),
+        ),
+    )
+
+    plans = LadPlanService(tmp_path / "plans")
+    artifacts = XmlArtifactService(tmp_path / "artifacts")
+    plan = plans.create_from_requirements(
+        "故障反馈1或故障反馈2或故障反馈3或故障反馈4或故障反馈5或故障反馈6或故障反馈7经P_TRIG上升沿后置位蜂鸣器",
+        conversation_id="tia-burner-alarm-regression",
+        target_device=device,
+        main_fc_name="FC_BurnerAlarmRegression",
+    )
+    assert "topology.contact_or_pbox_scoil.v17" in plan.networks[0].selected_knowledge_ids
+
+    mcp = FastMCP("tia-burner-alarm")
+    register_xml_artifact_tools(mcp, session, artifacts, plans)
+    register_lad_runtime_tools(mcp, session, artifacts, plans)
+    artifact = _invoke(
+        mcp, "create_lad_block_artifact", plan.plan_id, plan.main_fc.block_name, "FC", None, device,
+        "tia-burner-alarm-regression",
+    )["artifact"]
+    rendered = _invoke(
+        mcp,
+        "write_lad_network_from_knowledge",
+        artifact["artifact_id"],
+        1,
+        plan.networks[0].network_key,
+        "topology.contact_or_pbox_scoil.v17",
+        {
+            "contacts": [[f"故障反馈{index}"] for index in range(1, 8)],
+            "edge_memory": ["内部数据", "报警脉冲"],
+            "output": ["蜂鸣器"],
+        },
+        "烧嘴故障上升沿报警",
+        "七路故障反馈经O汇合和PBox上升沿检测后置位蜂鸣器。",
+        False,
+    )
+    version = rendered["version"]
+    _invoke(mcp, "import_lad_xml", artifact["artifact_id"], device, version)
+    _invoke(mcp, "compile_check", device, plan.main_fc.block_name, artifact["artifact_id"], version, plan.networks[0].network_key, plan.plan_id)

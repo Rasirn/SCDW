@@ -1,0 +1,13 @@
+{
+  "networks": [
+    {
+      "network_key": "net_fault_alarm",
+      "sha256": "d213e878f1555278be5ff846d506dd98e6be0b29b283bc642b97b354fca1ea0d"
+    },
+    {
+      "network_key": "net_overtemp_summary",
+      "sha256": "e82be52c3d2f1b0b7003c32912416fb7da0fb23710a3cc8d0ead71558496aba1"
+    }
+  ],
+  "version": 3
+}

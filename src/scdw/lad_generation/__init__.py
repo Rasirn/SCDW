@@ -4,6 +4,7 @@ from .models import (
     AuxiliaryFbPlan,
     BlockPlan,
     InstanceDbPlan,
+    KnowledgeGapError,
     LadGenerationPlan,
     NetworkPlan,
 )
@@ -14,6 +15,7 @@ __all__ = [
     "AuxiliaryFbPlan",
     "BlockPlan",
     "InstanceDbPlan",
+    "KnowledgeGapError",
     "LadGenerationPlan",
     "LadPlanner",
     "LadPlanService",

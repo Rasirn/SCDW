@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Exact FlgNet extracted from TIA V17 export: 烧嘴控制.xml, Network 2. -->
+<FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21">
+      <Symbol>
+        <Component Name="烧嘴电源" />
+      </Symbol>
+    </Access>
+    <Access Scope="LocalVariable" UId="22">
+      <Symbol>
+        <Component Name="趋势定时器复位" />
+      </Symbol>
+    </Access>
+    <Access Scope="TypedConstant" UId="23">
+      <Constant>
+        <ConstantValue>T#3s</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="LocalVariable" UId="24">
+      <Symbol>
+        <Component Name="趋势定时器" />
+        <Component Name="ET" />
+      </Symbol>
+    </Access>
+    <Access Scope="TypedConstant" UId="25">
+      <Constant>
+        <ConstantValue>T#2s</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="LocalVariable" UId="26">
+      <Symbol>
+        <Component Name="趋势定时器脉冲1" />
+      </Symbol>
+    </Access>
+    <Access Scope="LocalVariable" UId="27">
+      <Symbol>
+        <Component Name="测量值" />
+      </Symbol>
+    </Access>
+    <Access Scope="LocalVariable" UId="28">
+      <Symbol>
+        <Component Name="过程温度" />
+      </Symbol>
+    </Access>
+    <Access Scope="LocalVariable" UId="29">
+      <Symbol>
+        <Component Name="过程温度" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="30">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>0.2</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="LocalVariable" UId="31">
+      <Symbol>
+        <Component Name="过程温度差值上限" />
+      </Symbol>
+    </Access>
+    <Access Scope="LocalVariable" UId="32">
+      <Symbol>
+        <Component Name="过程温度" />
+      </Symbol>
+    </Access>
+    <Access Scope="LiteralConstant" UId="33">
+      <Constant>
+        <ConstantType>Real</ConstantType>
+        <ConstantValue>0.2</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="LocalVariable" UId="34">
+      <Symbol>
+        <Component Name="过程温度差值下限" />
+      </Symbol>
+    </Access>
+    <Access Scope="LocalVariable" UId="35">
+      <Symbol>
+        <Component Name="趋势定时器" />
+        <Component Name="ET" />
+      </Symbol>
+    </Access>
+    <Access Scope="TypedConstant" UId="36">
+      <Constant>
+        <ConstantValue>T#1s</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="LocalVariable" UId="37">
+      <Symbol>
+        <Component Name="趋势定时器脉冲2" />
+      </Symbol>
+    </Access>
+    <Access Scope="LocalVariable" UId="38">
+      <Symbol>
+        <Component Name="测量值" />
+      </Symbol>
+    </Access>
+    <Access Scope="LocalVariable" UId="39">
+      <Symbol>
+        <Component Name="过程温度差值上限" />
+      </Symbol>
+    </Access>
+    <Access Scope="LocalVariable" UId="40">
+      <Symbol>
+        <Component Name="温度下降趋势" />
+      </Symbol>
+    </Access>
+    <Access Scope="LocalVariable" UId="41">
+      <Symbol>
+        <Component Name="温度上升趋势" />
+      </Symbol>
+    </Access>
+    <Access Scope="LocalVariable" UId="42">
+      <Symbol>
+        <Component Name="测量值" />
+      </Symbol>
+    </Access>
+    <Access Scope="LocalVariable" UId="43">
+      <Symbol>
+        <Component Name="过程温度差值下限" />
+      </Symbol>
+    </Access>
+    <Access Scope="LocalVariable" UId="44">
+      <Symbol>
+        <Component Name="温度上升趋势" />
+      </Symbol>
+    </Access>
+    <Access Scope="LocalVariable" UId="45">
+      <Symbol>
+        <Component Name="温度下降趋势" />
+      </Symbol>
+    </Access>
+    <Access Scope="LocalVariable" UId="46">
+      <Symbol>
+        <Component Name="趋势定时器" />
+        <Component Name="ET" />
+      </Symbol>
+    </Access>
+    <Access Scope="TypedConstant" UId="47">
+      <Constant>
+        <ConstantValue>T#1.1s</ConstantValue>
+      </Constant>
+    </Access>
+    <Access Scope="LocalVariable" UId="48">
+      <Symbol>
+        <Component Name="趋势定时器复位" />
+      </Symbol>
+    </Access>
+    <Part Name="Contact" UId="49" />
+    <Part Name="TONR" Version="1.0" UId="50">
+      <Instance Scope="LocalVariable" UId="51">
+        <Component Name="趋势定时器" />
+      </Instance>
+      <TemplateValue Name="time_type" Type="Type">Time</TemplateValue>
+    </Part>
+    <Part Name="Ge" UId="52">
+      <TemplateValue Name="SrcType" Type="Type">Time</TemplateValue>
+    </Part>
+    <Part Name="PBox" UId="53" />
+    <Part Name="Move" UId="54" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">1</TemplateValue>
+    </Part>
+    <Part Name="Add" UId="55" DisabledENO="true">
+      <TemplateValue Name="Card" Type="Cardinality">2</TemplateValue>
+      <AutomaticTyped Name="SrcType" />
+    </Part>
+    <Part Name="Sub" UId="56" DisabledENO="true">
+      <AutomaticTyped Name="SrcType" />
+    </Part>
+    <Part Name="Ge" UId="57">
+      <TemplateValue Name="SrcType" Type="Type">Time</TemplateValue>
+    </Part>
+    <Part Name="PBox" UId="58" />
+    <Part Name="Gt" UId="59">
+      <TemplateValue Name="SrcType" Type="Type">Real</TemplateValue>
+    </Part>
+    <Part Name="RCoil" UId="60" />
+    <Part Name="SCoil" UId="61" />
+    <Part Name="Lt" UId="62">
+      <TemplateValue Name="SrcType" Type="Type">Real</TemplateValue>
+    </Part>
+    <Part Name="RCoil" UId="63" />
+    <Part Name="SCoil" UId="64" />
+    <Part Name="Ge" UId="65">
+      <TemplateValue Name="SrcType" Type="Type">Time</TemplateValue>
+    </Part>
+    <Part Name="Coil" UId="66" />
+  </Parts>
+  <Wires>
+    <Wire UId="68">
+      <Powerrail />
+      <NameCon UId="49" Name="in" />
+    </Wire>
+    <Wire UId="69">
+      <IdentCon UId="21" />
+      <NameCon UId="49" Name="operand" />
+    </Wire>
+    <Wire UId="70">
+      <NameCon UId="49" Name="out" />
+      <NameCon UId="50" Name="IN" />
+      <NameCon UId="52" Name="pre" />
+      <NameCon UId="57" Name="pre" />
+      <NameCon UId="65" Name="pre" />
+    </Wire>
+    <Wire UId="71">
+      <IdentCon UId="22" />
+      <NameCon UId="50" Name="R" />
+    </Wire>
+    <Wire UId="72">
+      <IdentCon UId="23" />
+      <NameCon UId="50" Name="PT" />
+    </Wire>
+    <Wire UId="73">
+      <NameCon UId="50" Name="ET" />
+      <OpenCon UId="67" />
+    </Wire>
+    <Wire UId="74">
+      <IdentCon UId="24" />
+      <NameCon UId="52" Name="in1" />
+    </Wire>
+    <Wire UId="75">
+      <IdentCon UId="25" />
+      <NameCon UId="52" Name="in2" />
+    </Wire>
+    <Wire UId="76">
+      <NameCon UId="52" Name="out" />
+      <NameCon UId="53" Name="in" />
+    </Wire>
+    <Wire UId="77">
+      <IdentCon UId="26" />
+      <NameCon UId="53" Name="bit" />
+    </Wire>
+    <Wire UId="78">
+      <NameCon UId="53" Name="out" />
+      <NameCon UId="54" Name="en" />
+      <NameCon UId="55" Name="en" />
+      <NameCon UId="56" Name="en" />
+    </Wire>
+    <Wire UId="79">
+      <IdentCon UId="27" />
+      <NameCon UId="54" Name="in" />
+    </Wire>
+    <Wire UId="80">
+      <NameCon UId="54" Name="out1" />
+      <IdentCon UId="28" />
+    </Wire>
+    <Wire UId="81">
+      <IdentCon UId="29" />
+      <NameCon UId="55" Name="in1" />
+    </Wire>
+    <Wire UId="82">
+      <IdentCon UId="30" />
+      <NameCon UId="55" Name="in2" />
+    </Wire>
+    <Wire UId="83">
+      <NameCon UId="55" Name="out" />
+      <IdentCon UId="31" />
+    </Wire>
+    <Wire UId="84">
+      <IdentCon UId="32" />
+      <NameCon UId="56" Name="in1" />
+    </Wire>
+    <Wire UId="85">
+      <IdentCon UId="33" />
+      <NameCon UId="56" Name="in2" />
+    </Wire>
+    <Wire UId="86">
+      <NameCon UId="56" Name="out" />
+      <IdentCon UId="34" />
+    </Wire>
+    <Wire UId="87">
+      <IdentCon UId="35" />
+      <NameCon UId="57" Name="in1" />
+    </Wire>
+    <Wire UId="88">
+      <IdentCon UId="36" />
+      <NameCon UId="57" Name="in2" />
+    </Wire>
+    <Wire UId="89">
+      <NameCon UId="57" Name="out" />
+      <NameCon UId="58" Name="in" />
+    </Wire>
+    <Wire UId="90">
+      <IdentCon UId="37" />
+      <NameCon UId="58" Name="bit" />
+    </Wire>
+    <Wire UId="91">
+      <NameCon UId="58" Name="out" />
+      <NameCon UId="59" Name="pre" />
+      <NameCon UId="62" Name="pre" />
+    </Wire>
+    <Wire UId="92">
+      <IdentCon UId="38" />
+      <NameCon UId="59" Name="in1" />
+    </Wire>
+    <Wire UId="93">
+      <IdentCon UId="39" />
+      <NameCon UId="59" Name="in2" />
+    </Wire>
+    <Wire UId="94">
+      <NameCon UId="59" Name="out" />
+      <NameCon UId="60" Name="in" />
+      <NameCon UId="61" Name="in" />
+    </Wire>
+    <Wire UId="95">
+      <IdentCon UId="40" />
+      <NameCon UId="60" Name="operand" />
+    </Wire>
+    <Wire UId="96">
+      <IdentCon UId="41" />
+      <NameCon UId="61" Name="operand" />
+    </Wire>
+    <Wire UId="97">
+      <IdentCon UId="42" />
+      <NameCon UId="62" Name="in1" />
+    </Wire>
+    <Wire UId="98">
+      <IdentCon UId="43" />
+      <NameCon UId="62" Name="in2" />
+    </Wire>
+    <Wire UId="99">
+      <NameCon UId="62" Name="out" />
+      <NameCon UId="63" Name="in" />
+      <NameCon UId="64" Name="in" />
+    </Wire>
+    <Wire UId="100">
+      <IdentCon UId="44" />
+      <NameCon UId="63" Name="operand" />
+    </Wire>
+    <Wire UId="101">
+      <IdentCon UId="45" />
+      <NameCon UId="64" Name="operand" />
+    </Wire>
+    <Wire UId="102">
+      <IdentCon UId="46" />
+      <NameCon UId="65" Name="in1" />
+    </Wire>
+    <Wire UId="103">
+      <IdentCon UId="47" />
+      <NameCon UId="65" Name="in2" />
+    </Wire>
+    <Wire UId="104">
+      <NameCon UId="65" Name="out" />
+      <NameCon UId="66" Name="in" />
+    </Wire>
+    <Wire UId="105">
+      <IdentCon UId="48" />
+      <NameCon UId="66" Name="operand" />
+    </Wire>
+  </Wires>
+</FlgNet>

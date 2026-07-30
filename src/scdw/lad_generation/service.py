@@ -11,8 +11,9 @@ from pathlib import Path
 from typing import Any
 
 from scdw.common.paths import LAD_GENERATION_PLANS_DIR
+from scdw.rag import KnowledgeLibrary
 
-from .models import GENERATION_STATES, LadGenerationPlan
+from .models import GENERATION_STATES, KnowledgeGapError, LadGenerationPlan
 from .planner import LadPlanner
 
 
@@ -49,8 +50,51 @@ class LadPlanService:
             if os.path.exists(temporary):
                 os.unlink(temporary)
 
+    @staticmethod
+    def _validate_knowledge_coverage(plan: LadGenerationPlan) -> None:
+        catalog = KnowledgeLibrary.instance().catalog()
+        entries = {str(item["id"]): item for item in catalog["items"]}
+        topology_capabilities = {
+            "series": ["topology.series"],
+            "parallel": ["topology.parallel"],
+            "fan_out": ["topology.fan_out"],
+            "merge": ["topology.merge"],
+            "parallel_merge": ["topology.parallel", "topology.merge"],
+        }
+        for network in plan.networks:
+            selected = list(dict.fromkeys(network.selected_knowledge_ids))
+            network.selected_knowledge_ids = selected
+            network.knowledge_ids = list(selected)
+            unknown = [item_id for item_id in selected if item_id not in entries]
+            if unknown:
+                network.uncovered_capabilities = [f"knowledge_id:{item_id}" for item_id in unknown]
+                raise KnowledgeGapError(
+                    f"Network {network.network_key} selects unknown knowledge IDs: {', '.join(unknown)}",
+                    network_key=network.network_key,
+                    uncovered=network.uncovered_capabilities,
+                )
+            provided = {
+                str(capability)
+                for item_id in selected
+                for capability in entries[item_id].get("provides", [])
+            }
+            required = list(dict.fromkeys(network.required_capabilities))
+            topology_kind = str(network.topology.get("kind", "")).strip().lower()
+            for topology_capability in topology_capabilities.get(topology_kind, []):
+                if topology_capability not in required:
+                    required.append(topology_capability)
+            network.required_capabilities = required
+            network.uncovered_capabilities = [item for item in required if item not in provided]
+            if network.uncovered_capabilities:
+                raise KnowledgeGapError(
+                    f"Network {network.network_key} has uncovered capabilities: {', '.join(network.uncovered_capabilities)}",
+                    network_key=network.network_key,
+                    uncovered=network.uncovered_capabilities,
+                )
+
     def save(self, plan: LadGenerationPlan) -> LadGenerationPlan:
         plan.validate()
+        self._validate_knowledge_coverage(plan)
         plan.updated_at = _stamp()
         if not plan.created_at:
             plan.created_at = plan.updated_at
@@ -58,8 +102,27 @@ class LadPlanService:
             self._atomic(self._path(plan.plan_id), json.dumps(plan.to_dict(), ensure_ascii=False, sort_keys=True, indent=2) + "\n")
         return plan
 
+    def _replace_active_plans(self, new_plan: LadGenerationPlan) -> None:
+        for old in self.list(new_plan.conversation_id):
+            if old.plan_id == new_plan.plan_id or old.status != "active":
+                continue
+            old.status = "replaced"
+            old.replaced_by = new_plan.plan_id
+            old.closed_at = _stamp()
+            old.updated_at = old.closed_at
+            # Lifecycle migration must also close legacy plans created before
+            # capability fields existed; those plans are never generation-ready.
+            self._atomic(self._path(old.plan_id), json.dumps(old.to_dict(), ensure_ascii=False, sort_keys=True, indent=2) + "\n")
+
+    def _save_new_active(self, plan: LadGenerationPlan) -> LadGenerationPlan:
+        with self._lock:
+            plan.validate()
+            self._validate_knowledge_coverage(plan)
+            self._replace_active_plans(plan)
+            return self.save(plan)
+
     def create_from_requirements(self, requirements: str, *, conversation_id: str, target_device: str, main_fc_name: str = "FC_MainControl") -> LadGenerationPlan:
-        return self.save(LadPlanner().plan(requirements, conversation_id=conversation_id, target_device=target_device, main_fc_name=main_fc_name))
+        return self._save_new_active(LadPlanner().plan(requirements, conversation_id=conversation_id, target_device=target_device, main_fc_name=main_fc_name))
 
     def create_from_planning(self, planning: dict[str, Any], *, requirements: str, conversation_id: str, target_device: str) -> LadGenerationPlan:
         """Persist the complete plan already formed by the current LLM conversation."""
@@ -75,6 +138,10 @@ class LadPlanService:
             "step_status": {"planning": "planned", "artifact_creation": "planned", "network_generation": "planned"},
             "artifacts": {},
             "interface_change_log": [],
+            "verification_history": [],
+            "status": "active",
+            "replaced_by": None,
+            "closed_at": None,
             "created_at": stamp,
             "updated_at": stamp,
         }
@@ -83,7 +150,7 @@ class LadPlanService:
             plan.current_block = plan.block_dependency_order[0]
         if plan.current_network is None and plan.networks:
             plan.current_network = plan.networks[0].network_key
-        return self.save(plan)
+        return self._save_new_active(plan)
 
     def get(self, plan_id: str) -> LadGenerationPlan:
         path = self._path(plan_id)
@@ -94,6 +161,7 @@ class LadPlanService:
     def set_cursor(self, plan_id: str, block_name: str | None, network_key: str | None) -> LadGenerationPlan:
         with self._lock:
             plan = self.get(plan_id)
+            self._require_active(plan)
             blocks = {plan.main_fc.block_name, *(item.block_name for item in plan.auxiliary_fbs)}
             if block_name is not None and block_name not in blocks:
                 raise ValueError("current block is not part of the plan")
@@ -107,6 +175,7 @@ class LadPlanService:
             raise ValueError("unsupported Network status")
         with self._lock:
             plan = self.get(plan_id)
+            self._require_active(plan)
             network = next((item for item in plan.networks if item.network_key == network_key), None)
             if network is None:
                 raise KeyError("Network not found")
@@ -118,6 +187,7 @@ class LadPlanService:
             raise ValueError("unsupported runtime status")
         with self._lock:
             plan = self.get(plan_id)
+            self._require_active(plan)
             if block_name:
                 self._block(plan, block_name).status = status
             if network_key:
@@ -143,9 +213,69 @@ class LadPlanService:
             raise KeyError("Network not found")
         return network
 
+    @staticmethod
+    def _require_active(plan: LadGenerationPlan) -> None:
+        if plan.status != "active":
+            raise ValueError(f"plan is not active: {plan.status}")
+
+    def close(self, plan_id: str) -> LadGenerationPlan:
+        with self._lock:
+            plan = self.get(plan_id)
+            if plan.status == "active":
+                plan.status = "closed"
+                plan.closed_at = _stamp()
+            return self.save(plan)
+
+    def mark_network_for_replan(self, plan_id: str, network_key: str, reason: str) -> LadGenerationPlan:
+        with self._lock:
+            plan = self.get(plan_id)
+            self._require_active(plan)
+            network = self._network(plan, network_key)
+            network.status = "needs_revision"
+            plan.step_status["planning"] = "needs_revision"
+            plan.verification_history.append({
+                "operation": "semantic_change_requires_replan",
+                "network_key": network_key,
+                "reason": reason,
+                "recorded_at": _stamp(),
+            })
+            return self.save(plan)
+
+    def revise_network_plan(self, plan_id: str, network_key: str, revision: dict[str, Any], reason: str) -> LadGenerationPlan:
+        """Revise knowledge/topology on the same active plan and keep Artifact linkage."""
+        allowed = {
+            "title", "comment", "purpose", "main_branch", "parallel_branches", "instructions", "variables",
+            "required_capabilities", "selected_knowledge_ids", "instruction_chain", "topology", "depends_on", "split_reason",
+        }
+        unexpected = sorted(set(revision) - allowed)
+        if unexpected:
+            raise ValueError(f"unsupported Network planning fields: {', '.join(unexpected)}")
+        if not revision:
+            raise ValueError("revision must not be empty")
+        with self._lock:
+            plan = self.get(plan_id)
+            self._require_active(plan)
+            network = self._network(plan, network_key)
+            for name, value in revision.items():
+                setattr(network, name, value)
+            network.status = "needs_revision"
+            network.import_result = None
+            network.compile_result = None
+            network.verified_version = None
+            plan.step_status["planning"] = "planned"
+            plan.verification_history.append({
+                "operation": "revise_network_plan",
+                "network_key": network_key,
+                "reason": reason,
+                "changed_fields": sorted(revision),
+                "recorded_at": _stamp(),
+            })
+            return self.save(plan)
+
     def record_import_result(self, plan_id: str, block_name: str, artifact_id: str, version: int, result: dict[str, Any], network_key: str | None = None) -> LadGenerationPlan:
         with self._lock:
             plan = self.get(plan_id)
+            self._require_active(plan)
             block = self._block(plan, block_name)
             status = "imported" if result.get("success") else "import_failed"
             block.status = status
@@ -166,6 +296,7 @@ class LadPlanService:
     def record_compile_result(self, plan_id: str, result: dict[str, Any], *, block_name: str | None = None, artifact_id: str | None = None, version: int | None = None, network_key: str | None = None) -> LadGenerationPlan:
         with self._lock:
             plan = self.get(plan_id)
+            self._require_active(plan)
             success = bool(result.get("success"))
             status = "verified" if success else "compile_failed"
             if block_name:
@@ -194,6 +325,7 @@ class LadPlanService:
     def record_instance_db_result(self, plan_id: str, fb_name: str, instance_db_name: str, result: dict[str, Any]) -> LadGenerationPlan:
         with self._lock:
             plan = self.get(plan_id)
+            self._require_active(plan)
             target = next((item for item in plan.instance_dbs if item.fb_name == fb_name and item.db_name == instance_db_name), None)
             if target is None:
                 raise KeyError("instance DB dependency not found in plan")
@@ -205,6 +337,7 @@ class LadPlanService:
 
     def validate_instance_db_order(self, plan_id: str, fb_name: str, instance_db_name: str) -> LadGenerationPlan:
         plan = self.get(plan_id)
+        self._require_active(plan)
         fb = next((item for item in plan.auxiliary_fbs if item.block_name == fb_name), None)
         if fb is None:
             raise KeyError("auxiliary FB not found in plan")
@@ -216,6 +349,8 @@ class LadPlanService:
 
     def validate_network_generation_order(self, plan_id: str, block_name: str, network_key: str) -> None:
         plan = self.get(plan_id)
+        self._require_active(plan)
+        self._validate_knowledge_coverage(plan)
         network = self._network(plan, network_key)
         if network.block_name != block_name:
             raise ValueError("Network does not belong to block")
@@ -236,6 +371,7 @@ class LadPlanService:
 
     def validate_final_block_compile(self, plan_id: str, block_name: str) -> None:
         plan = self.get(plan_id)
+        self._require_active(plan)
         networks = [item for item in plan.networks if item.block_name == block_name]
         missing = [item.network_key for item in networks if item.status != "verified"]
         if missing:
@@ -243,6 +379,7 @@ class LadPlanService:
 
     def validate_network_compile(self, plan_id: str, block_name: str, network_key: str, artifact_id: str | None, version: int | None) -> None:
         plan = self.get(plan_id)
+        self._require_active(plan)
         network = self._network(plan, network_key)
         if network.block_name != block_name:
             raise ValueError("Network does not belong to compiled block")
@@ -255,6 +392,7 @@ class LadPlanService:
 
     def validate_final_plc_compile(self, plan_id: str) -> None:
         plan = self.get(plan_id)
+        self._require_active(plan)
         blocks = [plan.main_fc, *plan.auxiliary_fbs]
         missing_blocks = [item.block_name for item in blocks if item.status != "verified"]
         missing_dbs = [item.db_name for item in plan.instance_dbs if item.status != "imported"]
@@ -271,6 +409,7 @@ class LadPlanService:
     def link_artifact(self, plan_id: str, block_name: str, artifact_id: str, version: int) -> LadGenerationPlan:
         with self._lock:
             plan = self.get(plan_id)
+            self._require_active(plan)
             self._validate_artifact_order(plan, block_name)
             blocks = [plan.main_fc, *plan.auxiliary_fbs]
             block = next((item for item in blocks if item.block_name == block_name), None)
@@ -298,11 +437,15 @@ class LadPlanService:
             raise ValueError(f"dependency Artifacts must be created first: {', '.join(missing)}")
 
     def validate_artifact_order(self, plan_id: str, block_name: str) -> None:
-        self._validate_artifact_order(self.get(plan_id), block_name)
+        plan = self.get(plan_id)
+        self._require_active(plan)
+        self._validate_knowledge_coverage(plan)
+        self._validate_artifact_order(plan, block_name)
 
     def record_artifact_version(self, plan_id: str, block_name: str, version: int, network_key: str | None = None) -> LadGenerationPlan:
         with self._lock:
             plan = self.get(plan_id)
+            self._require_active(plan)
             if block_name not in plan.artifacts:
                 raise KeyError("artifact is not linked to plan")
             plan.artifacts[block_name]["version"] = version
@@ -318,6 +461,7 @@ class LadPlanService:
     def record_interface_change(self, plan_id: str, block_name: str, affected_networks: list[str], description: str) -> LadGenerationPlan:
         with self._lock:
             plan = self.get(plan_id)
+            self._require_active(plan)
             plan.interface_change_log.append({
                 "recorded_at": _stamp(),
                 "block_name": block_name,

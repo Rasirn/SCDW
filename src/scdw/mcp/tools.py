@@ -10,14 +10,14 @@ import json
 import os
 import traceback
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Literal, Optional
 
 from scdw.mcp.client import MCPClient
 from scdw.mcp.tool_manager import ToolManager
 from mcp.types import CallToolResult, Tool, TextContent
 import openai.types.chat.chat_completion as Message
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 from scdw.common.paths import GENERATED_DIR, PROJECT_ROOT, RAG_GENERATED_DIR
 from scdw.openness.session import TiaSessionManager
 from scdw.rag.retriever import (
@@ -31,6 +31,15 @@ from scdw.rag.retriever import (
     save_generated_xml,
     search_templates,
 )
+
+
+class GlobalDbVariableInput(BaseModel):
+    name: str
+    data_type: str
+    initial_value: str | int | float | bool | None = None
+    comment: str = ""
+    address: str | None = None
+    offset: str | None = None
 
 class _LegacyToolManager:
     @classmethod
@@ -558,28 +567,77 @@ def register_mcp_tools(mcp) -> None:
     # ── 6. create_global_db ───────────────────────────────────────────────────
     @mcp.tool(
         name="create_global_db",
-        description="在目标PLC中创建优化访问的普通Global DB。variables_json提供变量名、数据类型、初始值和注释；该工具不创建Instance DB。",
+        description="Create a Global DB with an explicit address_mode. symbolic creates an optimized DB; absolute requires every requested address and currently returns ABSOLUTE_DB_ADDRESS_UNSUPPORTED without creating anything. Never omit an address or rename a variable to bypass failure. Returns requested-to-actual mappings; does not create Instance DBs.",
     )
     def create_global_db(
         device_name: str,
         db_name: str,
         db_number: int,
-        variables_json,
+        variables_json: List[GlobalDbVariableInput],
+        address_mode: Literal["symbolic", "absolute"],
     ) -> str:
         """创建全局 DB 并写入变量定义。"""
+        requested_mappings = []
         try:
-            _check_session()
-            vars_data: list = variables_json if isinstance(variables_json, list) else json.loads(variables_json)
+            vars_data = [
+                item if isinstance(item, dict) else (
+                    item.model_dump(exclude_none=True) if hasattr(item, "model_dump") else item.dict(exclude_none=True)
+                )
+                for item in variables_json
+            ]
             if not isinstance(vars_data, list):
-                return "❌ variables_json 必须是 JSON 数组。"
+                return json.dumps({"success": False, "stage": "create_global_db", "code": "INVALID_VARIABLES", "message": "variables_json must be an array"}, ensure_ascii=False)
+
+            requested_mappings = [
+                {
+                    "requested_name": str(v.get("name", "")),
+                    "tia_actual_name": None,
+                    "requested_address": str(v.get("address") or v.get("offset") or "") or None,
+                    "tia_actual_address": None,
+                }
+                for v in vars_data
+            ]
+            if address_mode not in {"symbolic", "absolute"}:
+                return json.dumps({
+                    "success": False, "stage": "create_global_db", "code": "ADDRESS_MODE_REQUIRED",
+                    "message": "address_mode must explicitly be symbolic or absolute; do not infer it by dropping requested addresses.",
+                    "variable_mappings": requested_mappings,
+                }, ensure_ascii=False, sort_keys=True)
+            fixed = [item for item in requested_mappings if item["requested_address"]]
+            if address_mode == "symbolic" and fixed:
+                return json.dumps({
+                    "success": False, "stage": "create_global_db", "code": "ADDRESS_MODE_CONFLICT",
+                    "message": "symbolic mode cannot accept fixed addresses; preserve the user's absolute request and use address_mode=absolute.",
+                    "variable_mappings": requested_mappings,
+                }, ensure_ascii=False, sort_keys=True)
+            if address_mode == "absolute" and len(fixed) != len(requested_mappings):
+                return json.dumps({
+                    "success": False, "stage": "create_global_db", "code": "ABSOLUTE_ADDRESS_REQUIRED",
+                    "message": "absolute mode requires address or offset for every variable; omitted addresses are not allowed.",
+                    "variable_mappings": requested_mappings,
+                }, ensure_ascii=False, sort_keys=True)
+            if address_mode == "absolute":
+                return json.dumps({
+                    "success": False,
+                    "stage": "create_global_db",
+                    "code": "ABSOLUTE_DB_ADDRESS_UNSUPPORTED",
+                    "message": "Fixed %DBx.DBXy.z/offset layout cannot be verified by the current Openness implementation; no DB was created.",
+                    "device_name": device_name,
+                    "db_name": db_name,
+                    "db_number": db_number,
+                    "optimized_access": None,
+                    "variable_mappings": requested_mappings,
+                }, ensure_ascii=False, sort_keys=True)
+
+            _check_session()
 
             db_vars = [
                 DBVariable(
                     name=v["name"],
                     data_type=v.get("data_type", "Bool"),
-                    initial_value=str(v.get("initial_value", "")),
+                    initial_value="" if v.get("initial_value") is None else str(v.get("initial_value")),
                     comment=v.get("comment", ""),
-                    offset=str(v.get("offset", "")),
+                    offset="",
                 )
                 for v in vars_data
                 if v.get("name") and v.get("data_type")
@@ -589,12 +647,24 @@ def register_mcp_tools(mcp) -> None:
             _session.run_plc_operation("create_global_db", device_name,
                                        lambda _project, plc_sw: _openness_create_global_db(plc_sw, temp_dir, db_name, db_number, db_vars))
 
-            return (
-                f"✅ 全局 DB '{db_name}' (DB{db_number}) 已创建，"
-                f"包含 {len(db_vars)} 个变量。"
-            )
+            mappings = [{
+                "requested_name": item.name,
+                "tia_actual_name": item.name,
+                "requested_address": None,
+                "tia_actual_address": None,
+            } for item in db_vars]
+            return json.dumps({
+                "success": True, "stage": "create_global_db", "code": "GLOBAL_DB_CREATED",
+                "device_name": device_name, "db_name": db_name, "db_number": db_number,
+                "optimized_access": True, "variable_mappings": mappings,
+            }, ensure_ascii=False, sort_keys=True)
         except Exception as exc:
-            return f"❌ 创建全局 DB 失败：{exc}"
+            return json.dumps({
+                "success": False, "stage": "create_global_db",
+                "code": getattr(exc, "code", type(exc).__name__), "message": str(exc),
+                "device_name": device_name, "db_name": db_name, "db_number": db_number,
+                "variable_mappings": requested_mappings,
+            }, ensure_ascii=False, sort_keys=True)
 
     # ── 7. import_scl_block ───────────────────────────────────────────────────
     @mcp.tool(
@@ -1142,7 +1212,7 @@ def register_mcp_tools(mcp) -> None:
     @mcp.tool(
         name="get_plc_knowledge_catalog",
         description=(
-            "返回全部精简TIA V17 LAD知识metadata，不返回XML或规则正文。模型应先读取完整目录、判断能力需求、显式选择知识项ID，再调用get_plc_knowledge_items。无关键词评分或阈值。"
+            "返回全部精简TIA V17 LAD知识metadata，不返回正文。先按provides、topology及not_for选择ID；带generation_mode=knowledge_renderer_required的拓扑必须通过write_lad_network_from_knowledge生成，不能自行拼Wire。随后调用get_plc_knowledge_items读取所选正文。"
         ),
     )
     def get_plc_knowledge_catalog() -> str:

@@ -25,8 +25,8 @@ def _validate_var_name(name: str) -> None:
         raise ValueError("变量名不能为空")
     if name[0].isdigit():
         raise ValueError(
-            f"变量名 '{name}' 以数字开头，TIA Portal 不允许此格式。"
-            f"建议改为下划线或字母开头，如 '_{name}' 或将数字移至末尾。"
+            f"变量名 '{name}' 以数字开头，当前SCL Global DB导入路径无法可靠创建该标识符。"
+            "不得静默重命名；请保留请求名称并返回失败，或改用经TIA验证的创建方式。"
         )
     if not _VAR_NAME_RE.match(name):
         invalid_chars = {c for c in name if not re.match(r'[A-Za-z0-9_\u4e00-\u9fff]', c)}
@@ -45,7 +45,13 @@ class DBVariable:
     data_type: str
     initial_value: str = ""
     comment: str = ""
-    offset: str = ""   # 逻辑偏移量，如 "0.0"、"2"，仅用于 SCL 注释中记录，不影响 TIA 编译器分配地址
+    offset: str = ""
+
+
+class AbsoluteDbAddressUnsupportedError(ValueError):
+    """Raised instead of pretending an optimized DB honors absolute offsets."""
+
+    code = "ABSOLUTE_DB_ADDRESS_UNSUPPORTED"
 
 
 # ── 内部辅助 ──────────────────────────────────────────────────────────────────
@@ -167,6 +173,13 @@ def build_global_db_scl(
     Returns:
         SCL 源码字符串
     """
+    addressed = [var for var in variables if str(var.offset).strip()]
+    if addressed:
+        requested = ", ".join(f"{var.name}={var.offset}" for var in addressed)
+        raise AbsoluteDbAddressUnsupportedError(
+            "This Openness path cannot verify fixed offsets in a non-optimized DB; "
+            f"no DB was created. Requested: {requested}"
+        )
     lines = [
         f'DATA_BLOCK "{db_name}"',
         "{ S7_Optimized_Access := 'TRUE' }",

@@ -1,0 +1,110 @@
+{
+  "affected_networks": [],
+  "artifact_id": "xml_a286d0a5848dc044609c2daa",
+  "block_name": "FC_烧嘴报警",
+  "block_type": "FC",
+  "change_source": "workflow_state",
+  "conversation_id": "burner_alarm_2025",
+  "created_at": "2026-07-30T16:12:52.406808Z",
+  "current_version": 3,
+  "device_name": "PLC_1",
+  "expires_at": "2026-08-01T16:12:52.406808Z",
+  "last_compile": {
+    "artifact_id": "xml_a286d0a5848dc044609c2daa",
+    "block_name": "FC_烧嘴报警",
+    "block_type": "FC",
+    "code": "OK",
+    "device_name": "PLC_1",
+    "error_count": 0,
+    "messages": [
+      {
+        "description": "",
+        "messages": [
+          {
+            "description": "",
+            "messages": [
+              {
+                "description": "Inputs or outputs are used that do not exist in the configured hardware.",
+                "messages": [],
+                "path": "",
+                "severity": "warning"
+              }
+            ],
+            "path": "General warnings",
+            "severity": "warning"
+          },
+          {
+            "description": "",
+            "messages": [
+              {
+                "description": "No block was compiled. All blocks are up-to-date.",
+                "messages": [],
+                "path": "",
+                "severity": "information"
+              }
+            ],
+            "path": "Program blocks",
+            "severity": "information"
+          }
+        ],
+        "path": "PLC_1",
+        "severity": "warning"
+      },
+      {
+        "description": "Compiling finished (errors: 0; warnings: 1)",
+        "messages": [],
+        "path": "",
+        "severity": "warning"
+      }
+    ],
+    "network_key": null,
+    "plan_id": "ladplan_f896420b4b431c72",
+    "recorded_at": "2026-07-30T16:14:15.674309Z",
+    "scope": "block",
+    "stage": "tia_compile",
+    "state": "Warning",
+    "success": true,
+    "target_name": "FC_烧嘴报警",
+    "version": 3,
+    "warning_count": 1
+  },
+  "last_import": {
+    "artifact_id": "xml_a286d0a5848dc044609c2daa",
+    "block_name": "FC_烧嘴报警",
+    "block_type": "FC",
+    "code": "OK",
+    "device_name": "PLC_1",
+    "message": "TIA import completed",
+    "messages": [],
+    "network_key": "net_overtemp_summary",
+    "plan_id": "ladplan_f896420b4b431c72",
+    "recorded_at": "2026-07-30T16:13:46.604924Z",
+    "stage": "tia_import",
+    "success": true,
+    "target": {
+      "device_name": "PLC_1",
+      "project": "烧嘴报警程序"
+    },
+    "version": 3
+  },
+  "last_validation": {
+    "errors": [],
+    "summary": {
+      "bytes": 8088,
+      "root": "Document"
+    },
+    "valid": true,
+    "warnings": []
+  },
+  "network_states": {
+    "net_fault_alarm": "verified",
+    "net_overtemp_summary": "verified"
+  },
+  "plan_id": "ladplan_f896420b4b431c72",
+  "status": "verified",
+  "updated_at": "2026-07-30T16:14:15.752517Z",
+  "verified_versions": {
+    "net_fault_alarm": 2,
+    "net_overtemp_summary": 3
+  }
+}

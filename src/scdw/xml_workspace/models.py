@@ -45,7 +45,27 @@ class PatchOperation:
     expected_occurrences: int = 1
 
     @classmethod
-    def from_dict(cls, value: dict[str, Any]) -> "PatchOperation": return cls(**value)
+    def from_dict(cls, value: dict[str, Any]) -> "PatchOperation":
+        if not isinstance(value, dict):
+            raise TypeError("patch operation must be an object")
+        data = dict(value)
+        op = data.pop("op", None)
+        if op is None and "search" in data and "replace" in data:
+            op = "replace_exact"
+        if op == "replace":
+            op = "replace_exact"
+        if op == "replace_exact":
+            old = data.pop("old", data.pop("search", None))
+            new = data.pop("new", data.pop("replace", None))
+        else:
+            old = data.pop("old", data.pop("search", None))
+            new = data.pop("new", data.pop("replace", None))
+        expected = data.pop("expected_occurrences", 1)
+        if data:
+            raise TypeError(f"unsupported patch operation fields: {', '.join(sorted(data))}")
+        if not isinstance(expected, int):
+            raise TypeError("expected_occurrences must be an integer")
+        return cls(op=str(op or ""), old=old, new=new, expected_occurrences=expected)
 
     def to_dict(self) -> dict[str, Any]: return asdict(self)
 

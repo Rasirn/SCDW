@@ -1,18 +1,99 @@
 {
   "tia_version": "V17",
   "sources": [
-    {"source": "data/rag/raw/application/Main.xml", "extracted_items": ["call.fc.v17", "network_text.title_comment.v17", "guide.simaticml_block_structure.v17"]},
-    {"source": "data/rag/raw/application/PID参数控制.xml", "extracted_items": ["instruction.move.v17"]},
-    {"source": "data/rag/raw/application/报警.xml", "extracted_items": ["instruction.ton_global_instance.v17", "access.typed_time_constant.v17", "access.multilevel_db_member.v17", "topology.parallel_set_reset.v17"]},
-    {"source": "data/rag/raw/application/烧嘴控制.xml", "extracted_items": ["instruction.ton_static_instance.v17", "interface.local_variable_access.v17", "interface.complex_sections.v17"]},
-    {"source": "data/rag/raw/application/烧嘴控制块.xml", "extracted_items": ["call.fb_global_instance.v17", "guide.user_block_call_rules.v17"]},
-    {"source": "data/rag/raw/application/程序发生器.xml", "extracted_items": ["instruction.math_cascade.v17", "instruction.ton_static_instance.v17", "interface.complex_sections.v17", "guide.instruction_template_rules.v17"]},
-    {"source": "data/rag/raw/application/设定值传递.xml", "extracted_items": ["topology.parallel_set_reset.v17", "instruction.move.v17"]},
-    {"source": "data/rag/raw/application/输入信号转换块.xml", "extracted_items": ["instruction.math_cascade.v17", "guide.instruction_template_rules.v17"]},
-    {"source": "data/rag/raw/application/风机燃气.xml", "extracted_items": ["instruction.math_cascade.v17", "guide.import_failure_patterns.v17"]}
+    {
+      "source": "data/rag/raw/application/Main.xml",
+      "extracted_items": [
+        "call.fc.v17",
+        "guide.simaticml_block_structure.v17",
+        "guide.uid_reference_rules.v17",
+        "guide.user_block_call_rules.v17",
+        "network_text.title_comment.v17"
+      ]
+    },
+    {
+      "source": "data/rag/raw/application/PID参数控制.xml",
+      "extracted_items": [
+        "instruction.move.v17"
+      ]
+    },
+    {
+      "source": "data/rag/raw/application/报警.xml",
+      "extracted_items": [
+        "access.multilevel_db_member.v17",
+        "access.typed_time_constant.v17",
+        "guide.timer_counter_instance_rules.v17",
+        "instruction.pbox_edge_memory.v17",
+        "instruction.ton_global_instance.v17",
+        "topology.parallel_set_reset.v17"
+      ]
+    },
+    {
+      "source": "data/rag/raw/application/烧嘴控制.xml",
+      "extracted_items": [
+        "guide.interface_access_consistency.v17",
+        "instruction.coilton_pulse.v17",
+        "instruction.comparison_or_chain.v17",
+        "instruction.increment_counter.v17",
+        "instruction.ton_static_instance.v17",
+        "instruction.tonr_trend_state.v17",
+        "interface.complex_sections.v17",
+        "interface.local_variable_access.v17"
+      ]
+    },
+    {
+      "source": "data/rag/raw/application/烧嘴控制块.xml",
+      "extracted_items": [
+        "call.fb_global_instance.v17",
+        "guide.user_block_call_rules.v17",
+        "topology.contact_or_coil.v17",
+        "topology.contact_or_pbox_scoil.v17"
+      ]
+    },
+    {
+      "source": "data/rag/raw/application/程序发生器.xml",
+      "extracted_items": [
+        "guide.instruction_template_rules.v17",
+        "guide.timer_counter_instance_rules.v17",
+        "instruction.arithmetic_guard.v17",
+        "instruction.math_cascade.v17",
+        "instruction.ton_static_instance.v17",
+        "interface.complex_sections.v17"
+      ]
+    },
+    {
+      "source": "data/rag/raw/application/设定值传递.xml",
+      "extracted_items": [
+        "instruction.move.v17",
+        "topology.parallel_set_reset.v17"
+      ]
+    },
+    {
+      "source": "data/rag/raw/application/输入信号转换块.xml",
+      "extracted_items": [
+        "guide.instruction_template_rules.v17",
+        "instruction.convert_divide.v17",
+        "instruction.math_cascade.v17"
+      ]
+    },
+    {
+      "source": "data/rag/raw/application/风机燃气.xml",
+      "extracted_items": [
+        "guide.import_failure_patterns.v17",
+        "instruction.gather_scatter.v17",
+        "instruction.math_cascade.v17"
+      ]
+    }
   ],
   "verified_absent_from_application": [
-    "TOF", "TP", "CTU", "CTD", "CTUD", "用户FB多重实例调用", "动态数组下标"
+    "RBox",
+    "TOF",
+    "TP",
+    "CTU",
+    "CTD",
+    "CTUD",
+    "用户FB多重实例调用",
+    "动态数组下标"
   ],
-  "publication_note": "缺少V17样本的能力不发布推测性XML；取得验证样本后再增补。"
+  "publication_note": "golden仅用于从TIA V17导出XML原样提取的结构；其他新条目标记verified，仍应由TIA导入和编译做最终语义验证。"
 }

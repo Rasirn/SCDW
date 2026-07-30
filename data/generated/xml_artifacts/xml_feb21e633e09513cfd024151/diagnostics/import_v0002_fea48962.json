@@ -1,0 +1,26 @@
+{
+  "artifact_id": "xml_feb21e633e09513cfd024151",
+  "block_name": "FC_BurnerAlarm",
+  "block_type": "FC",
+  "code": "TIA_XML_IMPORT_FAILED",
+  "device_name": "PLC_1",
+  "message": "Error when calling method 'Import' of type 'Siemens.Engineering.SW.Blocks.PlcBlockComposition'.\r\n\r\nCannot create the 'SW.Blocks.CompileUnit' object with Simatic ML ID '1' at line number 10 at line position 6.\r\n\r\nError when calling method 'Create' of type 'Siemens.Engineering.SW.Blocks.CompileUnitComposition'.\r\n\r\nNo import will be performed. UId 为 28 的元素产生以下错误消息：引脚“out”处，电源线 (UId=47) 中包含与 (UId=22) 的无效连接。\r\nUId 为 28 的元素产生以下错误消息：引脚“out”处，电源线 (UId=47) 中包含与 (UId=23) 的无效连接。\r\nUId 为 28 的元素产生以下错误消息：引脚“out”处，电源线 (UId=47) 中包含与 (UId=24) 的无效连接。\r\nUId 为 28 的元素产生以下错误消息：引脚“out”处，电源线 (UId=47) 中包含与 (UId=25) 的无效连接。\r\nUId 为 28 的元素产生以下错误消息：引脚“out”处，电源线 (UId=47) 中包含与 (UId=26) 的无效连接。\r\nUId 为 28 的元素产生以下错误消息：引脚“out”处，电源线 (UId=47) 中包含与 (UId=27) 的无效连接。\r\n\r\n   在 Siemens.Engineering.Private.Session.Siemens.Engineering.Private.IInstanceSession.InvokeFunc[T,TC](LifetimeContractHandle`1 lifetimeContractHandle, String name, IEnumerable`1 parameters, String fullName)\r\n   在 Siemens.Engineering.Private.InternalInstanceAccess`2.InvokeFunc[T](String name, IEnumerable`1 parameters)\r\n   在 Siemens.Engineering.SW.Blocks.PlcBlockComposition.Import(FileInfo path, ImportOptions importOptions)",
+  "messages": [
+    {
+      "description": "Error when calling method 'Import' of type 'Siemens.Engineering.SW.Blocks.PlcBlockComposition'.\r\n\r\nCannot create the 'SW.Blocks.CompileUnit' object with Simatic ML ID '1' at line number 10 at line position 6.\r\n\r\nError when calling method 'Create' of type 'Siemens.Engineering.SW.Blocks.CompileUnitComposition'.\r\n\r\nNo import will be performed. UId 为 28 的元素产生以下错误消息：引脚“out”处，电源线 (UId=47) 中包含与 (UId=22) 的无效连接。\r\nUId 为 28 的元素产生以下错误消息：引脚“out”处，电源线 (UId=47) 中包含与 (UId=23) 的无效连接。\r\nUId 为 28 的元素产生以下错误消息：引脚“out”处，电源线 (UId=47) 中包含与 (UId=24) 的无效连接。\r\nUId 为 28 的元素产生以下错误消息：引脚“out”处，电源线 (UId=47) 中包含与 (UId=25) 的无效连接。\r\nUId 为 28 的元素产生以下错误消息：引脚“out”处，电源线 (UId=47) 中包含与 (UId=26) 的无效连接。\r\nUId 为 28 的元素产生以下错误消息：引脚“out”处，电源线 (UId=47) 中包含与 (UId=27) 的无效连接。\r\n\r\n   在 Siemens.Engineering.Private.Session.Siemens.Engineering.Private.IInstanceSession.InvokeFunc[T,TC](LifetimeContractHandle`1 lifetimeContractHandle, String name, IEnumerable`1 parameters, String fullName)\r\n   在 Siemens.Engineering.Private.InternalInstanceAccess`2.InvokeFunc[T](String name, IEnumerable`1 parameters)\r\n   在 Siemens.Engineering.SW.Blocks.PlcBlockComposition.Import(FileInfo path, ImportOptions importOptions)",
+      "path": "",
+      "severity": "error",
+      "type": "EngineeringTargetInvocationException"
+    }
+  ],
+  "network_key": "net_fault_alarm",
+  "plan_id": "ladplan_088684a4cc5d073e",
+  "recorded_at": "2026-07-30T14:39:21.153928Z",
+  "stage": "tia_import",
+  "success": false,
+  "target": {
+    "device_name": "PLC_1",
+    "project": "BurnerAlarm_Proj"
+  },
+  "version": 2
+}

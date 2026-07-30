@@ -205,6 +205,25 @@ class XmlArtifactService:
     def get_artifact(self, artifact_id: str) -> ArtifactMetadata:
         return self._active(self.store.metadata(artifact_id))
 
+    def relink_plan(self, artifact_id: str, plan_id: str, block_name: str, block_type: str | None = None) -> ArtifactMetadata:
+        """Move an Artifact sidecar to a replacement active plan without changing XML."""
+        with self._lock(artifact_id):
+            metadata = self.get_artifact(artifact_id)
+            if metadata.block_name and metadata.block_name != block_name:
+                raise ArtifactError("PLAN_PRECONDITION_FAILED", "Artifact block_name does not match the plan block")
+            if block_type and metadata.block_type and metadata.block_type != block_type:
+                raise ArtifactError("PLAN_PRECONDITION_FAILED", "Artifact block_type does not match the plan block")
+            updated = replace(
+                metadata,
+                plan_id=plan_id,
+                block_name=block_name,
+                block_type=block_type or metadata.block_type,
+                updated_at=_iso(_now()),
+                change_source="plan_relink",
+            )
+            self.store.write_metadata(updated)
+            return updated
+
     def get_block_info(self, artifact_id: str, version: int | None = None) -> dict:
         metadata, used, content, units = self._snapshot(artifact_id, version)
         try:
@@ -374,6 +393,7 @@ class XmlArtifactService:
                 insert_at, key_index = content.rfind("</ObjectList>"), len(keys)
             if insert_at < 0:
                 raise ArtifactError("PATCH_PRECONDITION_FAILED", "ObjectList closing tag was not found")
+            unit = self._allocate_document_ids(content, unit)
             content = content[:insert_at] + unit + "\n" + content[insert_at:]
             keys.insert(key_index, network_key)
             return self._write_version(metadata, content, source=source, affected=[network_key], network_keys=keys, states={network_key: "import_pending"})
@@ -387,6 +407,8 @@ class XmlArtifactService:
             item = next((unit for unit in units if unit["network_key"] == network_key), None)
             if item is None:
                 raise ArtifactError("NETWORK_NOT_FOUND", "network key was not found")
+            without_old = content[:item["start"]] + content[item["end"]:]
+            replacement = self._allocate_document_ids(without_old, replacement)
             content = content[:item["start"]] + replacement + content[item["end"]:]
             keys = [unit["network_key"] for unit in units]
             return self._write_version(metadata, content, source=source, affected=[network_key], network_keys=keys, states={network_key: "import_pending"})
@@ -407,6 +429,19 @@ class XmlArtifactService:
     def _next_object_id(content: str) -> int:
         values = [int(value) for value in re.findall(r"(?<!U)ID=\"(\d+)\"", content)]
         return max(values, default=0) + 1
+
+    @classmethod
+    def _allocate_document_ids(cls, content: str, unit: str) -> str:
+        """Allocate document-scoped ID values without touching Network-local UId."""
+        next_id = cls._next_object_id(content)
+
+        def replace_id(match: re.Match[str]) -> str:
+            nonlocal next_id
+            value = f'ID="{next_id}"'
+            next_id += 1
+            return value
+
+        return re.sub(r'(?<!U)\bID="\d+"', replace_id, unit)
 
     @classmethod
     def _set_network_text(cls, unit: str, field: str, text: str, next_id: int) -> str:
