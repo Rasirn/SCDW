@@ -86,12 +86,12 @@ class DBBlockSpec:
 class FunctionLogicSpec:
     """
     程序功能逻辑规格：每条对应 xlsx 中一个功能区块的名称与逻辑描述。
-    描述文本用于指导 Agent 生成对应的 LAD/SCL 程序块。
-    关联 DB 块名称记录在 db_block_name，供 Agent 在 LAD 中引用 DB 变量。
+    描述文本作为 LAD 整体规划的需求输入，不预设块或Network边界。
+    关联 DB 块名称记录在 db_block_name，供同一对话中的LLM规划符号引用。
     """
 
     function_name: str       # 功能名称，如 "风机输出功能"
-    description: str         # 逻辑描述文本，Agent 根据此生成 LAD 梯级
+    description: str         # 逻辑需求文本，由整体规划决定块和Network组织
     db_block_name: str = "" # 关联的 DB 块名称（与 DBBlockSpec.function_name 一致）
     block_index: int = 0     # 建议的 LAD 块编号（从 200 起，避免与 DB 编号 100+ 冲突）
 

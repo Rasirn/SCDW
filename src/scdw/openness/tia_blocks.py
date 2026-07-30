@@ -209,6 +209,95 @@ def create_global_db(
     return import_scl_block(plc_software, temp_dir, db_name, scl_content)
 
 
+def _iter_plc_blocks(group):
+    try:
+        yield from list(group.Blocks)
+    except Exception:
+        pass
+    for attribute in ("Groups", "BlockGroups"):
+        try:
+            children = list(getattr(group, attribute))
+        except Exception:
+            continue
+        for child in children:
+            yield from _iter_plc_blocks(child)
+        break
+
+
+def find_plc_block(plc_software, block_name: str):
+    """Find one block by exact TIA name across nested block groups."""
+    for block in _iter_plc_blocks(plc_software.BlockGroup):
+        try:
+            if str(block.Name) == block_name:
+                return block
+        except Exception:
+            continue
+    return None
+
+
+def _tia_type_name(value) -> str:
+    try:
+        return str(value.GetType().Name)
+    except Exception:
+        return type(value).__name__
+
+
+def _instance_of_name(block) -> str | None:
+    for attribute in ("InstanceOf", "InstanceOfBlock"):
+        try:
+            target = getattr(block, attribute)
+            if target is not None:
+                return str(getattr(target, "Name", target))
+        except Exception:
+            pass
+    for attribute in ("InstanceOfName", "FunctionBlockName"):
+        try:
+            value = getattr(block, attribute)
+            if value:
+                return str(value)
+        except Exception:
+            pass
+    return None
+
+
+def create_instance_db(plc_software, fb_name: str, instance_db_name: str, db_number: int | None = None) -> dict:
+    """Create a TIA InstanceDB bound to an existing FB without using GlobalDB SCL."""
+    fb = find_plc_block(plc_software, fb_name)
+    if fb is None:
+        return {"success": False, "code": "FB_NOT_FOUND", "created": False, "fb_name": fb_name, "instance_db_name": instance_db_name}
+    fb_type = _tia_type_name(fb).lower()
+    if "functionblock" not in fb_type and "fb" not in fb_type:
+        return {"success": False, "code": "TARGET_NOT_FB", "created": False, "fb_name": fb_name, "actual_type": _tia_type_name(fb), "instance_db_name": instance_db_name}
+
+    existing = find_plc_block(plc_software, instance_db_name)
+    if existing is not None:
+        existing_type = _tia_type_name(existing)
+        bound_to = _instance_of_name(existing)
+        if "instance" not in existing_type.lower() and bound_to is None:
+            return {"success": False, "code": "NAME_CONFLICT_NOT_INSTANCE_DB", "created": False, "fb_name": fb_name, "instance_db_name": instance_db_name, "actual_type": existing_type}
+        if bound_to and bound_to != fb_name:
+            return {"success": False, "code": "INSTANCE_DB_BOUND_TO_OTHER_FB", "created": False, "fb_name": fb_name, "instance_db_name": instance_db_name, "bound_to": bound_to}
+        return {"success": True, "code": "INSTANCE_DB_ALREADY_EXISTS", "created": False, "fb_name": fb_name, "instance_db_name": instance_db_name, "bound_to": bound_to or fb_name, "db_number": getattr(existing, "Number", None)}
+
+    auto_number = db_number is None
+    # TIA Portal V17 exposes CreateInstanceDB(String, Boolean, Int32, String):
+    # the final argument is the referenced FB name, not the FB object.
+    # Even with isAutoNumbered=True, V17 validates the supplied number.  Zero
+    # creates an unusable DB0 on S7-1200; use the first valid DB number as the
+    # auto-numbering seed.
+    requested_number = db_number if db_number is not None else 1
+    created = plc_software.BlockGroup.Blocks.CreateInstanceDB(instance_db_name, auto_number, requested_number, fb_name)
+    return {
+        "success": True,
+        "code": "OK",
+        "created": True,
+        "fb_name": fb_name,
+        "instance_db_name": instance_db_name,
+        "bound_to": _instance_of_name(created) or fb_name,
+        "db_number": getattr(created, "Number", db_number),
+    }
+
+
 # ── FlgNet Part 排序自动修复 ──────────────────────────────────────────────────
 def _fix_flgnet_part_order(xml_content: str) -> str:
     """
@@ -522,52 +611,14 @@ def import_lad_xml_block(
     Returns:
         写入的 .xml 文件完整路径
     """
-    import re as _re
     from Siemens.Engineering import ImportOptions  # type: ignore
     from System.IO import FileInfo  # type: ignore
 
-    # ── 兼容性预处理 ──────────────────────────────────────────────────────────
-    # 1. 将 DisabledENO="true" 改为 DisabledENO="false"。
-    #    TIA Portal 要求该属性必须显式声明——有 "true" 或 "false" 都能接受，
-    #    但如果完全缺失则部分指令（Move/GATHER/SCATTER/Calc 等）会导入失败。
-    #    从 S7-1200 导出的 XML 带有 DisabledENO="true" 是合法的；
-    #    只需保持属性存在，将 true 改为 false 即可（ENO 默认启用，对逻辑无影响）。
-    xml_content = _re.sub(r'DisabledENO="true"', 'DisabledENO="false"', xml_content)
-
-    # 2. 检测多条 Powerrail：每个 CompileUnit（程序段）只能有 1 条 Powerrail。
-    #    并联支路必须从同一条 Powerrail Wire 分叉（多个 NameCon 挂在同一条 Wire 上），
-    #    不能每条支路各写一个 <Wire><Powerrail />...</Wire>。
-    _check_multiple_powerrails(xml_content)
-
-    # 3. 修复重复 IdentCon：每个 Access UId 只能在一条 Wire 中引用，
-    #    同一变量连接多处时需为每处创建独立 Access 元素（不同 UId）。
-    #    自动检测并复制 Access，分配新 UId，无法修复时原样保留。
-    xml_content = _fix_duplicate_identcon(xml_content)
-
-    # 4. 修复 FlgNet Part 排序：TIA Portal 要求同一分支的 Part 元素必须连续，
-    #    不能将所有 Contact 排在前面、Coil/SCoil/RCoil 排在后面。
-    #    自动拓扑排序，无法修复时原样保留（不影响正常 XML）。
-    xml_content = _fix_flgnet_part_order(xml_content)
-
-    # 5. 检测 S7-1500 专用直接 I/O 访问指令（S7-1200 不存在）：
-    #    GETIO/SETIO/GETIO_PART/SETIO_PART 直接访问过程映像，S7-1200 不支持。
-    #    注意：GATHER/SCATTER 在 S7-1200 V4.0+ 中完全支持，不在禁止列表内。
-    _S1500_ONLY = ('GETIO', 'SETIO', 'GETIO_PART', 'SETIO_PART')
-    _found = _re.findall(
-        r'<Part Name="(' + '|'.join(_S1500_ONLY) + r')"',
-        xml_content,
-    )
-    if _found:
-        raise ValueError(
-            f"XML 中包含 S7-1500 专用指令：{list(set(_found))}，S7-1200/S7-1214 不支持这些指令。\n"
-            "请用等效的 S7-1200 指令替换：\n"
-            "  GETIO/SETIO → 直接使用 PLC 输入/输出过程映像变量，无需直接 I/O 访问指令\n"
-            "修改后重新调用 import_lad_xml。"
-        )
-
+    # Import the exact artifact version supplied by the caller.  TIA Portal is
+    # authoritative for SimaticML/LAD structure and semantics; this layer must
+    # not silently repair, normalize or reject otherwise parseable XML.
     filename = safe_filename(block_name, ".xml")
     xml_path = write_text_file(temp_dir, filename, xml_content)
-
     file_info = FileInfo(xml_path)
     plc_software.BlockGroup.Blocks.Import(file_info, ImportOptions.Override)
     return xml_path

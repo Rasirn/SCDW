@@ -1,0 +1,94 @@
+E                                                                        [100%]
+=================================== ERRORS ====================================
+_ ERROR at setup of test_tia_artifact_fb_instance_db_and_incremental_main_fc __
+
+temporary_tia_project = (TiaSessionManager(tia=<Siemens.Engineering.TiaPortal object at 0x000001293B5E4AC0>, project=<Siemens.Engineering.Proj...ect at 0x000001293B6A3C80>, WindowsPath('E:/PlcProject/Code/PLC/SCDW/data/generated/test_projects/SCDW_TEST_48d81ff3'))
+
+    @pytest.fixture
+    def test_plc_software(temporary_tia_project):
+        """向临时工程添加测试 CPU 并返回 PLC Software。"""
+        from scdw.openness.tia_hardware import add_plc_device
+    
+        session, project, _ = temporary_tia_project
+        order_number = os.getenv("SCDW_TEST_CPU", "OrderNumber:6ES7 214-1BG40-0XB0/V4.4")
+        device_name = "SCDW_TEST_PLC"
+        try:
+>           device, plc_software = add_plc_device(project, order_number, device_name, device_name)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\conftest.py:73: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+project = <Siemens.Engineering.Project object at 0x000001293B6A3C80>
+order_number = 'OrderNumber:6ES7 214-1BG40-0XB0/V4.4'
+device_name = 'SCDW_TEST_PLC', device_item_name = 'SCDW_TEST_PLC'
+
+    def add_plc_device(
+        project,
+        order_number: str,
+        device_name: str,
+        device_item_name: Optional[str] = None,
+    ):
+        """
+        在项目根节点下新建 PLC 顶层设备。
+    
+        Args:
+            project: TIA Project 对象
+            order_number: 设备订货号，格式如 "OrderNumber:6ES7 214-1BG40-0XB0/V4.4"
+            device_name: 项目树中显示的设备名称，如 "PLC_1"
+            device_item_name: DeviceItem 名称，默认与 device_name 相同
+    
+        Returns:
+            (device, plc_software) 元组
+        """
+        item_name = device_item_name or device_name
+>       device = project.Devices.CreateWithItem(order_number, device_name, item_name)
+                 ^^^^^^^^^^^^^^^
+E       Siemens.Engineering.EngineeringRuntimeException: Cross-thread operation is not valid in Openness within STA.
+E          在 Siemens.Engineering.Private.ThreadSynchronizer.SynchronizerBase.ThreadCheck()
+E          在 Siemens.Engineering.Private.ThreadSynchronizer.SynchronizerBase.AsyncFuncInvoke[T1,TResult](Func`2 func, T1 arg1)
+E          在 Siemens.Engineering.Private.ThreadSynchronizer.AsyncFuncInvoke[T1,TResult](Func`2 func, T1 arg1)
+E          在 Siemens.Engineering.Private.Session.Siemens.Engineering.Private.IObjectSession.GetComposition[T,TC](LifetimeContractHandle`1 lifetimeContractHandle, String name, String fullName)
+E          在 Siemens.Engineering.Private.InternalObject_Access`2.GetComposition[T](String name)
+E          在 Siemens.Engineering.ProjectBase.get_Devices()
+
+src\scdw\openness\tia_hardware.py:173: EngineeringRuntimeException
+
+During handling of the above exception, another exception occurred:
+
+temporary_tia_project = (TiaSessionManager(tia=<Siemens.Engineering.TiaPortal object at 0x000001293B5E4AC0>, project=<Siemens.Engineering.Proj...ect at 0x000001293B6A3C80>, WindowsPath('E:/PlcProject/Code/PLC/SCDW/data/generated/test_projects/SCDW_TEST_48d81ff3'))
+
+    @pytest.fixture
+    def test_plc_software(temporary_tia_project):
+        """向临时工程添加测试 CPU 并返回 PLC Software。"""
+        from scdw.openness.tia_hardware import add_plc_device
+    
+        session, project, _ = temporary_tia_project
+        order_number = os.getenv("SCDW_TEST_CPU", "OrderNumber:6ES7 214-1BG40-0XB0/V4.4")
+        device_name = "SCDW_TEST_PLC"
+        try:
+            device, plc_software = add_plc_device(project, order_number, device_name, device_name)
+        except Exception as exc:
+>           pytest.fail(
+                "无法向临时工程添加测试 CPU。可通过 SCDW_TEST_CPU 指定本机硬件目录中的完整订货号。"
+                f" 原始错误：{exc}"
+            )
+E           Failed: 无法向临时工程添加测试 CPU。可通过 SCDW_TEST_CPU 指定本机硬件目录中的完整订货号。 原始错误：Cross-thread operation is not valid in Openness within STA.
+E              在 Siemens.Engineering.Private.ThreadSynchronizer.SynchronizerBase.ThreadCheck()
+E              在 Siemens.Engineering.Private.ThreadSynchronizer.SynchronizerBase.AsyncFuncInvoke[T1,TResult](Func`2 func, T1 arg1)
+E              在 Siemens.Engineering.Private.ThreadSynchronizer.AsyncFuncInvoke[T1,TResult](Func`2 func, T1 arg1)
+E              在 Siemens.Engineering.Private.Session.Siemens.Engineering.Private.IObjectSession.GetComposition[T,TC](LifetimeContractHandle`1 lifetimeContractHandle, String name, String fullName)
+E              在 Siemens.Engineering.Private.InternalObject_Access`2.GetComposition[T](String name)
+E              在 Siemens.Engineering.ProjectBase.get_Devices()
+
+tests\conftest.py:75: Failed
+============================== warnings summary ===============================
+.venv\Lib\site-packages\_pytest\config\__init__.py:1464
+  E:\PlcProject\Code\PLC\SCDW\.venv\Lib\site-packages\_pytest\config\__init__.py:1464: PytestConfigWarning: Unknown config option: timeout
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+ERROR tests/integration/tia/test_lad_artifact_closed_loop.py::test_tia_artifact_fb_instance_db_and_incremental_main_fc
+1 warning, 1 error in 27.49s

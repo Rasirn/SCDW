@@ -1,18 +1,14 @@
-# MCP 工具兼容清单
+# MCP 工具清单：PLC 知识库 Step 1
 
-本阶段所有工具名称、必填参数、默认值和文字返回格式保持不变；仅将内部会话状态改为 `TiaSessionManager`。
+TIA 会话、硬件、标签、块导入和编译工具本步骤不重构。知识库公开工具调整如下：
 
-| 分类 | 工具 |
-| --- | --- |
-| 会话 | `init_tia_project`、`close_tia_session` |
-| 硬件 | `add_plc_to_project`、`add_hardware_module` |
-| 标签/DB | `create_plc_tag_table`、`create_global_db` |
-| 块 | `import_scl_block`、`import_lad_xml`、`save_lad_xml`、`import_lad_xml_from_file`、`delete_plc_block`、`import_template_block` |
-| 编译 | `compile_and_save`、`compile_check` |
-| XLSX | `read_project_spec_from_xlsx` |
-| RAG | `list_plc_templates`、`search_plc_templates`、`get_plc_template` |
+| 状态 | 工具 | 说明 |
+| --- | --- | --- |
+| 新增 | `get_plc_knowledge_catalog` | 一次返回全部精简 metadata，不返回正文 |
+| 新增 | `get_plc_knowledge_items` | 按多个显式 ID 批量返回 XML 片段或规则文档，保持请求顺序 |
+| 停止公开 | `list_plc_templates` | 旧模板枚举流程 |
+| 停止公开 | `search_plc_templates` | 旧关键词、top_k、score 流程 |
+| 停止公开 | `get_plc_template` | 被批量 ID 读取替代 |
+| 停止公开 | `import_template_block` | 精简片段不是完整可导入块 |
 
-实际 MCP Client 已通过 stdio 列出上述 18 个工具。不存在接口破坏或新增废弃包装。
-# 已有 TIA 连接工具
-
-新增只读/会话工具：`list_tia_processes`、`connect_to_open_tia`、`refresh_tia_context`、`get_tia_context`、`select_tia_project`、`detach_tia_session`。原有 `init_tia_project` 保持用于新建工程；导入、标签、DB 和编译工具会在调用前刷新上下文。
+`data/rag/raw/application/` 不由运行时接口扫描或读取。`import_lad_xml` 与 `compile_check` 的实现和工具说明未在本步骤重构。

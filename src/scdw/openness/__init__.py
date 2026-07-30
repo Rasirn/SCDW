@@ -46,14 +46,19 @@ from .tia_blocks import (
     DBVariable,
     import_scl_block,
     create_global_db,
+    create_instance_db,
+    find_plc_block,
     import_lad_xml_block,
     build_global_db_scl,
     delete_block,
 )
 
 from .tia_compiler import (
+    CompileTargetNotFoundError,
     CompileResult,
+    compile_block,
     compile_plc,
+    parse_compiler_result,
 )
 from .session import TiaSessionManager
 from .context import TiaConnectionMode, TiaContext
@@ -92,12 +97,17 @@ __all__ = [
     "DBVariable",
     "import_scl_block",
     "create_global_db",
+    "create_instance_db",
+    "find_plc_block",
     "import_lad_xml_block",
     "build_global_db_scl",
     "delete_block",
     # tia_compiler
     "CompileResult",
+    "CompileTargetNotFoundError",
+    "compile_block",
     "compile_plc",
+    "parse_compiler_result",
     "TiaSessionManager",
     "TiaConnectionMode",
     "TiaContext",

@@ -1,0 +1,57 @@
+{
+  "affected_networks": [
+    "nw_fault_alarm"
+  ],
+  "artifact_id": "xml_8605132dc738f76af500f917",
+  "block_name": "FC_烧嘴报警",
+  "block_type": "FC",
+  "change_source": "workflow_state",
+  "conversation_id": "burner_alarm_001",
+  "created_at": "2026-07-30T13:19:28.223657Z",
+  "current_version": 4,
+  "device_name": "PLC_1",
+  "expires_at": "2026-08-01T13:19:28.223657Z",
+  "last_compile": null,
+  "last_import": {
+    "artifact_id": "xml_8605132dc738f76af500f917",
+    "block_name": "FC_烧嘴报警",
+    "block_type": "FC",
+    "code": "TIA_XML_IMPORT_FAILED",
+    "device_name": "PLC_1",
+    "message": "Error when calling method 'Import' of type 'Siemens.Engineering.SW.Blocks.PlcBlockComposition'.\r\n\r\nCannot create the 'SW.Blocks.CompileUnit' object with Simatic ML ID '100' at line number 10 at line position 6.\r\n\r\nError when calling method 'Create' of type 'Siemens.Engineering.SW.Blocks.CompileUnitComposition'.\r\n\r\nThe reference with the UID '8' is defined but not used.\r\n   在 Siemens.Engineering.Private.Session.Siemens.Engineering.Private.IInstanceSession.InvokeFunc[T,TC](LifetimeContractHandle`1 lifetimeContractHandle, String name, IEnumerable`1 parameters, String fullName)\r\n   在 Siemens.Engineering.Private.InternalInstanceAccess`2.InvokeFunc[T](String name, IEnumerable`1 parameters)\r\n   在 Siemens.Engineering.SW.Blocks.PlcBlockComposition.Import(FileInfo path, ImportOptions importOptions)",
+    "messages": [
+      {
+        "description": "Error when calling method 'Import' of type 'Siemens.Engineering.SW.Blocks.PlcBlockComposition'.\r\n\r\nCannot create the 'SW.Blocks.CompileUnit' object with Simatic ML ID '100' at line number 10 at line position 6.\r\n\r\nError when calling method 'Create' of type 'Siemens.Engineering.SW.Blocks.CompileUnitComposition'.\r\n\r\nThe reference with the UID '8' is defined but not used.\r\n   在 Siemens.Engineering.Private.Session.Siemens.Engineering.Private.IInstanceSession.InvokeFunc[T,TC](LifetimeContractHandle`1 lifetimeContractHandle, String name, IEnumerable`1 parameters, String fullName)\r\n   在 Siemens.Engineering.Private.InternalInstanceAccess`2.InvokeFunc[T](String name, IEnumerable`1 parameters)\r\n   在 Siemens.Engineering.SW.Blocks.PlcBlockComposition.Import(FileInfo path, ImportOptions importOptions)",
+        "path": "",
+        "severity": "error",
+        "type": "EngineeringTargetInvocationException"
+      }
+    ],
+    "network_key": "nw_fault_alarm",
+    "plan_id": "ladplan_514bb51bf1c7196d",
+    "recorded_at": "2026-07-30T13:21:55.397458Z",
+    "stage": "tia_import",
+    "success": false,
+    "target": {
+      "device_name": "PLC_1",
+      "project": "烧嘴报警_BurnerAlarm"
+    },
+    "version": 4
+  },
+  "last_validation": {
+    "errors": [],
+    "summary": {
+      "bytes": 4548,
+      "root": "Document"
+    },
+    "valid": true,
+    "warnings": []
+  },
+  "network_states": {
+    "nw_fault_alarm": "import_failed"
+  },
+  "plan_id": "ladplan_514bb51bf1c7196d",
+  "status": "import_failed",
+  "updated_at": "2026-07-30T13:21:55.446500Z",
+  "verified_versions": {}
+}

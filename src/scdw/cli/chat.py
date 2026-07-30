@@ -2,6 +2,7 @@ from scdw.mcp.client import MCPClient
 from scdw.mcp.tool_manager import ToolManager
 from scdw.llm.providers.deepseek import DeepSeekProvider
 from scdw.common.exceptions import LlmToolCallError
+from scdw.llm.prompts import SYSTEM_PROMPT
 
 MAX_TOOL_ROUNDS = 20
 
@@ -9,7 +10,7 @@ class Chat:
     def __init__(self, deepseek_service: DeepSeekProvider, clients: dict[str, MCPClient]):
         self.deepseek_service: DeepSeekProvider = deepseek_service
         self.clients: dict[str, MCPClient] = clients
-        self.messages: list = []
+        self.messages: list = [{"role": "system", "content": SYSTEM_PROMPT}]
 
     async def _process_query(self, query: str):
         self.messages.append({"role": "user", "content": query})

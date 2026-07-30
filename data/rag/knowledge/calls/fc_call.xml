@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- verified_v17_sample: 用户FC通过CallInfo的Name和BlockType关联；Call及其使能Wire不可拆开。 -->
+<FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts><Call UId="21"><CallInfo Name="风机燃气" BlockType="FC" /></Call></Parts>
+  <Wires><Wire UId="22"><Powerrail /><NameCon UId="21" Name="en" /></Wire></Wires>
+</FlgNet>

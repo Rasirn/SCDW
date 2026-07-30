@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- verified_v17_sample: V17导出样本的TypedConstant只有ConstantValue；不要臆加ConstantType。 -->
+<FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="TypedConstant" UId="1"><Constant><ConstantValue>T#3m</ConstantValue></Constant></Access>
+    <Part Name="TON" Version="1.0" UId="10"><Instance Scope="GlobalVariable" UId="11"><Component Name="TimerDB" /></Instance><TemplateValue Name="time_type" Type="Type">Time</TemplateValue></Part>
+  </Parts>
+  <Wires><Wire UId="20"><Powerrail /><NameCon UId="10" Name="IN" /></Wire><Wire UId="21"><IdentCon UId="1" /><NameCon UId="10" Name="PT" /></Wire></Wires>
+</FlgNet>

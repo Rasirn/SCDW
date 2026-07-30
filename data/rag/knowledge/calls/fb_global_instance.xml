@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- verified_v17_sample: FB调用保留完整CallInfo、全局背景Instance、参数签名和每个参数的Wire。 -->
+<FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="21"><Symbol><Component Name="过程数据" /><Component Name="测量值" /></Symbol></Access>
+    <Access Scope="GlobalVariable" UId="22"><Symbol><Component Name="过程数据" /><Component Name="设定值" /></Symbol></Access>
+    <Access Scope="GlobalVariable" UId="23"><Symbol><Component Name="过程数据" /><Component Name="小火输出" /></Symbol></Access>
+    <Call UId="35">
+      <CallInfo Name="烧嘴控制" BlockType="FB">
+        <Instance Scope="GlobalVariable" UId="36"><Component Name="烧嘴01背景DB" /></Instance>
+        <Parameter Name="测量值" Section="Input" Type="Real" />
+        <Parameter Name="设定值" Section="Input" Type="Real" />
+        <Parameter Name="小火输出" Section="Output" Type="Bool" />
+      </CallInfo>
+    </Call>
+  </Parts>
+  <Wires>
+    <Wire UId="37"><Powerrail /><NameCon UId="35" Name="en" /></Wire>
+    <Wire UId="38"><IdentCon UId="21" /><NameCon UId="35" Name="测量值" /></Wire>
+    <Wire UId="39"><IdentCon UId="22" /><NameCon UId="35" Name="设定值" /></Wire>
+    <Wire UId="40"><NameCon UId="35" Name="小火输出" /><IdentCon UId="23" /></Wire>
+  </Wires>
+</FlgNet>

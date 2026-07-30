@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- verified_v17_sample: LocalVariable定时器实例必须先在调用方FB的Static接口声明，名称与Access/Instance一致。 -->
+<KnowledgeFragment>
+  <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v5">
+    <Section Name="Input"><Member Name="Enable" Datatype="Bool" Remanence="SetInIDB" Accessibility="Public" /></Section>
+    <Section Name="Output"><Member Name="Done" Datatype="Bool" Remanence="SetInIDB" Accessibility="Public" /></Section>
+    <Section Name="InOut" />
+    <Section Name="Static">
+      <Member Name="DelayTimer" Datatype="IEC_TIMER" Version="1.0" Remanence="SetInIDB" Accessibility="Public">
+        <Sections><Section Name="None"><Member Name="PT" Datatype="Time" /><Member Name="ET" Datatype="Time" /><Member Name="IN" Datatype="Bool" /><Member Name="Q" Datatype="Bool" /></Section></Sections>
+      </Member>
+    </Section><Section Name="Temp" /><Section Name="Constant" />
+  </Sections></Interface>
+  <FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+    <Parts>
+      <Access Scope="LocalVariable" UId="1"><Symbol><Component Name="Enable" /></Symbol></Access>
+      <Access Scope="TypedConstant" UId="2"><Constant><ConstantValue>T#5s</ConstantValue></Constant></Access>
+      <Part Name="Contact" UId="10" />
+      <Part Name="TON" Version="1.0" UId="11"><Instance Scope="LocalVariable" UId="12"><Component Name="DelayTimer" /></Instance><TemplateValue Name="time_type" Type="Type">Time</TemplateValue></Part>
+    </Parts>
+    <Wires>
+      <Wire UId="20"><Powerrail /><NameCon UId="10" Name="in" /></Wire>
+      <Wire UId="21"><IdentCon UId="1" /><NameCon UId="10" Name="operand" /></Wire>
+      <Wire UId="22"><NameCon UId="10" Name="out" /><NameCon UId="11" Name="IN" /></Wire>
+      <Wire UId="23"><IdentCon UId="2" /><NameCon UId="11" Name="PT" /></Wire>
+    </Wires>
+  </FlgNet>
+</KnowledgeFragment>

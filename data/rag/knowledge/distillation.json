@@ -1,0 +1,18 @@
+{
+  "tia_version": "V17",
+  "sources": [
+    {"source": "data/rag/raw/application/Main.xml", "extracted_items": ["call.fc.v17", "network_text.title_comment.v17", "guide.simaticml_block_structure.v17"]},
+    {"source": "data/rag/raw/application/PID参数控制.xml", "extracted_items": ["instruction.move.v17"]},
+    {"source": "data/rag/raw/application/报警.xml", "extracted_items": ["instruction.ton_global_instance.v17", "access.typed_time_constant.v17", "access.multilevel_db_member.v17", "topology.parallel_set_reset.v17"]},
+    {"source": "data/rag/raw/application/烧嘴控制.xml", "extracted_items": ["instruction.ton_static_instance.v17", "interface.local_variable_access.v17", "interface.complex_sections.v17"]},
+    {"source": "data/rag/raw/application/烧嘴控制块.xml", "extracted_items": ["call.fb_global_instance.v17", "guide.user_block_call_rules.v17"]},
+    {"source": "data/rag/raw/application/程序发生器.xml", "extracted_items": ["instruction.math_cascade.v17", "instruction.ton_static_instance.v17", "interface.complex_sections.v17", "guide.instruction_template_rules.v17"]},
+    {"source": "data/rag/raw/application/设定值传递.xml", "extracted_items": ["topology.parallel_set_reset.v17", "instruction.move.v17"]},
+    {"source": "data/rag/raw/application/输入信号转换块.xml", "extracted_items": ["instruction.math_cascade.v17", "guide.instruction_template_rules.v17"]},
+    {"source": "data/rag/raw/application/风机燃气.xml", "extracted_items": ["instruction.math_cascade.v17", "guide.import_failure_patterns.v17"]}
+  ],
+  "verified_absent_from_application": [
+    "TOF", "TP", "CTU", "CTD", "CTUD", "用户FB多重实例调用", "动态数组下标"
+  ],
+  "publication_note": "缺少V17样本的能力不发布推测性XML；取得验证样本后再增补。"
+}

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- verified_v17_sample: 分叉由一条Wire中的一个上游out连接多个下游in表达；Wire文本先后不代表业务优先级。 -->
+<FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="1"><Symbol><Component Name="DB1" /><Component Name="Fault" /></Symbol></Access>
+    <Access Scope="GlobalVariable" UId="2"><Symbol><Component Name="DB1" /><Component Name="Run" /></Symbol></Access>
+    <Access Scope="GlobalVariable" UId="3"><Symbol><Component Name="DB1" /><Component Name="Alarm" /></Symbol></Access>
+    <Part Name="Contact" UId="10" /><Part Name="RCoil" UId="11" /><Part Name="SCoil" UId="12" />
+  </Parts>
+  <Wires>
+    <Wire UId="20"><Powerrail /><NameCon UId="10" Name="in" /></Wire>
+    <Wire UId="21"><IdentCon UId="1" /><NameCon UId="10" Name="operand" /></Wire>
+    <Wire UId="22"><NameCon UId="10" Name="out" /><NameCon UId="11" Name="in" /><NameCon UId="12" Name="in" /></Wire>
+    <Wire UId="23"><IdentCon UId="2" /><NameCon UId="11" Name="operand" /></Wire>
+    <Wire UId="24"><IdentCon UId="3" /><NameCon UId="12" Name="operand" /></Wire>
+  </Wires>
+</FlgNet>

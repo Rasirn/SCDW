@@ -16,19 +16,16 @@ from scdw.llm.providers.deepseek import MAX_TOOL_ROUNDS, LlmStreamResult
 from scdw.common.run_logging import get_run_logger
 from scdw.frontend.events import summarize_tool_arguments
 
-_SYSTEM_PROMPT = """你是 MACtrl，由厦门大学 MAC 实验室与四川电网合作研发的 TIA Portal 智控助手。
-你协助 PLC 工程师完成需求分析、工程检查、程序生成、程序块导入、编译诊断和修改建议。可按规则调用 MCP 工具，但不得编造工具结果。执行任何 TIA 写入操作前必须使用当前工程上下文。"""
-
 TOOL_DISPLAY_NAMES = {"refresh_tia_context": "刷新 TIA 上下文", "get_tia_context": "读取 TIA 工程信息",
                       "connect_to_open_tia": "连接已打开的 TIA", "compile_check": "编译检查",
                       "import_lad_xml": "导入 LAD 程序块", "import_scl_block": "导入 SCL 程序块",
-                      "save_lad_xml": "保存 LAD XML", "import_lad_xml_from_file": "导入已保存的 LAD XML",
+                      "create_instance_db": "创建背景 DB", "save_verified_project": "保存已验证项目",
                       "create_global_db": "创建全局 DB", "create_plc_tag_table": "创建 PLC 变量表",
-                      "search_plc_templates": "检索 PLC 模板"}
+                      "get_plc_knowledge_catalog": "读取 PLC 知识目录",
+                      "get_plc_knowledge_items": "读取 PLC 知识项"}
 TOOL_ACTIVITY_MESSAGES = {
-    "save_lad_xml": "正在校验并写入 XML 文件",
-    "import_lad_xml": "正在校验 XML 并导入 TIA Portal",
-    "import_lad_xml_from_file": "正在导入 TIA Portal",
+    "import_lad_xml": "正在导入 Artifact XML 到 TIA Portal",
+    "create_instance_db": "正在创建并绑定背景 DB",
     "compile_check": "正在执行编译检查",
 }
 
@@ -37,7 +34,6 @@ class StreamingChat(CliChat):
     """把 Provider 的真实 chunk 转换为前端可渲染事件。"""
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.messages.insert(0, {"role": "system", "content": _SYSTEM_PROMPT})
 
     def reset_conversation(self) -> None:
         """清除用户、模型和工具历史，仅保留系统身份。"""

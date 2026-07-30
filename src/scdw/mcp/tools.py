@@ -22,8 +22,11 @@ from scdw.common.paths import GENERATED_DIR, PROJECT_ROOT, RAG_GENERATED_DIR
 from scdw.openness.session import TiaSessionManager
 from scdw.rag.retriever import (
     TemplateLibrary,
+    get_knowledge_catalog,
+    get_knowledge_items,
     get_template_xml,
     list_categories,
+    list_template_catalog,
     list_templates,
     save_generated_xml,
     search_templates,
@@ -206,8 +209,8 @@ def _ensure_temp_dir() -> str:
 
 
 def _cleanup_session() -> None:
-    """释放 TIA 资源并清理会话状态。"""
-    _session.close(save=True)
+    """释放 TIA 资源；项目保存只能由 save_verified_project 显式执行。"""
+    _session.close(save=False)
 
 
 def _tool_error(code: str, message: str, *, retryable: bool = False, needs_user_action: bool = False, data: dict | None = None) -> str:
@@ -294,9 +297,8 @@ def register_mcp_tools(mcp) -> None:
         delete_block,
     )
     from scdw.xlsx.reader import read_plc_project_xlsx
-    # XML Artifact lifecycle tools intentionally live in their own module.
-    from scdw.mcp.xml_artifact_tools import register_xml_artifact_tools
-    register_xml_artifact_tools(mcp, _session)
+    from scdw.mcp.lad_plan_tools import register_lad_plan_tools
+    register_lad_plan_tools(mcp)
 
     @mcp.tool(name="list_tia_processes", description="列出运行中的 TIA Portal，不会附着或修改任何工程。")
     def list_tia_processes() -> str:
@@ -424,15 +426,15 @@ def register_mcp_tools(mcp) -> None:
     # ── 2. close_tia_session ──────────────────────────────────────────────────
     @mcp.tool(
         name="close_tia_session",
-        description="保存当前 TIA 项目并关闭 TIA Portal，释放会话资源。",
+        description="关闭当前TIA会话并释放资源，不保存项目。已验证项目应先调用save_verified_project。",
     )
     def close_tia_session() -> str:
-        """保存并关闭 TIA 会话。"""
+        """关闭 TIA 会话但不隐式保存。"""
         if not _session.context.connected:
             return "ℹ️ 当前没有活动的 TIA 会话。"
         try:
             _cleanup_session()
-            return "✅ TIA 项目已保存并关闭，会话已释放。"
+            return "✅ TIA 会话已关闭且未执行隐式保存。"
         except Exception as exc:
             _cleanup_session()
             return f"⚠️ 关闭会话时出错（资源已释放）：{exc}"
@@ -556,18 +558,7 @@ def register_mcp_tools(mcp) -> None:
     # ── 6. create_global_db ───────────────────────────────────────────────────
     @mcp.tool(
         name="create_global_db",
-        description=(
-            "在指定 PLC 设备下创建全局数据块（Global DB，优化访问 S7_Optimized_Access=TRUE）。\n"
-            "⚠️  创建的 DB 是优化访问类型：\n"
-            "  - 只能用符号名访问：\"DB名\".变量名（LAD XML 中 Component Name=\"DB名\"）\n"
-            "  - 绝对地址 %DB100.DBX / %DB100.DBD 对优化 DB 无效，禁止使用\n"
-            "  - 创建后须先 compile_check，使符号注册到交叉引用表，再导入引用该 DB 的程序块\n\n"
-            "variables_json 为 JSON 数组，每项格式：\n"
-            '  {"name":"变量名","data_type":"Bool","offset":"0.0","initial_value":"","comment":"注释"}\n'
-            "offset 为 xlsx 中的字节偏移量（如 0.0、2.0），仅写入 SCL 注释，不影响编译器分配地址。\n"
-            "data_type 支持 S7 所有基础类型及复合类型，如 IEC_TIMER、Array[0..15] of Bool 等。\n"
-            "复合类型（IEC_TIMER 等）会自动加双引号，且不允许设置初始值。"
-        ),
+        description="在目标PLC中创建优化访问的普通Global DB。variables_json提供变量名、数据类型、初始值和注释；该工具不创建Instance DB。",
     )
     def create_global_db(
         device_name: str,
@@ -1051,11 +1042,7 @@ def register_mcp_tools(mcp) -> None:
     # ── 11. delete_plc_block ──────────────────────────────────────────────────
     @mcp.tool(
         name="delete_plc_block",
-        description=(
-            "删除指定 PLC 设备中的程序块。\n"
-            "用途：当编译失败且重新导入覆盖无法解决时，可先删除再重建。\n"
-            "注意：通常不需要先删除再导入 —— import_lad_xml 和 import_scl_block 会自动覆盖同名块。"
-        ),
+        description="删除目标PLC中的指定程序块并返回是否找到该块。该工具不生成替代块。",
     )
     def delete_plc_block(device_name: str, block_name: str) -> str:
         """删除 PLC 中的指定程序块。"""
@@ -1073,30 +1060,7 @@ def register_mcp_tools(mcp) -> None:
     # ── 12. read_project_spec_from_xlsx ───────────────────────────────────────
     @mcp.tool(
         name="read_project_spec_from_xlsx",
-        description=(
-            "解析 xlsx 配置文件，读取 PLC 项目规格并以结构化文本返回，供后续逐步调用其他工具创建项目使用。\n"
-            "返回内容包括：\n"
-            "  - 硬件设备清单（CPU 订货号、I/O 模块等）\n"
-            "  - I/O 点表（按模块组分组，含变量名/数据类型/地址/注释）\n"
-            "  - DB 块列表（含变量定义，不含逻辑描述）\n"
-            "  - 【LAD 功能逻辑清单】每条功能的逻辑描述文本，这是生成 LAD 程序块的依据\n\n"
-            "读取结果后，按以下顺序调用工具完成项目创建：\n"
-            "  1. init_tia_project       — 创建 TIA 项目\n"
-            "  2. add_plc_to_project     — 添加 CPU（使用此工具返回的订货号）\n"
-            "  3. create_plc_tag_table   — 按模块组创建变量表\n"
-            "  4. create_global_db       — 创建各 DB 块\n"
-            "  4.5 compile_check         — 【必须！】编译 DB，使符号注册到交叉引用表\n"
-            "                              跳过此步直接导入程序块会导致 'Tag not defined' 编译错误\n"
-            "  5. import_lad_xml          — 【重要】根据 LAD 功能逻辑清单为每个功能生成 LAD 程序块\n"
-            "                              LAD 中引用 DB 变量必须用符号名：Component Name=\"DB名\"+Component Name=\"变量名\"\n"
-            "                              禁止用绝对地址（%DB100.DBX...），create_global_db 创建的是优化 DB\n"
-            "  6. compile_check          — 检查编译错误（不保存），有类型错误则修正后重新 import_lad_xml\n"
-            "  7. compile_and_save       — 确认无误后编译并保存\n\n"
-            "注意：\n"
-            "  - LAD 功能逻辑清单中的每条描述都需要生成对应的 LAD 块（FC）\n"
-            "  - 描述中包含的条件/动作信息应转化为 contacts/outputs 梯级逻辑\n"
-            "  - 注意数据类型匹配：Real→Int需要Convert，Int→Bool需要比较指令"
-        ),
+        description="解析xlsx并返回硬件、I/O、Global DB定义和LAD功能需求。只返回工程需求事实，不决定FC、FB、Instance DB或Network组织。",
     )
     def read_project_spec_from_xlsx(xlsx_path: str) -> str:
         """解析 xlsx 文件，返回结构化的 PLC 项目规格信息。"""
@@ -1152,34 +1116,50 @@ def register_mcp_tools(mcp) -> None:
                     + (f"  // {v.comment}" if v.comment else "")
                 )
 
-        # ── LAD 功能逻辑清单（核心：每条描述对应一个需要生成的 LAD 程序块）────
+        # ── LAD 功能需求（仅返回需求事实，块与Network由规划流程决定）─────────
         lines.append(
-            f"\n=== LAD 功能逻辑清单（共 {len(spec.logic_functions)} 个功能，每个功能需调用 import_lad_xml 生成 LAD 块）==="
+            f"\n=== LAD 功能需求清单（共 {len(spec.logic_functions)} 项，待整体规划）==="
         )
         if not spec.logic_functions:
             lines.append("  （xlsx 中未找到功能描述，无需生成 LAD 块）")
         for fn in spec.logic_functions:
-            lines.append(f"\n  [FC{fn.block_index}] 功能名称：{fn.function_name}")
+            lines.append(f"\n  [需求{fn.block_index}] 功能名称：{fn.function_name}")
             lines.append(f"  关联 DB 块：{fn.db_block_name}")
-            lines.append(f"  >>> 逻辑描述（根据此描述生成 LAD 梯级）：")
+            lines.append(f"  >>> 逻辑描述：")
             lines.append(f"  {fn.description}")
-            lines.append(
-                f"  >>> 调用方式：import_lad_xml(block_name=\"FC_{fn.block_index}\", "
-                f"block_type=\"FC\", block_number={fn.block_index}, "
-                f"networks_json=<根据上述描述生成的梯级 JSON>)"
-            )
 
         lines.append(
             f"\n=== 汇总 ===\n"
             f"  硬件：{len(spec.hardware)} 项\n"
             f"  I/O 变量：{len(spec.io_tags)} 个（{len(groups)} 个变量表）\n"
             f"  DB 块：{len(spec.db_blocks)} 个\n"
-            f"  LAD 逻辑功能：{len(spec.logic_functions)} 个（需调用 import_lad_xml 生成）"
+            f"  LAD 功能需求：{len(spec.logic_functions)} 项（块与Network尚未规划）"
         )
 
         return "\n".join(lines)
 
     # ── 13. list_plc_templates ────────────────────────────────────────────────
+    @mcp.tool(
+        name="get_plc_knowledge_catalog",
+        description=(
+            "返回全部精简TIA V17 LAD知识metadata，不返回XML或规则正文。模型应先读取完整目录、判断能力需求、显式选择知识项ID，再调用get_plc_knowledge_items。无关键词评分或阈值。"
+        ),
+    )
+    def get_plc_knowledge_catalog() -> str:
+        return json.dumps(get_knowledge_catalog(), ensure_ascii=False)
+
+    @mcp.tool(
+        name="get_plc_knowledge_items",
+        description=(
+            "按显式知识项ID批量返回精简XML片段或规则文档。item_ids可包含多个ID，返回顺序与请求一致；raw/application永不通过此接口读取。"
+        ),
+    )
+    def get_plc_knowledge_items(item_ids: List[str]) -> str:
+        try:
+            return json.dumps({"items": get_knowledge_items(item_ids)}, ensure_ascii=False)
+        except (KeyError, ValueError) as exc:
+            return json.dumps({"success": False, "error": str(exc)}, ensure_ascii=False)
+
     @mcp.tool(
         name="list_plc_templates",
         description=(
@@ -1317,3 +1297,17 @@ def register_mcp_tools(mcp) -> None:
             )
         except Exception as exc:
             return f"❌ 导入模板失败：{exc}\n{traceback.format_exc()}"
+
+    # 历史raw XML/文件导入、直接保存和模板整块导入不再属于LLM公开工具。
+    for legacy_name in (
+        "import_lad_xml", "import_lad_xml_from_file", "save_lad_xml",
+        "compile_check", "compile_and_save",
+        "list_plc_templates", "search_plc_templates", "get_plc_template", "import_template_block",
+    ):
+        mcp._tool_manager._tools.pop(legacy_name, None)
+
+    # Artifact编辑与TIA运行闭环在移除历史入口后注册，确保公开名称唯一。
+    from scdw.mcp.xml_artifact_tools import register_xml_artifact_tools
+    from scdw.mcp.lad_runtime_tools import register_lad_runtime_tools
+    register_xml_artifact_tools(mcp, _session)
+    register_lad_runtime_tools(mcp, _session)

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- verified_v17_sample: 多层DB成员路径按Component顺序展开；IdentCon引用最外层Access的UId。 -->
+<FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="1"><Symbol><Component Name="内部数据" /><Component Name="通讯延时定时器" /><Component Name="Q" /></Symbol></Access>
+    <Access Scope="GlobalVariable" UId="2"><Symbol><Component Name="报警数据" /><Component Name="通讯报警" /></Symbol></Access>
+    <Part Name="Contact" UId="10" /><Part Name="Coil" UId="11" />
+  </Parts>
+  <Wires>
+    <Wire UId="20"><Powerrail /><NameCon UId="10" Name="in" /></Wire>
+    <Wire UId="21"><IdentCon UId="1" /><NameCon UId="10" Name="operand" /></Wire>
+    <Wire UId="22"><NameCon UId="10" Name="out" /><NameCon UId="11" Name="in" /></Wire>
+    <Wire UId="23"><IdentCon UId="2" /><NameCon UId="11" Name="operand" /></Wire>
+  </Wires>
+</FlgNet>

@@ -5,33 +5,35 @@ import xml.etree.ElementTree as ET
 import pytest
 
 from scdw.common.config import get_deepseek_model
-from scdw.common.paths import RAG_GENERATED_DIR, RAG_TEMPLATES_DIR, ensure_generated_dir
-from scdw.rag.retriever import TemplateLibrary, get_template_xml, search_templates
+from scdw.common.paths import RAG_GENERATED_DIR, RAG_KNOWLEDGE_DIR, ensure_generated_dir
+from scdw.rag.retriever import KnowledgeLibrary, get_knowledge_items
 from scdw.openness.tia_blocks import _check_multiple_powerrails, _fix_duplicate_identcon
 
 
 @pytest.mark.unit
-def test_rag_query_is_stable():
-    TemplateLibrary.reset()
-    first = search_templates("烧嘴控制", top_k=3)
-    TemplateLibrary.reset()
-    second = search_templates("烧嘴控制", top_k=3)
+def test_rag_catalog_is_stable_and_has_no_scores():
+    KnowledgeLibrary.reset()
+    first = KnowledgeLibrary.instance().catalog()
+    KnowledgeLibrary.reset()
+    second = KnowledgeLibrary.instance().catalog()
     assert first == second
-    assert first and first[0]["name"] == "烧嘴控制"
+    assert first["selection_mode"] == "explicit_ids"
+    assert all("score" not in item and "keywords" not in item for item in first["items"])
 
 
 @pytest.mark.unit
-def test_rag_xml_can_be_parsed():
-    xml = get_template_xml("01_串联_触点线圈", full=True)
-    assert xml is not None
-    assert ET.fromstring(xml).tag == "Document"
+def test_rag_items_are_read_in_requested_order():
+    ids = ["call.fc.v17", "topology.series_contact_coil.v17"]
+    items = get_knowledge_items(ids)
+    assert [item["id"] for item in items] == ids
+    assert ET.fromstring(items[1]["content"]).tag.endswith("FlgNet")
 
 
 @pytest.mark.unit
 def test_generated_directory_is_not_source_directory():
     assert ensure_generated_dir() == RAG_GENERATED_DIR
     assert RAG_GENERATED_DIR.is_dir()
-    assert RAG_TEMPLATES_DIR.is_dir()
+    assert RAG_KNOWLEDGE_DIR.is_dir()
 
 
 @pytest.mark.unit

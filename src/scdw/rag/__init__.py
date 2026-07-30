@@ -1,5 +1,17 @@
-"""PLC XML 模板检索与生成产物管理。"""
+"""TIA V17 PLC 精简知识目录。"""
 
-from .retriever import get_template_xml, list_templates, save_generated_xml, search_templates
+from .retriever import (
+    KnowledgeCatalogError,
+    KnowledgeLibrary,
+    get_knowledge_catalog,
+    get_knowledge_items,
+    save_generated_xml,
+)
 
-__all__ = ["get_template_xml", "list_templates", "save_generated_xml", "search_templates"]
+__all__ = [
+    "KnowledgeCatalogError",
+    "KnowledgeLibrary",
+    "get_knowledge_catalog",
+    "get_knowledge_items",
+    "save_generated_xml",
+]

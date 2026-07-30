@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- verified_v17_sample: TON的Version=1.0、全局Instance、TypedConstant PT及Q成员访问必须成组保留。 -->
+<FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="1"><Symbol><Component Name="内部数据" /><Component Name="通讯故障" /></Symbol></Access>
+    <Access Scope="TypedConstant" UId="2"><Constant><ConstantValue>T#3m</ConstantValue></Constant></Access>
+    <Access Scope="GlobalVariable" UId="3"><Symbol><Component Name="内部数据" /><Component Name="通讯延时定时器" /><Component Name="Q" /></Symbol></Access>
+    <Access Scope="GlobalVariable" UId="4"><Symbol><Component Name="报警数据" /><Component Name="通讯报警" /></Symbol></Access>
+    <Part Name="Contact" UId="10" />
+    <Part Name="TON" Version="1.0" UId="11">
+      <Instance Scope="GlobalVariable" UId="12"><Component Name="内部数据" /><Component Name="通讯延时定时器" /></Instance>
+      <TemplateValue Name="time_type" Type="Type">Time</TemplateValue>
+    </Part>
+    <Part Name="Contact" UId="13" /><Part Name="Coil" UId="14" />
+  </Parts>
+  <Wires>
+    <Wire UId="20"><Powerrail /><NameCon UId="10" Name="in" /><NameCon UId="13" Name="in" /></Wire>
+    <Wire UId="21"><IdentCon UId="1" /><NameCon UId="10" Name="operand" /></Wire>
+    <Wire UId="22"><NameCon UId="10" Name="out" /><NameCon UId="11" Name="IN" /></Wire>
+    <Wire UId="23"><IdentCon UId="2" /><NameCon UId="11" Name="PT" /></Wire>
+    <Wire UId="25"><IdentCon UId="3" /><NameCon UId="13" Name="operand" /></Wire>
+    <Wire UId="26"><NameCon UId="13" Name="out" /><NameCon UId="14" Name="in" /></Wire>
+    <Wire UId="27"><IdentCon UId="4" /><NameCon UId="14" Name="operand" /></Wire>
+  </Wires>
+</FlgNet>

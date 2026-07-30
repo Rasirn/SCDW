@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- verified_v17_sample: AutomaticTyped、Equation、TemplateValue名称和Type来自V17样本，应按具体指令保留。 -->
+<FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="1"><Symbol><Component Name="DB1" /><Component Name="A" /></Symbol></Access>
+    <Access Scope="LiteralConstant" UId="2"><Constant><ConstantType>Real</ConstantType><ConstantValue>2.0</ConstantValue></Constant></Access>
+    <Access Scope="LiteralConstant" UId="3"><Constant><ConstantType>Real</ConstantType><ConstantValue>10.0</ConstantValue></Constant></Access>
+    <Access Scope="GlobalVariable" UId="4"><Symbol><Component Name="DB1" /><Component Name="Result" /></Symbol></Access>
+    <Part Name="Mul" UId="10"><TemplateValue Name="Card" Type="Cardinality">2</TemplateValue><AutomaticTyped Name="SrcType" /></Part>
+    <Part Name="Calc" UId="11"><Equation>IN1/IN2</Equation><TemplateValue Name="Card" Type="Cardinality">2</TemplateValue><TemplateValue Name="SrcType" Type="Type">Real</TemplateValue></Part>
+  </Parts>
+  <Wires>
+    <Wire UId="20"><Powerrail /><NameCon UId="10" Name="en" /></Wire>
+    <Wire UId="21"><IdentCon UId="1" /><NameCon UId="10" Name="in1" /></Wire>
+    <Wire UId="22"><IdentCon UId="2" /><NameCon UId="10" Name="in2" /></Wire>
+    <Wire UId="23"><NameCon UId="10" Name="eno" /><NameCon UId="11" Name="en" /></Wire>
+    <Wire UId="24"><NameCon UId="10" Name="out" /><NameCon UId="11" Name="in1" /></Wire>
+    <Wire UId="25"><IdentCon UId="3" /><NameCon UId="11" Name="in2" /></Wire>
+    <Wire UId="26"><NameCon UId="11" Name="out" /><IdentCon UId="4" /></Wire>
+  </Wires>
+</FlgNet>

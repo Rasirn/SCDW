@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- verified_v17_sample: 每个LocalVariable Access都必须能在本块Interface中找到同名声明。 -->
+<KnowledgeFragment>
+  <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v5">
+    <Section Name="Input"><Member Name="Enable" Datatype="Bool" Remanence="SetInIDB" Accessibility="Public" /></Section>
+    <Section Name="Output"><Member Name="Result" Datatype="Real" Remanence="SetInIDB" Accessibility="Public" /></Section>
+    <Section Name="InOut"><Member Name="State" Datatype="Bool" Remanence="SetInIDB" Accessibility="Public" /></Section>
+    <Section Name="Static"><Member Name="StoredValue" Datatype="Real" Remanence="SetInIDB" Accessibility="Public" /></Section>
+    <Section Name="Temp"><Member Name="WorkValue" Datatype="Real" /></Section><Section Name="Constant" />
+  </Sections></Interface>
+  <FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+    <Parts>
+      <Access Scope="LocalVariable" UId="1"><Symbol><Component Name="Enable" /></Symbol></Access>
+      <Access Scope="LocalVariable" UId="2"><Symbol><Component Name="StoredValue" /></Symbol></Access>
+      <Access Scope="LocalVariable" UId="3"><Symbol><Component Name="Result" /></Symbol></Access>
+      <Part Name="Contact" UId="10" /><Part Name="Move" UId="11"><TemplateValue Name="Card" Type="Cardinality">1</TemplateValue></Part>
+    </Parts>
+    <Wires>
+      <Wire UId="20"><Powerrail /><NameCon UId="10" Name="in" /></Wire>
+      <Wire UId="21"><IdentCon UId="1" /><NameCon UId="10" Name="operand" /></Wire>
+      <Wire UId="22"><NameCon UId="10" Name="out" /><NameCon UId="11" Name="en" /></Wire>
+      <Wire UId="23"><IdentCon UId="2" /><NameCon UId="11" Name="in" /></Wire>
+      <Wire UId="24"><NameCon UId="11" Name="out1" /><IdentCon UId="3" /></Wire>
+    </Wires>
+  </FlgNet>
+</KnowledgeFragment>

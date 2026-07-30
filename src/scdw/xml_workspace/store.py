@@ -31,4 +31,16 @@ class ArtifactStore:
         path = self.artifact_dir(artifact_id) / "versions" / f"v{version:04d}.xml"
         if not path.is_file(): raise ArtifactError("VERSION_NOT_FOUND", "version not found")
         return path
-    def write_version(self, artifact_id: str, version: int, content: str) -> None: self._atomic(self.artifact_dir(artifact_id) / "versions" / f"v{version:04d}.xml", content)
+    def write_version(self, artifact_id: str, version: int, content: str) -> None:
+        path = self.artifact_dir(artifact_id) / "versions" / f"v{version:04d}.xml"
+        if path.exists(): raise ArtifactError("VERSION_CONFLICT", "immutable artifact version already exists")
+        self._atomic(path, content)
+    def write_network_index(self, artifact_id: str, version: int, network_keys: list[str], hashes: list[str]) -> None:
+        value = {"version": version, "networks": [
+            {"network_key": key, "sha256": digest} for key, digest in zip(network_keys, hashes, strict=True)
+        ]}
+        self._atomic(self.artifact_dir(artifact_id) / "sidecar" / f"networks_v{version:04d}.json", json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2) + "\n")
+    def network_index(self, artifact_id: str, version: int) -> list[dict]:
+        path = self.artifact_dir(artifact_id) / "sidecar" / f"networks_v{version:04d}.json"
+        if not path.is_file(): return []
+        return json.loads(path.read_text(encoding="utf-8")).get("networks", [])

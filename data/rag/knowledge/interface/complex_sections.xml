@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- verified_v17_sample: Input/Output/InOut/Static/Temp按块类型保留；IEC实例成员的Version只沿用样本。 -->
+<Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v5">
+  <Section Name="Input"><Member Name="Enable" Datatype="Bool" Remanence="SetInIDB" Accessibility="Public" /></Section>
+  <Section Name="Output"><Member Name="Done" Datatype="Bool" Remanence="SetInIDB" Accessibility="Public" /></Section>
+  <Section Name="InOut"><Member Name="Command" Datatype="Bool" Remanence="SetInIDB" Accessibility="Public" /></Section>
+  <Section Name="Static">
+    <Member Name="State" Datatype="Int" Remanence="SetInIDB" Accessibility="Public" />
+    <Member Name="DelayTimer" Datatype="IEC_TIMER" Version="1.0" Remanence="SetInIDB" Accessibility="Public"><Sections><Section Name="None"><Member Name="PT" Datatype="Time" /><Member Name="ET" Datatype="Time" /><Member Name="IN" Datatype="Bool" /><Member Name="Q" Datatype="Bool" /></Section></Sections></Member>
+  </Section>
+  <Section Name="Temp"><Member Name="Intermediate" Datatype="Real" /></Section><Section Name="Constant" />
+</Sections></Interface>

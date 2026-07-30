@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from scdw.common.paths import RAG_TEMPLATES_DIR
+from scdw.common.paths import RAG_APPLICATION_RAW_DIR, RAG_RAW_DIR
 from scdw.openness.tia_blocks import import_lad_xml_block, import_scl_block
 from scdw.openness.tia_compiler import compile_plc
 from scdw.openness.tia_tags import TagSpec, create_tag_table_with_tags
@@ -32,7 +32,7 @@ def test_tia_plc_tag_and_compile(test_plc_software):
 def test_tia_import_main_xml_reports_missing_dependencies(test_plc_software):
     """Main 模板可以导入，但缺少其应用块依赖时必须报告真实诊断。"""
     session, _, plc_software = test_plc_software
-    xml_content = (RAG_TEMPLATES_DIR / "application" / "Main.xml").read_text(encoding="utf-8")
+    xml_content = (RAG_APPLICATION_RAW_DIR / "Main.xml").read_text(encoding="utf-8")
     import_lad_xml_block(plc_software, session.get_temp_dir(), "SCDW_TEST_Main", xml_content)
     result = compile_plc(plc_software)
     assert not result.success
@@ -55,7 +55,7 @@ END_FUNCTION
 def test_tia_import_xml_with_missing_symbol_reports_compile_error(test_plc_software):
     """引用不存在 DB 的基础模板必须产生真实编译错误。"""
     session, _, plc_software = test_plc_software
-    xml_content = (RAG_TEMPLATES_DIR / "basic" / "01_串联_触点线圈.xml").read_text(encoding="utf-8")
+    xml_content = (RAG_RAW_DIR / "basic" / "01_串联_触点线圈.xml").read_text(encoding="utf-8")
     import_lad_xml_block(plc_software, session.get_temp_dir(), "SCDW_TEST_MissingSymbol", xml_content)
     result = compile_plc(plc_software)
     assert not result.success

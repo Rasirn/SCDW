@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- verified_v17_sample: Parts与对应Wires是一个不可拆分的网络知识单元。UId只需在本CompileUnit内唯一。 -->
+<FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="1"><Symbol><Component Name="DB1" /><Component Name="Start" /></Symbol></Access>
+    <Access Scope="GlobalVariable" UId="2"><Symbol><Component Name="DB1" /><Component Name="Stop" /></Symbol></Access>
+    <Access Scope="GlobalVariable" UId="3"><Symbol><Component Name="DB1" /><Component Name="Run" /></Symbol></Access>
+    <Part Name="Contact" UId="10" />
+    <Part Name="Contact" UId="11"><Negated Name="operand" /></Part>
+    <Part Name="Coil" UId="12" />
+  </Parts>
+  <Wires>
+    <Wire UId="20"><Powerrail /><NameCon UId="10" Name="in" /></Wire>
+    <Wire UId="21"><IdentCon UId="1" /><NameCon UId="10" Name="operand" /></Wire>
+    <Wire UId="22"><NameCon UId="10" Name="out" /><NameCon UId="11" Name="in" /></Wire>
+    <Wire UId="23"><IdentCon UId="2" /><NameCon UId="11" Name="operand" /></Wire>
+    <Wire UId="24"><NameCon UId="11" Name="out" /><NameCon UId="12" Name="in" /></Wire>
+    <Wire UId="25"><IdentCon UId="3" /><NameCon UId="12" Name="operand" /></Wire>
+  </Wires>
+</FlgNet>

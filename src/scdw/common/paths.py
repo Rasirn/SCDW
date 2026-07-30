@@ -9,10 +9,15 @@ PROJECT_ROOT = SRC_DIR.parent
 DATA_DIR = PROJECT_ROOT / "data"
 LOGS_DIR = DATA_DIR / "logs"
 RAG_DATA_DIR = DATA_DIR / "rag"
+RAG_RAW_DIR = RAG_DATA_DIR / "raw"
+RAG_APPLICATION_RAW_DIR = RAG_RAW_DIR / "application"
+RAG_KNOWLEDGE_DIR = RAG_DATA_DIR / "knowledge"
+# 仅供仍引用旧常量的离线/历史代码兼容；运行时知识加载器不扫描此路径。
 RAG_TEMPLATES_DIR = RAG_DATA_DIR / "templates"
 GENERATED_DIR = DATA_DIR / "generated"
 RAG_GENERATED_DIR = GENERATED_DIR / "rag"
 XML_ARTIFACTS_DIR = GENERATED_DIR / "xml_artifacts"
+LAD_GENERATION_PLANS_DIR = GENERATED_DIR / "lad_plans"
 XML_ARTIFACT_TTL_HOURS = int(os.getenv("SCDW_XML_ARTIFACT_TTL_HOURS", "48"))
 XLSX_DATA_DIR = DATA_DIR / "xlsx"
 TIA_PROJECTS_DIR = PROJECT_ROOT / "assets" / "tia_projects"
@@ -29,3 +34,9 @@ def ensure_xml_artifacts_dir() -> Path:
     """Create and return the isolated XML Artifact workspace."""
     XML_ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
     return XML_ARTIFACTS_DIR
+
+
+def ensure_lad_generation_plans_dir() -> Path:
+    """Create and return the lightweight LAD plan workspace."""
+    LAD_GENERATION_PLANS_DIR.mkdir(parents=True, exist_ok=True)
+    return LAD_GENERATION_PLANS_DIR

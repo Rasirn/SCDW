@@ -8,8 +8,8 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from scdw.common.paths import PROJECT_ROOT, RAG_TEMPLATES_DIR, XLSX_DATA_DIR
-from scdw.rag.retriever import TemplateLibrary
+from scdw.common.paths import PROJECT_ROOT, RAG_KNOWLEDGE_DIR, XLSX_DATA_DIR
+from scdw.rag.retriever import KnowledgeLibrary
 from scdw.xlsx.reader import read_plc_project_xlsx
 
 
@@ -19,10 +19,10 @@ class PathAndDataTests(unittest.TestCase):
     def test_project_root_is_repository_root(self):
         self.assertEqual(PROJECT_ROOT, ROOT)
 
-    def test_rag_templates_are_available(self):
-        self.assertTrue(RAG_TEMPLATES_DIR.is_dir())
-        TemplateLibrary.reset()
-        self.assertGreaterEqual(len(TemplateLibrary.instance().list_all()), 16)
+    def test_plc_knowledge_is_available(self):
+        self.assertTrue(RAG_KNOWLEDGE_DIR.is_dir())
+        KnowledgeLibrary.reset()
+        self.assertGreaterEqual(len(KnowledgeLibrary.instance().catalog()["items"]), 16)
 
     def test_xlsx_data_directory_is_available(self):
         self.assertTrue(XLSX_DATA_DIR.is_dir())

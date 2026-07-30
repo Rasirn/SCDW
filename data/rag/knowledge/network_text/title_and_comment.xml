@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- verified_v17_sample: Network标题和功能注释位于CompileUnit的ObjectList，均保留完整MultilingualText层级。 -->
+<SW.Blocks.CompileUnit ID="3" CompositionName="CompileUnits">
+  <AttributeList>
+    <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4"><Parts /><Wires /></FlgNet></NetworkSource>
+    <ProgrammingLanguage>LAD</ProgrammingLanguage>
+  </AttributeList>
+  <ObjectList>
+    <MultilingualText ID="4" CompositionName="Comment"><ObjectList><MultilingualTextItem ID="5" CompositionName="Items"><AttributeList><Culture>zh-CN</Culture><Text>说明本Network的功能与边界。</Text></AttributeList></MultilingualTextItem></ObjectList></MultilingualText>
+    <MultilingualText ID="6" CompositionName="Title"><ObjectList><MultilingualTextItem ID="7" CompositionName="Items"><AttributeList><Culture>zh-CN</Culture><Text>Network标题</Text></AttributeList></MultilingualTextItem></ObjectList></MultilingualText>
+  </ObjectList>
+</SW.Blocks.CompileUnit>

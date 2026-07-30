@@ -22,7 +22,14 @@ class ArtifactMetadata:
     expires_at: str
     last_validation: dict[str, Any] | None = None
     last_import: dict[str, Any] | None = None
+    last_compile: dict[str, Any] | None = None
     conversation_id: str | None = None
+    change_source: str | None = None
+    affected_networks: list[str] = field(default_factory=list)
+    network_states: dict[str, str] = field(default_factory=dict)
+    plan_id: str | None = None
+    block_type: str | None = None
+    verified_versions: dict[str, int] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]: return asdict(self)
 
@@ -76,3 +83,9 @@ class PatchResult:
 
     def to_dict(self) -> dict[str, Any]:
         data = asdict(self); data["validation"] = self.validation.to_dict(); return data
+
+
+NETWORK_STATES = {
+    "planned", "artifact_created", "generating", "generated", "import_pending", "importing",
+    "imported", "import_failed", "compile_pending", "compiling", "compile_failed", "verified", "needs_revision",
+}

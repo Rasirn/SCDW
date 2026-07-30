@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- verified_v17_sample: 多支路共享同一Powerrail Wire；SCoil/RCoil与各自Access和Wire保持成组。 -->
+<FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="1"><Symbol><Component Name="DB1" /><Component Name="SetCmd" /></Symbol></Access>
+    <Access Scope="GlobalVariable" UId="2"><Symbol><Component Name="DB1" /><Component Name="State" /></Symbol></Access>
+    <Access Scope="GlobalVariable" UId="3"><Symbol><Component Name="DB1" /><Component Name="ResetCmd" /></Symbol></Access>
+    <Access Scope="GlobalVariable" UId="4"><Symbol><Component Name="DB1" /><Component Name="State" /></Symbol></Access>
+    <Part Name="Contact" UId="10" /><Part Name="SCoil" UId="11" />
+    <Part Name="Contact" UId="12" /><Part Name="RCoil" UId="13" />
+  </Parts>
+  <Wires>
+    <Wire UId="20"><Powerrail /><NameCon UId="10" Name="in" /><NameCon UId="12" Name="in" /></Wire>
+    <Wire UId="21"><IdentCon UId="1" /><NameCon UId="10" Name="operand" /></Wire>
+    <Wire UId="22"><NameCon UId="10" Name="out" /><NameCon UId="11" Name="in" /></Wire>
+    <Wire UId="23"><IdentCon UId="2" /><NameCon UId="11" Name="operand" /></Wire>
+    <Wire UId="24"><IdentCon UId="3" /><NameCon UId="12" Name="operand" /></Wire>
+    <Wire UId="25"><NameCon UId="12" Name="out" /><NameCon UId="13" Name="in" /></Wire>
+    <Wire UId="26"><IdentCon UId="4" /><NameCon UId="13" Name="operand" /></Wire>
+  </Wires>
+</FlgNet>
