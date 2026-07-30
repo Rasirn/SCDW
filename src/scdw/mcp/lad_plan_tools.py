@@ -3,13 +3,14 @@
 import json
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from scdw.lad_generation import LadPlanService
 from scdw.xml_workspace import ArtifactError, XmlArtifactService
 
 
 class BlockPlanningInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     block_name: str
     block_type: Literal["FC", "FB"]
     responsibility: str
@@ -22,6 +23,7 @@ class AuxiliaryFbPlanningInput(BlockPlanningInput):
 
 
 class InstanceDbPlanningInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     db_name: str
     fb_name: str
     instance_name: str
@@ -29,11 +31,13 @@ class InstanceDbPlanningInput(BaseModel):
 
 
 class NetworkTopologyInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     kind: Literal["series", "parallel", "fan_out", "merge", "parallel_merge"]
     description: str
 
 
 class NetworkPlanningInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     network_key: str = Field(min_length=1)
     block_name: str = Field(min_length=1)
     title: str = Field(min_length=1)
@@ -52,6 +56,7 @@ class NetworkPlanningInput(BaseModel):
 
 
 class LadPlanningInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     main_fc: BlockPlanningInput
     main_fc_reason: str
     auxiliary_fbs: list[AuxiliaryFbPlanningInput] = Field(default_factory=list)
@@ -83,13 +88,16 @@ def register_lad_plan_tools(mcp, service: LadPlanService | None = None, artifact
             "message": str(exc),
             "network_key": getattr(exc, "network_key", None),
             "uncovered_capabilities": getattr(exc, "uncovered", []),
+            "issues": getattr(exc, "issues", []),
             "retryable": False,
         }, ensure_ascii=False, sort_keys=True)
 
-    @mcp.tool(name="create_lad_generation_plan", description="Plan a main FC, any necessary stateful helper FBs and instance DBs, merged Networks, interfaces, dependencies and explicit knowledge IDs; persist the result as JSON.")
-    def create_lad_generation_plan(requirements: str, conversation_id: str, target_device: str, main_fc_name: str = "FC_MainControl") -> str:
+    @mcp.tool(name="draft_lad_generation_plan", description="Return a deterministic non-persisted LAD draft. It never creates or replaces the single active formal Plan; save_lad_generation_plan persists the reviewed plan.")
+    def draft_lad_generation_plan(requirements: str, conversation_id: str, target_device: str, main_fc_name: str = "FC_MainControl") -> str:
         try:
-            return ok(plan=service.create_from_requirements(requirements, conversation_id=conversation_id, target_device=target_device, main_fc_name=main_fc_name).to_dict())
+            from scdw.lad_generation import LadPlanner
+            value = LadPlanner().plan(requirements, conversation_id=conversation_id, target_device=target_device, main_fc_name=main_fc_name)
+            return ok(draft=True, persisted=False, plan=value.to_dict())
         except (KeyError, ValueError, OSError) as exc:
             return fail(exc)
 
@@ -118,20 +126,6 @@ def register_lad_plan_tools(mcp, service: LadPlanService | None = None, artifact
         except (KeyError, ValueError, OSError) as exc:
             return fail(exc)
 
-    @mcp.tool(name="set_lad_generation_cursor", description="Persist the block and Network currently being processed in this conversation.")
-    def set_lad_generation_cursor(plan_id: str, block_name: str | None = None, network_key: str | None = None) -> str:
-        try:
-            return ok(plan=service.set_cursor(plan_id, block_name, network_key).to_dict())
-        except (KeyError, ValueError, OSError) as exc:
-            return fail(exc)
-
-    @mcp.tool(name="set_lad_network_plan_status", description="Persist one planned Network generation status without importing or compiling it.")
-    def set_lad_network_plan_status(plan_id: str, network_key: str, status: str) -> str:
-        try:
-            return ok(plan=service.set_network_status(plan_id, network_key, status).to_dict())
-        except (KeyError, ValueError, OSError) as exc:
-            return fail(exc)
-
     @mcp.tool(name="revise_lad_network_plan", description="Revise one Network's capabilities, selected knowledge IDs, instruction chain or topology on the same active plan. Use this after a knowledge-backed structural diagnosis; it preserves the linked Artifact and marks only that Network needs_revision.")
     def revise_lad_network_plan(plan_id: str, network_key: str, revision: dict, reason: str) -> str:
         try:
@@ -139,29 +133,17 @@ def register_lad_plan_tools(mcp, service: LadPlanService | None = None, artifact
         except (KeyError, TypeError, ValueError, OSError) as exc:
             return fail(exc)
 
-    @mcp.tool(name="link_lad_plan_artifact", description="Link an FC or FB Artifact and immutable version to its block in one LAD plan.")
-    def link_lad_plan_artifact(plan_id: str, block_name: str, artifact_id: str, version: int) -> str:
-        try:
-            plan = service.get(plan_id)
-            block = next((item for item in [plan.main_fc, *plan.auxiliary_fbs] if item.block_name == block_name), None)
-            if block is None:
-                raise KeyError("block not found in plan")
-            linked = service.link_artifact(plan_id, block_name, artifact_id, version)
-            artifact = artifact_service.relink_plan(artifact_id, plan_id, block_name, block.block_type)
-            return ok(plan=linked.to_dict(), artifact=artifact.to_dict())
-        except (ArtifactError, KeyError, ValueError, OSError) as exc:
-            return fail(exc)
-
-    @mcp.tool(name="record_lad_artifact_version", description="Record a new Artifact version for a plan block and move the edited Network to import_pending.")
-    def record_lad_artifact_version(plan_id: str, block_name: str, version: int, network_key: str | None = None) -> str:
-        try:
-            return ok(plan=service.record_artifact_version(plan_id, block_name, version, network_key).to_dict())
-        except (KeyError, ValueError, OSError, StopIteration) as exc:
-            return fail(exc)
-
     @mcp.tool(name="record_lad_interface_change", description="Record an Interface change and the block and Network keys it may affect.")
     def record_lad_interface_change(plan_id: str, block_name: str, affected_networks: list[str], description: str) -> str:
         try:
             return ok(plan=service.record_interface_change(plan_id, block_name, affected_networks, description).to_dict())
         except (KeyError, ValueError, OSError) as exc:
+            return fail(exc)
+
+    @mcp.tool(name="reconcile_lad_workflow", description="Reconcile recoverable Plan and Artifact version/state drift after interruption. It does not change LAD XML or semantics and returns the exact resume action.")
+    def reconcile_lad_workflow(plan_id: str) -> str:
+        try:
+            plan, repairs = service.reconcile(plan_id, artifact_service)
+            return ok(plan_id=plan.plan_id, repairs=repairs, next=service.next_step(plan_id))
+        except (ArtifactError, KeyError, ValueError, OSError) as exc:
             return fail(exc)

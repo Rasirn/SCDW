@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import re
 import secrets
@@ -13,7 +14,7 @@ from typing import Any
 from scdw.common.paths import LAD_GENERATION_PLANS_DIR
 from scdw.rag import KnowledgeLibrary
 
-from .models import GENERATION_STATES, KnowledgeGapError, LadGenerationPlan
+from .models import GENERATION_STATES, KnowledgeGapError, LadGenerationPlan, PlanValidationError
 from .planner import LadPlanner
 
 
@@ -50,10 +51,50 @@ class LadPlanService:
             if os.path.exists(temporary):
                 os.unlink(temporary)
 
-    @staticmethod
-    def _validate_knowledge_coverage(plan: LadGenerationPlan) -> None:
-        catalog = KnowledgeLibrary.instance().catalog()
-        entries = {str(item["id"]): item for item in catalog["items"]}
+    def _snapshot_path(self, plan_id: str) -> Path:
+        path = self.root / "knowledge_snapshots" / f"{plan_id}.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def _catalog_entries(self, plan: LadGenerationPlan) -> dict[str, dict[str, Any]]:
+        snapshot = self._snapshot_path(plan.plan_id)
+        if snapshot.is_file():
+            value = json.loads(snapshot.read_text(encoding="utf-8"))
+            return {str(item["id"]): item["metadata"] for item in value.get("items", [])}
+        return {str(item["id"]): item for item in KnowledgeLibrary.instance().catalog()["items"]}
+
+    def _write_knowledge_snapshot(self, plan: LadGenerationPlan) -> None:
+        selected = list(dict.fromkeys(
+            item_id for network in plan.networks for item_id in network.selected_knowledge_ids
+        ))
+        library = KnowledgeLibrary.instance()
+        all_ids = [str(item["id"]) for item in library.catalog()["items"]]
+        items = library.get_many(all_ids) if all_ids else []
+        catalog_text = json.dumps(
+            [item["metadata"] for item in items], ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        )
+        summary = {
+            "captured_at": _stamp(),
+            "catalog_sha256": hashlib.sha256(catalog_text.encode("utf-8")).hexdigest(),
+            "items": {
+                item["id"]: hashlib.sha256(item["content"].encode("utf-8")).hexdigest()
+                for item in items if item["id"] in selected
+            },
+        }
+        value = {**summary, "items": [
+            {
+                "id": item["id"],
+                "metadata": item["metadata"],
+                "content": item["content"],
+                "content_sha256": hashlib.sha256(item["content"].encode("utf-8")).hexdigest(),
+            }
+            for item in items
+        ]}
+        self._atomic(self._snapshot_path(plan.plan_id), json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2) + "\n")
+        plan.knowledge_snapshot = summary
+
+    def _collect_knowledge_issues(self, plan: LadGenerationPlan) -> list[dict[str, Any]]:
+        entries = self._catalog_entries(plan)
         topology_capabilities = {
             "series": ["topology.series"],
             "parallel": ["topology.parallel"],
@@ -61,6 +102,7 @@ class LadPlanService:
             "merge": ["topology.merge"],
             "parallel_merge": ["topology.parallel", "topology.merge"],
         }
+        issues: list[dict[str, Any]] = []
         for network in plan.networks:
             selected = list(dict.fromkeys(network.selected_knowledge_ids))
             network.selected_knowledge_ids = selected
@@ -68,11 +110,8 @@ class LadPlanService:
             unknown = [item_id for item_id in selected if item_id not in entries]
             if unknown:
                 network.uncovered_capabilities = [f"knowledge_id:{item_id}" for item_id in unknown]
-                raise KnowledgeGapError(
-                    f"Network {network.network_key} selects unknown knowledge IDs: {', '.join(unknown)}",
-                    network_key=network.network_key,
-                    uncovered=network.uncovered_capabilities,
-                )
+                issues.append({"network_key": network.network_key, "code": "UNKNOWN_KNOWLEDGE_ID", "message": f"unknown knowledge IDs: {', '.join(unknown)}", "uncovered_capabilities": network.uncovered_capabilities})
+                continue
             provided = {
                 str(capability)
                 for item_id in selected
@@ -86,11 +125,16 @@ class LadPlanService:
             network.required_capabilities = required
             network.uncovered_capabilities = [item for item in required if item not in provided]
             if network.uncovered_capabilities:
-                raise KnowledgeGapError(
-                    f"Network {network.network_key} has uncovered capabilities: {', '.join(network.uncovered_capabilities)}",
-                    network_key=network.network_key,
-                    uncovered=network.uncovered_capabilities,
-                )
+                issues.append({"network_key": network.network_key, "code": "UNCOVERED_CAPABILITIES", "message": f"uncovered capabilities: {', '.join(network.uncovered_capabilities)}", "uncovered_capabilities": list(network.uncovered_capabilities)})
+            topology_kind = str(network.topology.get("kind", "")).strip().lower()
+            if topology_kind in {"parallel", "parallel_merge"} and len([branch for branch in network.parallel_branches if branch]) < 2:
+                issues.append({"network_key": network.network_key, "code": "INVALID_PARALLEL_BRANCHES", "message": "parallel topology requires at least two explicit parallel_branches", "uncovered_capabilities": ["topology.parallel_branches"]})
+        return issues
+
+    def _validate_knowledge_coverage(self, plan: LadGenerationPlan) -> None:
+        issues = self._collect_knowledge_issues(plan)
+        if issues:
+            raise PlanValidationError(issues)
 
     def save(self, plan: LadGenerationPlan) -> LadGenerationPlan:
         plan.validate()
@@ -118,6 +162,7 @@ class LadPlanService:
         with self._lock:
             plan.validate()
             self._validate_knowledge_coverage(plan)
+            self._write_knowledge_snapshot(plan)
             self._replace_active_plans(plan)
             return self.save(plan)
 
@@ -139,6 +184,7 @@ class LadPlanService:
             "artifacts": {},
             "interface_change_log": [],
             "verification_history": [],
+            "knowledge_snapshot": {},
             "status": "active",
             "replaced_by": None,
             "closed_at": None,
@@ -150,6 +196,9 @@ class LadPlanService:
             plan.current_block = plan.block_dependency_order[0]
         if plan.current_network is None and plan.networks:
             plan.current_network = plan.networks[0].network_key
+        issues = self._collect_knowledge_issues(plan)
+        if issues:
+            raise PlanValidationError(issues)
         return self._save_new_active(plan)
 
     def get(self, plan_id: str) -> LadGenerationPlan:
@@ -181,6 +230,43 @@ class LadPlanService:
                 raise KeyError("Network not found")
             network.status = status
             return self.save(plan)
+
+    @staticmethod
+    def _advance_cursor(plan: LadGenerationPlan) -> None:
+        for block_name in plan.block_dependency_order:
+            candidate = next(
+                (item for item in plan.networks if item.block_name == block_name and item.status != "verified"),
+                None,
+            )
+            if candidate is not None:
+                plan.current_block = block_name
+                plan.current_network = candidate.network_key
+                return
+        plan.current_block = None
+        plan.current_network = None
+
+    def next_step(self, plan_id: str) -> dict[str, Any]:
+        plan = self.get(plan_id)
+        self._advance_cursor(plan)
+        if plan.current_network:
+            network = self._network(plan, plan.current_network)
+            artifact = plan.artifacts.get(network.block_name, {})
+            return {
+                "action": "generate_network" if network.status in {"planned", "needs_revision", "compile_failed", "import_failed"} else "resume_network",
+                "plan_id": plan.plan_id,
+                "block_name": network.block_name,
+                "network_key": network.network_key,
+                "network_status": network.status,
+                "artifact_id": artifact.get("artifact_id"),
+                "version": artifact.get("version"),
+                "device_name": plan.target_device,
+            }
+        unverified_blocks = [item.block_name for item in [plan.main_fc, *plan.auxiliary_fbs] if item.status != "verified"]
+        if unverified_blocks:
+            return {"action": "finalize_block", "plan_id": plan.plan_id, "block_name": unverified_blocks[0], "device_name": plan.target_device}
+        if plan.step_status.get("plc_compile") != "verified":
+            return {"action": "compile_plc", "plan_id": plan.plan_id, "device_name": plan.target_device}
+        return {"action": "save_project", "plan_id": plan.plan_id, "device_name": plan.target_device}
 
     def set_runtime_status(self, plan_id: str, status: str, *, block_name: str | None = None, network_key: str | None = None, instance_db_name: str | None = None) -> LadGenerationPlan:
         if status not in GENERATION_STATES:
@@ -313,6 +399,8 @@ class LadPlanService:
                     if success and version is not None:
                         network.verified_version = version
                     block.status = "compiling" if success else "compile_failed"
+                    if success:
+                        self._advance_cursor(plan)
                 else:
                     block.status = status
                     if success and version is not None:
@@ -468,7 +556,48 @@ class LadPlanService:
                 "affected_networks": affected_networks,
                 "description": description,
             })
+            for network_key in affected_networks:
+                network = self._network(plan, network_key)
+                network.status = "needs_revision"
+                network.verified_version = None
+                network.compile_result = None
+            if affected_networks:
+                self._block(plan, block_name).status = "needs_revision"
+                plan.step_status["planning"] = "needs_revision"
+                self._advance_cursor(plan)
             return self.save(plan)
+
+    def reconcile(self, plan_id: str, artifact_service: Any) -> tuple[LadGenerationPlan, list[dict[str, Any]]]:
+        """Repair recoverable Plan/Artifact drift without changing LAD semantics."""
+        with self._lock:
+            plan = self.get(plan_id)
+            self._require_active(plan)
+            repairs: list[dict[str, Any]] = []
+            for block_name, link in plan.artifacts.items():
+                metadata = artifact_service.get_artifact(link["artifact_id"])
+                if link.get("version") != metadata.current_version:
+                    repairs.append({"kind": "artifact_version", "block_name": block_name, "from": link.get("version"), "to": metadata.current_version})
+                    link["version"] = metadata.current_version
+                    self._block(plan, block_name).artifact_version = metadata.current_version
+                for network in (item for item in plan.networks if item.block_name == block_name):
+                    artifact_state = metadata.network_states.get(network.network_key)
+                    if artifact_state == "verified" and metadata.verified_versions.get(network.network_key) == metadata.current_version and network.status != "verified":
+                        repairs.append({"kind": "network_verified", "network_key": network.network_key, "from": network.status, "to": "verified"})
+                        network.status = "verified"
+                        network.verified_version = metadata.current_version
+                        network.artifact_id = metadata.artifact_id
+                        network.artifact_version = metadata.current_version
+                        network.compile_result = metadata.last_compile
+                    elif artifact_state in {"imported", "import_failed", "compile_failed", "needs_revision", "import_pending"} and network.status != artifact_state:
+                        repairs.append({"kind": "network_state", "network_key": network.network_key, "from": network.status, "to": artifact_state})
+                        network.status = artifact_state
+                        network.artifact_id = metadata.artifact_id
+                        network.artifact_version = metadata.current_version
+            self._advance_cursor(plan)
+            if repairs:
+                plan.verification_history.append({"operation": "reconcile", "recorded_at": _stamp(), "repairs": repairs})
+                plan = self.save(plan)
+            return plan, repairs
 
     def list(self, conversation_id: str | None = None) -> list[LadGenerationPlan]:
         plans: list[LadGenerationPlan] = []

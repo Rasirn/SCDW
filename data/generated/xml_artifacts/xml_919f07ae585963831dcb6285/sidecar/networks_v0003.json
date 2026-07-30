@@ -1,0 +1,13 @@
+{
+  "networks": [
+    {
+      "network_key": "NW_FanRunCoil",
+      "sha256": "acd9fa1572424813ba085e65a8fd31fc0d25efb75527d28f0713ae8eaa6179c6"
+    },
+    {
+      "network_key": "NW_FanAutoMove",
+      "sha256": "7e79514aadf9fc64d24d3bc5fcfa7c37e8a17d8b0b19af459878977cc4ae9579"
+    }
+  ],
+  "version": 3
+}

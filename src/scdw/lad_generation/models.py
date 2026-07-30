@@ -20,6 +20,29 @@ GENERATION_STATES = {
     "needs_revision",
 }
 
+STATE_TRANSITIONS = {
+    "planned": {"artifact_created", "generating", "needs_revision"},
+    "artifact_created": {"generating", "generated", "import_pending", "needs_revision"},
+    "generating": {"generated", "needs_revision"},
+    "generated": {"import_pending", "needs_revision"},
+    "import_pending": {"importing", "needs_revision"},
+    "importing": {"imported", "import_failed"},
+    "imported": {"compiling", "importing", "needs_revision"},
+    "compile_pending": {"compiling", "needs_revision"},
+    "compiling": {"verified", "compile_failed"},
+    "import_failed": {"import_pending", "importing", "needs_revision"},
+    "compile_failed": {"import_pending", "compiling", "needs_revision"},
+    "verified": {"needs_revision", "import_pending"},
+    "needs_revision": {"generating", "generated", "import_pending"},
+}
+
+
+def require_state_transition(current: str, target: str) -> None:
+    if current == target:
+        return
+    if target not in STATE_TRANSITIONS.get(current, set()):
+        raise ValueError(f"invalid workflow state transition: {current} -> {target}")
+
 PLAN_STATES = {"active", "replaced", "closed"}
 TOPOLOGY_KINDS = {"series", "parallel", "fan_out", "merge", "parallel_merge"}
 
@@ -33,6 +56,19 @@ class KnowledgeGapError(ValueError):
         super().__init__(message)
         self.network_key = network_key
         self.uncovered = list(uncovered or [])
+
+
+class PlanValidationError(KnowledgeGapError):
+    """All independently detectable plan issues returned in one response."""
+
+    def __init__(self, issues: list[dict[str, Any]]) -> None:
+        self.issues = issues
+        uncovered = sorted({item for issue in issues for item in issue.get("uncovered_capabilities", [])})
+        super().__init__(
+            f"plan has {len(issues)} validation issue(s); fix them in one revision",
+            network_key=issues[0].get("network_key") if len(issues) == 1 else None,
+            uncovered=uncovered,
+        )
 
 
 @dataclass
@@ -116,6 +152,7 @@ class LadGenerationPlan:
     artifacts: dict[str, dict[str, Any]] = field(default_factory=dict)
     interface_change_log: list[dict[str, Any]] = field(default_factory=list)
     verification_history: list[dict[str, Any]] = field(default_factory=list)
+    knowledge_snapshot: dict[str, Any] = field(default_factory=dict)
     status: str = "active"
     replaced_by: str | None = None
     closed_at: str | None = None
@@ -146,6 +183,7 @@ class LadGenerationPlan:
         data.setdefault("status", "active")
         data.setdefault("replaced_by", None)
         data.setdefault("closed_at", None)
+        data.setdefault("knowledge_snapshot", {})
         return cls(**data)
 
     def validate(self) -> None:

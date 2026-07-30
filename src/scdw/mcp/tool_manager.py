@@ -8,19 +8,28 @@ from scdw.mcp.client import MCPClient
 class ToolManager:
     """将 MCP 工具描述与调用结果转换为 OpenAI/DeepSeek 兼容格式。"""
 
+    _client_tool_names: dict[int, set[str]] = {}
+
     @classmethod
     async def get_all_tools(cls, clients: dict[str, MCPClient]) -> list[dict]:
         """获取全部客户端工具的函数调用 Schema。"""
         tools = []
         for client in clients.values():
-            for tool in await client.list_tools():
+            listed = await client.list_tools()
+            cls._client_tool_names[id(client)] = {tool.name for tool in listed}
+            for tool in listed:
                 tools.append({"type": "function", "function": {"name": tool.name, "description": tool.description, "parameters": tool.inputSchema}})
         return tools
 
     @classmethod
     async def _find_client_with_tool(cls, clients: list[MCPClient], tool_name: str) -> Optional[MCPClient]:
         for client in clients:
-            if any(tool.name == tool_name for tool in await client.list_tools()):
+            names = cls._client_tool_names.get(id(client))
+            if names is None:
+                listed = await client.list_tools()
+                names = {tool.name for tool in listed}
+                cls._client_tool_names[id(client)] = names
+            if tool_name in names:
                 return client
         return None
 

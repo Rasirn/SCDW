@@ -1,0 +1,1914 @@
+{
+  "by_network": {
+    "NW_BurnerPower": {
+      "compile": 1,
+      "generate": 1
+    },
+    "NW_FanAutoMove": {
+      "compile": 1,
+      "generate": 1
+    },
+    "NW_FanCalcOutput": {
+      "compile": 2,
+      "failures": 1,
+      "generate": 1,
+      "replace": 1
+    },
+    "NW_FanManualMul": {
+      "compile": 1,
+      "generate": 1
+    },
+    "NW_FanRunCoil": {
+      "compile": 1,
+      "generate": 1
+    },
+    "NW_FanStopZero": {
+      "compile": 1,
+      "generate": 1
+    }
+  },
+  "by_tool": {
+    "add_plc_to_project": 1,
+    "append_network_and_prepare_import": 6,
+    "create_global_db": 3,
+    "create_lad_block_artifact": 1,
+    "create_plc_tag_table": 1,
+    "draft_lad_generation_plan": 1,
+    "get_plc_knowledge_catalog": 5,
+    "get_plc_knowledge_items": 2,
+    "import_and_compile_artifact": 7,
+    "init_tia_project": 1,
+    "list_tia_processes": 1,
+    "refresh_tia_context": 2,
+    "replace_network_and_prepare_import": 1,
+    "save_lad_generation_plan": 2,
+    "save_verified_project": 1
+  },
+  "calls": [
+    {
+      "arguments": {},
+      "arguments_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "code": null,
+      "duplicate_of": null,
+      "duration_ms": 6.388,
+      "index": 1,
+      "result_chars": 2,
+      "stage": null,
+      "started_at": "2026-07-31T01:39:01.149731+08:00",
+      "success": false,
+      "tool": "refresh_tia_context"
+    },
+    {
+      "arguments": {},
+      "arguments_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 383.274,
+      "index": 2,
+      "result_chars": 285,
+      "stage": "list_tia_processes",
+      "started_at": "2026-07-31T01:39:22.240263+08:00",
+      "success": true,
+      "tool": "list_tia_processes"
+    },
+    {
+      "arguments": {
+        "overwrite": false,
+        "project_name": "FanGasControl"
+      },
+      "arguments_sha256": "5fd29eff61ea3ecf184888c5b8ed98e1d6d849373534b536f2c678d530cd3f9d",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 23344.226,
+      "index": 3,
+      "result_chars": 448,
+      "stage": "init_tia_project",
+      "started_at": "2026-07-31T01:39:29.584970+08:00",
+      "success": true,
+      "tool": "init_tia_project"
+    },
+    {
+      "arguments": {
+        "device_name": "PLC_1",
+        "order_number": "OrderNumber:6ES7 214-1AG40-0XB0/V4.5"
+      },
+      "arguments_sha256": "e6f34c83078d3613be8b6cd7631749bf98d5792d0f3775965115287f02ad4cd1",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 10658.975,
+      "index": 4,
+      "result_chars": 363,
+      "stage": "add_plc_to_project",
+      "started_at": "2026-07-31T01:40:01.689206+08:00",
+      "success": true,
+      "tool": "add_plc_to_project"
+    },
+    {
+      "arguments": {
+        "address_mode": "absolute",
+        "db_name": "信号数据",
+        "db_number": 3,
+        "device_name": "PLC_1",
+        "variables_json": [
+          {
+            "address": "%DB3.DBX129.4",
+            "data_type": "Bool",
+            "name": "风机运行按"
+          },
+          {
+            "address": "%DB3.DBX129.5",
+            "data_type": "Bool",
+            "name": "风机故障反馈"
+          },
+          {
+            "address": "%DB3.DBX129.3",
+            "data_type": "Bool",
+            "name": "风机手动"
+          },
+          {
+            "address": "%DB3.DBD130",
+            "data_type": "Real",
+            "name": "风机自动输出"
+          },
+          {
+            "address": "%DB3.DBD134",
+            "data_type": "Real",
+            "name": "风机手动频率"
+          },
+          {
+            "address": "%DB3.DBD138",
+            "data_type": "Real",
+            "name": "风机控制输出"
+          },
+          {
+            "address": "%DB3.DBD80",
+            "data_type": "Real",
+            "name": "风压测量值"
+          }
+        ]
+      },
+      "arguments_sha256": "e12befee1db3ddb316c5f5dc1f3ad58f61ea95cc6e0be7ab467cdbceb5238f35",
+      "code": "ABSOLUTE_DB_ADDRESS_UNSUPPORTED",
+      "duplicate_of": null,
+      "duration_ms": 4.0,
+      "index": 5,
+      "result_chars": 2483,
+      "stage": "create_global_db",
+      "started_at": "2026-07-31T01:40:26.642098+08:00",
+      "success": false,
+      "tool": "create_global_db"
+    },
+    {
+      "arguments": {},
+      "arguments_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "code": null,
+      "duplicate_of": 1,
+      "duration_ms": 79.071,
+      "index": 6,
+      "result_chars": 2,
+      "stage": null,
+      "started_at": "2026-07-31T01:40:40.009552+08:00",
+      "success": true,
+      "tool": "refresh_tia_context"
+    },
+    {
+      "arguments": {
+        "address_mode": "symbolic",
+        "db_name": "信号数据",
+        "db_number": 3,
+        "device_name": "PLC_1",
+        "variables_json": [
+          {
+            "data_type": "Bool",
+            "name": "风机运行按"
+          },
+          {
+            "data_type": "Bool",
+            "name": "风机故障反馈"
+          },
+          {
+            "data_type": "Bool",
+            "name": "风机手动"
+          },
+          {
+            "data_type": "Real",
+            "name": "风机自动输出"
+          },
+          {
+            "data_type": "Real",
+            "name": "风机手动频率"
+          },
+          {
+            "data_type": "Real",
+            "name": "风机控制输出"
+          },
+          {
+            "data_type": "Real",
+            "name": "风压测量值"
+          }
+        ]
+      },
+      "arguments_sha256": "1565699fcb73df00927a8acb952691ddd53cef29ba3e18e6a9cfcd4574ae63e7",
+      "code": "GLOBAL_DB_CREATED",
+      "duplicate_of": null,
+      "duration_ms": 2624.109,
+      "index": 7,
+      "result_chars": 2279,
+      "stage": "create_global_db",
+      "started_at": "2026-07-31T01:40:50.326391+08:00",
+      "success": true,
+      "tool": "create_global_db"
+    },
+    {
+      "arguments": {
+        "address_mode": "symbolic",
+        "db_name": "内部数据",
+        "db_number": 10,
+        "device_name": "PLC_1",
+        "variables_json": [
+          {
+            "data_type": "Real",
+            "name": "风机控制输出值"
+          },
+          {
+            "data_type": "Int",
+            "name": "风压过渡"
+          }
+        ]
+      },
+      "arguments_sha256": "06180144c9ab1dad28a12ab68cffda0513fefaa4c78e7a23915b8801311d9d35",
+      "code": null,
+      "duplicate_of": null,
+      "duration_ms": 561.257,
+      "index": 8,
+      "result_chars": 2,
+      "stage": null,
+      "started_at": "2026-07-31T01:40:52.951500+08:00",
+      "success": true,
+      "tool": "create_global_db"
+    },
+    {
+      "arguments": {
+        "device_name": "PLC_1",
+        "table_name": "IO变量",
+        "tags_json": "[{\"name\":\"风机运行\",\"data_type\":\"Bool\",\"address\":\"%Q4.4\",\"comment\":\"风机运行线圈\"},{\"name\":\"烧嘴电源\",\"data_type\":\"Bool\",\"address\":\"%Q4.6\",\"comment\":\"烧嘴电源线圈\"},{\"name\":\"风机控制\",\"data_type\":\"Int\",\"address\":\"%QW44\",\"comment\":\"模拟量输出风机控制\"}]"
+      },
+      "arguments_sha256": "61da4693c24dfcd94ea5917899af4a76cb30d239831db80833d289a3b8bd62db",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 338.551,
+      "index": 9,
+      "result_chars": 339,
+      "stage": "create_plc_tag_table",
+      "started_at": "2026-07-31T01:40:53.513758+08:00",
+      "success": true,
+      "tool": "create_plc_tag_table"
+    },
+    {
+      "arguments": {
+        "capabilities": [
+          "NO_contact",
+          "NC_contact",
+          "coil_output",
+          "MOVE",
+          "MUL_REAL",
+          "CALCULATE_REAL",
+          "CONV_Real_to_Int",
+          "CMP_GE_REAL",
+          "series_contact_logic",
+          "parallel_branch_select",
+          "network_chain"
+        ],
+        "roles": [
+          "lad_instruction",
+          "lad_pattern",
+          "lad_network_template"
+        ]
+      },
+      "arguments_sha256": "2339687b086259cfd65af71e05d44f9a18e541f002f171f91f4cc5bb6049e872",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 40.862,
+      "index": 10,
+      "result_chars": 790,
+      "stage": "get_plc_knowledge_catalog",
+      "started_at": "2026-07-31T01:41:14.765214+08:00",
+      "success": true,
+      "tool": "get_plc_knowledge_catalog"
+    },
+    {
+      "arguments": {
+        "roles": [
+          "lad_instruction"
+        ]
+      },
+      "arguments_sha256": "980ba45929538e7c17c8820bb0d3e0a467bc409be50208a76826793435d7335c",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 4.0,
+      "index": 11,
+      "result_chars": 544,
+      "stage": "get_plc_knowledge_catalog",
+      "started_at": "2026-07-31T01:41:19.278666+08:00",
+      "success": true,
+      "tool": "get_plc_knowledge_catalog"
+    },
+    {
+      "arguments": {
+        "roles": [
+          "lad_pattern"
+        ]
+      },
+      "arguments_sha256": "8876f68cc1d38e64b895bffd4d94c9f2117ef42797c41d17cf3344e8a3d8807b",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 3.002,
+      "index": 12,
+      "result_chars": 540,
+      "stage": "get_plc_knowledge_catalog",
+      "started_at": "2026-07-31T01:41:19.283667+08:00",
+      "success": true,
+      "tool": "get_plc_knowledge_catalog"
+    },
+    {
+      "arguments": {
+        "roles": [
+          "lad_network_template"
+        ]
+      },
+      "arguments_sha256": "168341230d6594898389353274889a234f42a8702915ba052c4153f29f4fb214",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 2.001,
+      "index": 13,
+      "result_chars": 549,
+      "stage": "get_plc_knowledge_catalog",
+      "started_at": "2026-07-31T01:41:19.287671+08:00",
+      "success": true,
+      "tool": "get_plc_knowledge_catalog"
+    },
+    {
+      "arguments": {},
+      "arguments_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 5.001,
+      "index": 14,
+      "result_chars": 13715,
+      "stage": "get_plc_knowledge_catalog",
+      "started_at": "2026-07-31T01:41:22.270420+08:00",
+      "success": true,
+      "tool": "get_plc_knowledge_catalog"
+    },
+    {
+      "arguments": {
+        "conversation_id": "fan_gas_control_001",
+        "main_fc_name": "FC_MainControl",
+        "requirements": {
+          "chars": 546,
+          "sha256": "c250039b7ed9eff70affab6c0362f12719a7fc73b2ba4a49ba49759f06df47ae"
+        },
+        "target_device": "PLC_1"
+      },
+      "arguments_sha256": "2f384763ced8e2dcb12e6d183396c182ff4be9f4a46c7923d9cf104fdba4a3cb",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 7.003,
+      "index": 15,
+      "result_chars": 5480,
+      "stage": "draft_lad_generation_plan",
+      "started_at": "2026-07-31T01:42:23.772860+08:00",
+      "success": true,
+      "tool": "draft_lad_generation_plan"
+    },
+    {
+      "arguments": {
+        "item_ids": [
+          "shell.fc_block.v17",
+          "topology.series_contact_coil.v17",
+          "instruction.move.v17",
+          "instruction.math_cascade.v17",
+          "instruction.convert_divide.v17",
+          "instruction.comparison_or_chain.v17",
+          "network_text.title_comment.v17",
+          "topology.fan_out.v17",
+          "guide.simaticml_block_structure.v17",
+          "guide.uid_reference_rules.v17",
+          "guide.part_wire_coupling.v17",
+          "guide.interface_access_consistency.v17",
+          "guide.instruction_template_rules.v17",
+          "instruction.arithmetic_guard.v17"
+        ]
+      },
+      "arguments_sha256": "4efa9ff937239dc9600c550a1db03d2ca45bdc8a88ad4e81e607b5fb9baf24fc",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 7.002,
+      "index": 16,
+      "result_chars": 41037,
+      "stage": "get_plc_knowledge_items",
+      "started_at": "2026-07-31T01:42:35.066622+08:00",
+      "success": true,
+      "tool": "get_plc_knowledge_items"
+    },
+    {
+      "arguments": {
+        "item_ids": [
+          "instruction.tonr_trend_state.v17"
+        ]
+      },
+      "arguments_sha256": "5fa5143f29748056e31fbf08ca815f722f924b96688385903985cfe1c7852e67",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 5.001,
+      "index": 17,
+      "result_chars": 13890,
+      "stage": "get_plc_knowledge_items",
+      "started_at": "2026-07-31T01:43:31.411295+08:00",
+      "success": true,
+      "tool": "get_plc_knowledge_items"
+    },
+    {
+      "arguments": {
+        "conversation_id": "fan_gas_control_001",
+        "planning": {
+          "auxiliary_fbs": [],
+          "block_dependency_order": [
+            "FC_MainControl"
+          ],
+          "instance_dbs": [],
+          "interface_plan": {
+            "FC_MainControl": {
+              "Constant": [],
+              "InOut": [],
+              "Input": [],
+              "Output": [],
+              "Return": [
+                "Ret_Val:Void"
+              ],
+              "Temp": []
+            }
+          },
+          "main_fc": {
+            "block_name": "FC_MainControl",
+            "block_type": "FC",
+            "interface": {
+              "Constant": [],
+              "InOut": [],
+              "Input": [],
+              "Output": [],
+              "Return": [
+                "Ret_Val:Void"
+              ],
+              "Temp": []
+            },
+            "logic_scope": [
+              "风机运行联锁控制",
+              "风机自动/手动输出选择",
+              "风机输出计算与模拟量转换",
+              "燃气烧嘴电源条件判断"
+            ],
+            "responsibility": "风机燃气控制：无状态组合逻辑，含风机联锁、自动/手动选择、输出计算和烧嘴电源判断"
+          },
+          "main_fc_reason": "全部逻辑为组合判断、计算和无状态控制，不需要跨扫描Static状态，使用FC即可",
+          "networks": [
+            {
+              "block_name": "FC_MainControl",
+              "comment": "常开触点风机运行按与常闭触点风机故障反馈串联，当运行按接通且无故障反馈时驱动风机运行线圈Q4.4",
+              "depends_on": [],
+              "instruction_chain": [
+                "evaluate NO contact 风机运行按",
+                "evaluate NC contact 风机故障反馈",
+                "energize coil 风机运行"
+              ],
+              "instructions": [
+                "Contact",
+                "Coil"
+              ],
+              "main_branch": [
+                "NO Contact: 信号数据.风机运行按",
+                "NC Contact: 信号数据.风机故障反馈",
+                "Coil: 风机运行(Q4.4)"
+              ],
+              "network_key": "NW_FanRunCoil",
+              "parallel_branches": [],
+              "purpose": "风机启停联锁保护",
+              "required_capabilities": [
+                "contact",
+                "coil",
+                "series_flow",
+                "topology.series"
+              ],
+              "selected_knowledge_ids": [
+                "shell.fc_block.v17",
+                "topology.series_contact_coil.v17",
+                "network_text.title_comment.v17"
+              ],
+              "split_reason": null,
+              "title": "风机运行联锁",
+              "topology": {
+                "description": "两个触点串联后驱动线圈",
+                "kind": "series"
+              },
+              "variables": [
+                "信号数据.风机运行按",
+                "信号数据.风机故障反馈",
+                "风机运行"
+              ]
+            },
+            {
+              "block_name": "FC_MainControl",
+              "comment": "风机手动=FALSE时MOVE自动输出值到控制输出；风机手动=TRUE时MUL手动频率乘2.0到控制输出。两个分支互斥，写到同一目标",
+              "depends_on": [],
+              "instruction_chain": [
+                "branch A: NC Contact(风机手动) -> MOVE(风机自动输出->风机控制输出)",
+                "branch B: NO Contact(风机手动) -> MUL(风机手动频率*2.0->风机控制输出)"
+              ],
+              "instructions": [
+                "Contact",
+                "Move",
+                "Mul"
+              ],
+              "main_branch": [
+                "NC Contact: 信号数据.风机手动 -> MOVE: 信号数据.风机自动输出 -> 信号数据.风机控制输出"
+              ],
+              "network_key": "NW_FanAutoManual",
+              "parallel_branches": [
+                [
+                  "NO Contact: 信号数据.风机手动 -> MUL: 信号数据.风机手动频率 * 2.0 -> 信号数据.风机控制输出"
+                ]
+              ],
+              "purpose": "根据手动模式选择信号，切换自动MOVE或手动MUL写入风机控制输出",
+              "required_capabilities": [
+                "contact",
+                "move",
+                "mul",
+                "parameter_binding",
+                "automatic_typed",
+                "topology.parallel"
+              ],
+              "selected_knowledge_ids": [
+                "shell.fc_block.v17",
+                "topology.series_contact_coil.v17",
+                "instruction.move.v17",
+                "instruction.math_cascade.v17",
+                "topology.fan_out.v17",
+                "network_text.title_comment.v17"
+              ],
+              "split_reason": "互斥条件选择两个不同指令写入同一输出，非OR逻辑，分为两个独立分支",
+              "title": "风机自动/手动输出选择",
+              "topology": {
+                "description": "两个独立分支从Powerrail出发，分别由互斥条件控制",
+                "kind": "parallel"
+              },
+              "variables": [
+                "信号数据.风机手动",
+                "信号数据.风机自动输出",
+                "信号数据.风机控制输出",
+                "信号数据.风机手动频率"
+              ]
+            },
+            {
+              "block_name": "FC_MainControl",
+              "comment": "停止时清零风机控制输出；无条件执行CALCULATE=(IN1/100.0)*27648.0；CONV Real转Int；MOVE到模拟量输出QW44",
+              "depends_on": [
+                "NW_FanAutoManual"
+              ],
+              "instruction_chain": [
+                "rung A: NC Contact(风机运行按) -> MOVE(0.0->风机控制输出)",
+                "rung B: Powerrail -> CALCULATE((风机控制输出/100.0)*27648.0) -> CONV(Real->Int) -> MOVE(->风机控制QW44)"
+              ],
+              "instructions": [
+                "Contact",
+                "Move",
+                "Calc",
+                "Convert",
+                "Move"
+              ],
+              "main_branch": [
+                "NC Contact: 信号数据.风机运行按 -> MOVE: 0.0 -> 信号数据.风机控制输出"
+              ],
+              "network_key": "NW_FanCalc",
+              "parallel_branches": [
+                [
+                  "Powerrail -> CALCULATE: (风机控制输出/100.0)*27648.0 -> 内部数据.风机控制输出值 -> CONV: Real to Int -> 内部数据.风压过渡 -> MOVE: -> 风机控制(QW44)"
+                ]
+              ],
+              "purpose": "风机控制输出比例缩放为0-27648模拟量值并输出",
+              "required_capabilities": [
+                "contact",
+                "move",
+                "calc",
+                "equation",
+                "convert",
+                "automatic_typed",
+                "cascade",
+                "topology.series",
+                "topology.parallel"
+              ],
+              "selected_knowledge_ids": [
+                "shell.fc_block.v17",
+                "topology.series_contact_coil.v17",
+                "instruction.move.v17",
+                "instruction.math_cascade.v17",
+                "instruction.convert_divide.v17",
+                "instruction.arithmetic_guard.v17",
+                "network_text.title_comment.v17"
+              ],
+              "split_reason": null,
+              "title": "风机输出计算",
+              "topology": {
+                "description": "两个独立rung：条件清零rung和无条件计算链rung，计算链始终执行",
+                "kind": "parallel"
+              },
+              "variables": [
+                "信号数据.风机运行按",
+                "信号数据.风机控制输出",
+                "内部数据.风机控制输出值",
+                "内部数据.风压过渡",
+                "风机控制"
+              ]
+            },
+            {
+              "block_name": "FC_MainControl",
+              "comment": "风压测量值大于等于1.2时驱动烧嘴电源线圈Q4.6接通，低于1.2时断开",
+              "depends_on": [],
+              "instruction_chain": [
+                "Ge(风压测量值, 1.2, Real) -> Coil(烧嘴电源)"
+              ],
+              "instructions": [
+                "Ge",
+                "Coil"
+              ],
+              "main_branch": [
+                "Ge Compare: 信号数据.风压测量值 >= 1.2 -> Coil: 烧嘴电源(Q4.6)"
+              ],
+              "network_key": "NW_BurnerPower",
+              "parallel_branches": [],
+              "purpose": "风压条件判断控制烧嘴电源",
+              "required_capabilities": [
+                "compare.ge",
+                "coil",
+                "topology.series"
+              ],
+              "selected_knowledge_ids": [
+                "shell.fc_block.v17",
+                "instruction.comparison_or_chain.v17",
+                "instruction.tonr_trend_state.v17",
+                "network_text.title_comment.v17"
+              ],
+              "split_reason": null,
+              "title": "燃气开启烧嘴电源",
+              "topology": {
+                "description": "比较指令从Powerrail直接驱动线圈",
+                "kind": "series"
+              },
+              "variables": [
+                "信号数据.风压测量值",
+                "烧嘴电源"
+              ]
+            }
+          ]
+        },
+        "requirements": "风机燃气梯形图程序，三个程序段。(1)风机输出：NO触点风机运行按与NC触点风机故障反馈串联驱动Q4.4风机运行；风机手动=FALSE时MOVE自动输出→风机控制输出，TRUE时MUL手动频率×2.0→风机控制输出。(2)风机输出计算：风机运行按断开时MOVE 0.0→风机控制输出；CALCULATE=(IN1/100.0)*27648.0→内部数据.风机控制输出值；CONV Real→Int→内部数据.风压过渡；MOVE→QW44风机控制。(3)风压测量值>=1.2驱动Q4.6烧嘴电源。",
+        "target_device": "PLC_1"
+      },
+      "arguments_sha256": "187ad8fa60e332b7303af06812a104a48fa75aa4f818024825d180323b3cf8ca",
+      "code": "KNOWLEDGE_GAP",
+      "duplicate_of": null,
+      "duration_ms": 4.004,
+      "index": 18,
+      "result_chars": 1276,
+      "stage": "lad_plan",
+      "started_at": "2026-07-31T01:45:00.132679+08:00",
+      "success": false,
+      "tool": "save_lad_generation_plan"
+    },
+    {
+      "arguments": {
+        "conversation_id": "fan_gas_control_001",
+        "planning": {
+          "auxiliary_fbs": [],
+          "block_dependency_order": [
+            "FC_MainControl"
+          ],
+          "instance_dbs": [],
+          "interface_plan": {
+            "FC_MainControl": {
+              "Constant": [],
+              "InOut": [],
+              "Input": [],
+              "Output": [],
+              "Return": [
+                "Ret_Val:Void"
+              ],
+              "Temp": []
+            }
+          },
+          "main_fc": {
+            "block_name": "FC_MainControl",
+            "block_type": "FC",
+            "interface": {
+              "Constant": [],
+              "InOut": [],
+              "Input": [],
+              "Output": [],
+              "Return": [
+                "Ret_Val:Void"
+              ],
+              "Temp": []
+            },
+            "logic_scope": [
+              "风机运行联锁",
+              "自动模式MOVE",
+              "手动模式MUL",
+              "停止清零",
+              "输出计算缩放转换",
+              "烧嘴电源判断"
+            ],
+            "responsibility": "风机燃气控制：无状态组合逻辑"
+          },
+          "main_fc_reason": "全部为组合判断计算和无状态控制，无需FB",
+          "networks": [
+            {
+              "block_name": "FC_MainControl",
+              "comment": "常开触点风机运行按与常闭触点风机故障反馈串联，当运行按接通且无故障反馈时驱动风机运行线圈",
+              "depends_on": [],
+              "instruction_chain": [
+                "NO_Contact(风机运行按)->NC_Contact(风机故障反馈)->Coil(风机运行)"
+              ],
+              "instructions": [
+                "Contact",
+                "Coil"
+              ],
+              "main_branch": [
+                "NO Contact:信号数据.风机运行按",
+                "NC Contact:信号数据.风机故障反馈",
+                "Coil:风机运行(Q4.4)"
+              ],
+              "network_key": "NW_FanRunCoil",
+              "parallel_branches": [],
+              "purpose": "风机启停联锁保护",
+              "required_capabilities": [
+                "contact",
+                "coil",
+                "series_flow",
+                "topology.series"
+              ],
+              "selected_knowledge_ids": [
+                "shell.fc_block.v17",
+                "topology.series_contact_coil.v17",
+                "network_text.title_comment.v17"
+              ],
+              "split_reason": null,
+              "title": "风机运行联锁",
+              "topology": {
+                "description": "两个触点串联驱动线圈",
+                "kind": "series"
+              },
+              "variables": [
+                "信号数据.风机运行按",
+                "信号数据.风机故障反馈",
+                "风机运行"
+              ]
+            },
+            {
+              "block_name": "FC_MainControl",
+              "comment": "风机手动为FALSE时，MOVE风机自动输出值到风机控制输出",
+              "depends_on": [],
+              "instruction_chain": [
+                "NC_Contact(风机手动)->MOVE(风机自动输出->风机控制输出)"
+              ],
+              "instructions": [
+                "Contact",
+                "Move"
+              ],
+              "main_branch": [
+                "NC Contact:信号数据.风机手动",
+                "Move:信号数据.风机自动输出->信号数据.风机控制输出"
+              ],
+              "network_key": "NW_FanAutoMove",
+              "parallel_branches": [],
+              "purpose": "自动模式下将预设值写入控制输出",
+              "required_capabilities": [
+                "contact",
+                "move",
+                "parameter_binding",
+                "topology.series"
+              ],
+              "selected_knowledge_ids": [
+                "shell.fc_block.v17",
+                "topology.series_contact_coil.v17",
+                "instruction.move.v17",
+                "network_text.title_comment.v17"
+              ],
+              "split_reason": "与手动MUL互斥选择同一输出，但条件相反非OR逻辑，拆分为独立Network",
+              "title": "风机自动输出MOVE",
+              "topology": {
+                "description": "NC触点使能MOVE指令",
+                "kind": "series"
+              },
+              "variables": [
+                "信号数据.风机手动",
+                "信号数据.风机自动输出",
+                "信号数据.风机控制输出"
+              ]
+            },
+            {
+              "block_name": "FC_MainControl",
+              "comment": "风机手动为TRUE时，MUL风机手动频率乘以2.0写入风机控制输出",
+              "depends_on": [],
+              "instruction_chain": [
+                "NO_Contact(风机手动)->MUL(风机手动频率*2.0->风机控制输出)"
+              ],
+              "instructions": [
+                "Contact",
+                "Mul"
+              ],
+              "main_branch": [
+                "NO Contact:信号数据.风机手动",
+                "Mul:信号数据.风机手动频率 * 2.0 -> 信号数据.风机控制输出"
+              ],
+              "network_key": "NW_FanManualMul",
+              "parallel_branches": [],
+              "purpose": "手动模式下将手动频率乘2写入控制输出",
+              "required_capabilities": [
+                "contact",
+                "mul",
+                "automatic_typed",
+                "topology.series"
+              ],
+              "selected_knowledge_ids": [
+                "shell.fc_block.v17",
+                "topology.series_contact_coil.v17",
+                "instruction.math_cascade.v17",
+                "network_text.title_comment.v17"
+              ],
+              "split_reason": "与自动MOVE互斥选择同一输出，拆分为独立Network",
+              "title": "风机手动输出MUL",
+              "topology": {
+                "description": "NO触点使能MUL指令",
+                "kind": "series"
+              },
+              "variables": [
+                "信号数据.风机手动",
+                "信号数据.风机手动频率",
+                "信号数据.风机控制输出"
+              ]
+            },
+            {
+              "block_name": "FC_MainControl",
+              "comment": "风机运行按断开时MOVE 0.0到风机控制输出，实现停止清零",
+              "depends_on": [
+                "NW_FanAutoMove",
+                "NW_FanManualMul"
+              ],
+              "instruction_chain": [
+                "NC_Contact(风机运行按)->MOVE(0.0->风机控制输出)"
+              ],
+              "instructions": [
+                "Contact",
+                "Move"
+              ],
+              "main_branch": [
+                "NC Contact:信号数据.风机运行按",
+                "Move: 0.0 -> 信号数据.风机控制输出"
+              ],
+              "network_key": "NW_FanStopZero",
+              "parallel_branches": [],
+              "purpose": "停止时将控制输出归零",
+              "required_capabilities": [
+                "contact",
+                "move",
+                "topology.series"
+              ],
+              "selected_knowledge_ids": [
+                "shell.fc_block.v17",
+                "topology.series_contact_coil.v17",
+                "instruction.move.v17",
+                "network_text.title_comment.v17"
+              ],
+              "split_reason": null,
+              "title": "风机停止清零",
+              "topology": {
+                "description": "NC触点使能MOVE清零",
+                "kind": "series"
+              },
+              "variables": [
+                "信号数据.风机运行按",
+                "信号数据.风机控制输出"
+              ]
+            },
+            {
+              "block_name": "FC_MainControl",
+              "comment": "CALCULATE=(风机控制输出/100.0)*27648.0，CONV Real转Int，MOVE到模拟量输出QW44",
+              "depends_on": [
+                "NW_FanStopZero"
+              ],
+              "instruction_chain": [
+                "Powerrail->CALCULATE((控制输出/100)*27648)->CONV(Real->Int)->MOVE(->QW44)"
+              ],
+              "instructions": [
+                "Calc",
+                "Convert",
+                "Move"
+              ],
+              "main_branch": [
+                "Calc: (信号数据.风机控制输出/100.0)*27648.0 -> 内部数据.风机控制输出值",
+                "Convert: Real->Int 内部数据.风机控制输出值->内部数据.风压过渡",
+                "Move: 内部数据.风压过渡->风机控制(QW44)"
+              ],
+              "network_key": "NW_FanCalcOutput",
+              "parallel_branches": [],
+              "purpose": "将百分比控制输出缩放为0-27648模拟量",
+              "required_capabilities": [
+                "calc",
+                "equation",
+                "convert",
+                "move",
+                "automatic_typed",
+                "cascade",
+                "topology.series"
+              ],
+              "selected_knowledge_ids": [
+                "shell.fc_block.v17",
+                "instruction.math_cascade.v17",
+                "instruction.convert_divide.v17",
+                "instruction.move.v17",
+                "network_text.title_comment.v17"
+              ],
+              "split_reason": "无条件计算链与条件清零有数据依赖，拆分为先后两个Network",
+              "title": "风机输出计算与转换",
+              "topology": {
+                "description": "无条件执行的计算-转换-输出链",
+                "kind": "series"
+              },
+              "variables": [
+                "信号数据.风机控制输出",
+                "内部数据.风机控制输出值",
+                "内部数据.风压过渡",
+                "风机控制"
+              ]
+            },
+            {
+              "block_name": "FC_MainControl",
+              "comment": "风压测量值大于等于1.2时驱动烧嘴电源线圈Q4.6",
+              "depends_on": [],
+              "instruction_chain": [
+                "Ge(风压测量值>=1.2)->Coil(烧嘴电源)"
+              ],
+              "instructions": [
+                "Ge",
+                "Coil"
+              ],
+              "main_branch": [
+                "Ge Compare: 信号数据.风压测量值 >= 1.2",
+                "Coil: 烧嘴电源(Q4.6)"
+              ],
+              "network_key": "NW_BurnerPower",
+              "parallel_branches": [],
+              "purpose": "风压条件控制烧嘴电源",
+              "required_capabilities": [
+                "compare.ge",
+                "coil",
+                "topology.series"
+              ],
+              "selected_knowledge_ids": [
+                "shell.fc_block.v17",
+                "instruction.comparison_or_chain.v17",
+                "instruction.tonr_trend_state.v17",
+                "network_text.title_comment.v17"
+              ],
+              "split_reason": null,
+              "title": "燃气开启烧嘴电源",
+              "topology": {
+                "description": "比较指令驱动线圈",
+                "kind": "series"
+              },
+              "variables": [
+                "信号数据.风压测量值",
+                "烧嘴电源"
+              ]
+            }
+          ]
+        },
+        "requirements": "风机燃气梯形图程序。(1)风机输出：NO触点风机运行按与NC触点风机故障反馈串联驱动Q4.4风机运行；风机手动=FALSE时MOVE自动输出→风机控制输出，TRUE时MUL手动频率×2.0→风机控制输出。(2)风机输出计算：风机运行按断开时MOVE 0.0→风机控制输出；CALCULATE=(IN1/100.0)*27648.0→内部数据.风机控制输出值；CONV Real→Int→内部数据.风压过渡；MOVE→QW44风机控制。(3)风压测量值>=1.2驱动Q4.6烧嘴电源。",
+        "target_device": "PLC_1"
+      },
+      "arguments_sha256": "362a97ed22f36b19d64dfed295f16934037eed422d4f8bfddb9a0ecf9ca058dd",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 136.634,
+      "index": 19,
+      "result_chars": 10575,
+      "stage": "save_lad_generation_plan",
+      "started_at": "2026-07-31T01:45:54.668620+08:00",
+      "success": true,
+      "tool": "save_lad_generation_plan"
+    },
+    {
+      "arguments": {
+        "block_name": "FC_MainControl",
+        "block_type": "FC",
+        "conversation_id": "fan_gas_control_001",
+        "device_name": "PLC_1",
+        "plan_id": "ladplan_deddd525c8cb2b6c"
+      },
+      "arguments_sha256": "d3d41c7a1f9e572de566c549c40e2cb65ded1ad14b194756ae76bc9e74db78c5",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 108.059,
+      "index": 20,
+      "result_chars": 1031,
+      "stage": "create_lad_block_artifact",
+      "started_at": "2026-07-31T01:46:01.565638+08:00",
+      "success": true,
+      "tool": "create_lad_block_artifact"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "compile_unit_xml": {
+          "chars": 1758,
+          "sha256": "3afb6678647d25f217bbb019437c2b1e6557c64f99e40c74da99c71c3ab09701"
+        },
+        "expected_version": 1,
+        "network_key": "NW_FanRunCoil"
+      },
+      "arguments_sha256": "1d2764a0c69daa6814aaa2bebf3107c85421ebbf92374993933c1cbbdfc239e5",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 245.984,
+      "index": 21,
+      "result_chars": 833,
+      "stage": "append_network_and_prepare_import",
+      "started_at": "2026-07-31T01:46:16.433036+08:00",
+      "success": true,
+      "tool": "append_network_and_prepare_import"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "device_name": "PLC_1",
+        "network_key": "NW_FanRunCoil",
+        "version": 2
+      },
+      "arguments_sha256": "d6be074b4b3b57bf92c5be6de03312b04edc277b3adf6fa9bfbffc50672946eb",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 4918.65,
+      "index": 22,
+      "result_chars": 2517,
+      "stage": "workflow_verified",
+      "started_at": "2026-07-31T01:46:21.187722+08:00",
+      "success": true,
+      "tool": "import_and_compile_artifact"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "compile_unit_xml": {
+          "chars": 1725,
+          "sha256": "94e6bee1dd5f36263bfcd4d811c47b6b578790eea4a1e0a4d450c8aa4b776014"
+        },
+        "expected_version": 2,
+        "network_key": "NW_FanAutoMove"
+      },
+      "arguments_sha256": "78d61bd04147a06dfdd42f7f91502735feac49b0b91f3c5da4a371356db61d9f",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 185.318,
+      "index": 23,
+      "result_chars": 835,
+      "stage": "append_network_and_prepare_import",
+      "started_at": "2026-07-31T01:46:37.983493+08:00",
+      "success": true,
+      "tool": "append_network_and_prepare_import"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "device_name": "PLC_1",
+        "network_key": "NW_FanAutoMove",
+        "version": 3
+      },
+      "arguments_sha256": "4cc0ce0d7530e18fa91b040e2059bba4db92ae3fce913d7b342e99b14e6b7584",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 1938.189,
+      "index": 24,
+      "result_chars": 2521,
+      "stage": "workflow_verified",
+      "started_at": "2026-07-31T01:46:44.513280+08:00",
+      "success": true,
+      "tool": "import_and_compile_artifact"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "compile_unit_xml": {
+          "chars": 1937,
+          "sha256": "b6cbdbb046d8942f1511d337b6cdb1d3d7511b792555dc8986b2567c08e001cc"
+        },
+        "expected_version": 3,
+        "network_key": "NW_FanManualMul"
+      },
+      "arguments_sha256": "9d0df5fcfbaafed71a5b73bb107034422d0519c20784ef32cdec1db10ca8c96a",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 181.684,
+      "index": 25,
+      "result_chars": 837,
+      "stage": "append_network_and_prepare_import",
+      "started_at": "2026-07-31T01:46:58.508067+08:00",
+      "success": true,
+      "tool": "append_network_and_prepare_import"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "device_name": "PLC_1",
+        "network_key": "NW_FanManualMul",
+        "version": 4
+      },
+      "arguments_sha256": "48bd015de16350b90fef4e70bb84885a407363a083d8327ebf593ae0c2a55820",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 2039.933,
+      "index": 26,
+      "result_chars": 2523,
+      "stage": "workflow_verified",
+      "started_at": "2026-07-31T01:47:08.222893+08:00",
+      "success": true,
+      "tool": "import_and_compile_artifact"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "compile_unit_xml": {
+          "chars": 1746,
+          "sha256": "a6f0c5d858a360cf8664183cf1286e30552e1235f982e9aa38e08188cbd98ff6"
+        },
+        "expected_version": 4,
+        "network_key": "NW_FanStopZero"
+      },
+      "arguments_sha256": "05fd12bf906d9a2825d5da41f5f9bd4834716a8925fb13fe0f0d632dd6d8f448",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 226.207,
+      "index": 27,
+      "result_chars": 835,
+      "stage": "append_network_and_prepare_import",
+      "started_at": "2026-07-31T01:47:19.843255+08:00",
+      "success": true,
+      "tool": "append_network_and_prepare_import"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "device_name": "PLC_1",
+        "network_key": "NW_FanStopZero",
+        "version": 5
+      },
+      "arguments_sha256": "a6de505a18815e56f07a624a9ec0c3c02c70dfc340a792e2a2e78d1644cdc48b",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 1798.989,
+      "index": 28,
+      "result_chars": 2522,
+      "stage": "workflow_verified",
+      "started_at": "2026-07-31T01:47:23.745351+08:00",
+      "success": true,
+      "tool": "import_and_compile_artifact"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "compile_unit_xml": {
+          "chars": 2869,
+          "sha256": "3d9b2f3f2276048308c51120480bdd92f65034a5806b5d13580e7cf38724518b"
+        },
+        "expected_version": 5,
+        "network_key": "NW_FanCalcOutput"
+      },
+      "arguments_sha256": "5d24349886f41b6831f4b0c15a187d9b73bd3f57c1d0e5248615bfb2c5e5b61d",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 224.197,
+      "index": 29,
+      "result_chars": 839,
+      "stage": "append_network_and_prepare_import",
+      "started_at": "2026-07-31T01:47:51.539994+08:00",
+      "success": true,
+      "tool": "append_network_and_prepare_import"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "device_name": "PLC_1",
+        "network_key": "NW_FanCalcOutput",
+        "version": 6
+      },
+      "arguments_sha256": "826a10154ef991007e3c5747afc4e59b4045f08d11a028212b50cafb08b65f24",
+      "code": "TIA_XML_IMPORT_FAILED",
+      "duplicate_of": null,
+      "duration_ms": 1613.91,
+      "index": 30,
+      "result_chars": 3904,
+      "stage": "tia_import",
+      "started_at": "2026-07-31T01:47:55.391256+08:00",
+      "success": false,
+      "tool": "import_and_compile_artifact"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "compile_unit_xml": {
+          "chars": 3098,
+          "sha256": "c470bdfa346ae0e5d7c43b1aebbd07f86abb9ca54454aff117d40786dd54a178"
+        },
+        "expected_version": 6,
+        "knowledge_ids": [
+          "instruction.math_cascade.v17",
+          "instruction.convert_divide.v17",
+          "instruction.move.v17"
+        ],
+        "network_key": "NW_FanCalcOutput",
+        "repair_kind": "structural_subgraph"
+      },
+      "arguments_sha256": "ac6a7de47505c1be6ee367a31bee7bfd3736d120c2285d2a832ecc59b7c98332",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 163.89,
+      "index": 31,
+      "result_chars": 840,
+      "stage": "replace_network_and_prepare_import",
+      "started_at": "2026-07-31T01:48:17.904833+08:00",
+      "success": true,
+      "tool": "replace_network_and_prepare_import"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "device_name": "PLC_1",
+        "network_key": "NW_FanCalcOutput",
+        "version": 7
+      },
+      "arguments_sha256": "420500ed2bda07de1d46947d4a76f2ed081e8873616a01e5721ade4e3c2fe2c5",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 1969.69,
+      "index": 32,
+      "result_chars": 2526,
+      "stage": "workflow_verified",
+      "started_at": "2026-07-31T01:48:21.798444+08:00",
+      "success": true,
+      "tool": "import_and_compile_artifact"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "compile_unit_xml": {
+          "chars": 1681,
+          "sha256": "8c515566833871384d3a2a48917d85dbd45a5f545ba3731f576997ff3922f8f3"
+        },
+        "expected_version": 7,
+        "network_key": "NW_BurnerPower"
+      },
+      "arguments_sha256": "55025a6d6d03b8a6360ac932a7b12a8e97fd756084d7e871112a9ea7a340a63a",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 183.722,
+      "index": 33,
+      "result_chars": 835,
+      "stage": "append_network_and_prepare_import",
+      "started_at": "2026-07-31T01:48:35.148814+08:00",
+      "success": true,
+      "tool": "append_network_and_prepare_import"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "device_name": "PLC_1",
+        "network_key": "NW_BurnerPower",
+        "version": 8
+      },
+      "arguments_sha256": "489d78b5907952c5747ab200f4181d305acbd12a4a8edc0045783a82693b8096",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 3773.532,
+      "index": 34,
+      "result_chars": 4519,
+      "stage": "workflow_verified",
+      "started_at": "2026-07-31T01:48:39.026450+08:00",
+      "success": true,
+      "tool": "import_and_compile_artifact"
+    },
+    {
+      "arguments": {
+        "device_name": "PLC_1",
+        "plan_id": "ladplan_deddd525c8cb2b6c"
+      },
+      "arguments_sha256": "7e15b015eb9168b89bcbb5312606df7afd0b65531acf4d80d33db98cb0f68889",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 382.11,
+      "index": 35,
+      "result_chars": 385,
+      "stage": "tia_save",
+      "started_at": "2026-07-31T01:48:46.847005+08:00",
+      "success": true,
+      "tool": "save_verified_project"
+    }
+  ],
+  "duplicate_calls": [
+    {
+      "arguments": {},
+      "arguments_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "code": null,
+      "duplicate_of": 1,
+      "duration_ms": 79.071,
+      "index": 6,
+      "result_chars": 2,
+      "stage": null,
+      "started_at": "2026-07-31T01:40:40.009552+08:00",
+      "success": true,
+      "tool": "refresh_tia_context"
+    }
+  ],
+  "failures": [
+    {
+      "arguments": {},
+      "arguments_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "code": null,
+      "duplicate_of": null,
+      "duration_ms": 6.388,
+      "index": 1,
+      "result_chars": 2,
+      "stage": null,
+      "started_at": "2026-07-31T01:39:01.149731+08:00",
+      "success": false,
+      "tool": "refresh_tia_context"
+    },
+    {
+      "arguments": {
+        "address_mode": "absolute",
+        "db_name": "信号数据",
+        "db_number": 3,
+        "device_name": "PLC_1",
+        "variables_json": [
+          {
+            "address": "%DB3.DBX129.4",
+            "data_type": "Bool",
+            "name": "风机运行按"
+          },
+          {
+            "address": "%DB3.DBX129.5",
+            "data_type": "Bool",
+            "name": "风机故障反馈"
+          },
+          {
+            "address": "%DB3.DBX129.3",
+            "data_type": "Bool",
+            "name": "风机手动"
+          },
+          {
+            "address": "%DB3.DBD130",
+            "data_type": "Real",
+            "name": "风机自动输出"
+          },
+          {
+            "address": "%DB3.DBD134",
+            "data_type": "Real",
+            "name": "风机手动频率"
+          },
+          {
+            "address": "%DB3.DBD138",
+            "data_type": "Real",
+            "name": "风机控制输出"
+          },
+          {
+            "address": "%DB3.DBD80",
+            "data_type": "Real",
+            "name": "风压测量值"
+          }
+        ]
+      },
+      "arguments_sha256": "e12befee1db3ddb316c5f5dc1f3ad58f61ea95cc6e0be7ab467cdbceb5238f35",
+      "code": "ABSOLUTE_DB_ADDRESS_UNSUPPORTED",
+      "duplicate_of": null,
+      "duration_ms": 4.0,
+      "index": 5,
+      "result_chars": 2483,
+      "stage": "create_global_db",
+      "started_at": "2026-07-31T01:40:26.642098+08:00",
+      "success": false,
+      "tool": "create_global_db"
+    },
+    {
+      "arguments": {
+        "conversation_id": "fan_gas_control_001",
+        "planning": {
+          "auxiliary_fbs": [],
+          "block_dependency_order": [
+            "FC_MainControl"
+          ],
+          "instance_dbs": [],
+          "interface_plan": {
+            "FC_MainControl": {
+              "Constant": [],
+              "InOut": [],
+              "Input": [],
+              "Output": [],
+              "Return": [
+                "Ret_Val:Void"
+              ],
+              "Temp": []
+            }
+          },
+          "main_fc": {
+            "block_name": "FC_MainControl",
+            "block_type": "FC",
+            "interface": {
+              "Constant": [],
+              "InOut": [],
+              "Input": [],
+              "Output": [],
+              "Return": [
+                "Ret_Val:Void"
+              ],
+              "Temp": []
+            },
+            "logic_scope": [
+              "风机运行联锁控制",
+              "风机自动/手动输出选择",
+              "风机输出计算与模拟量转换",
+              "燃气烧嘴电源条件判断"
+            ],
+            "responsibility": "风机燃气控制：无状态组合逻辑，含风机联锁、自动/手动选择、输出计算和烧嘴电源判断"
+          },
+          "main_fc_reason": "全部逻辑为组合判断、计算和无状态控制，不需要跨扫描Static状态，使用FC即可",
+          "networks": [
+            {
+              "block_name": "FC_MainControl",
+              "comment": "常开触点风机运行按与常闭触点风机故障反馈串联，当运行按接通且无故障反馈时驱动风机运行线圈Q4.4",
+              "depends_on": [],
+              "instruction_chain": [
+                "evaluate NO contact 风机运行按",
+                "evaluate NC contact 风机故障反馈",
+                "energize coil 风机运行"
+              ],
+              "instructions": [
+                "Contact",
+                "Coil"
+              ],
+              "main_branch": [
+                "NO Contact: 信号数据.风机运行按",
+                "NC Contact: 信号数据.风机故障反馈",
+                "Coil: 风机运行(Q4.4)"
+              ],
+              "network_key": "NW_FanRunCoil",
+              "parallel_branches": [],
+              "purpose": "风机启停联锁保护",
+              "required_capabilities": [
+                "contact",
+                "coil",
+                "series_flow",
+                "topology.series"
+              ],
+              "selected_knowledge_ids": [
+                "shell.fc_block.v17",
+                "topology.series_contact_coil.v17",
+                "network_text.title_comment.v17"
+              ],
+              "split_reason": null,
+              "title": "风机运行联锁",
+              "topology": {
+                "description": "两个触点串联后驱动线圈",
+                "kind": "series"
+              },
+              "variables": [
+                "信号数据.风机运行按",
+                "信号数据.风机故障反馈",
+                "风机运行"
+              ]
+            },
+            {
+              "block_name": "FC_MainControl",
+              "comment": "风机手动=FALSE时MOVE自动输出值到控制输出；风机手动=TRUE时MUL手动频率乘2.0到控制输出。两个分支互斥，写到同一目标",
+              "depends_on": [],
+              "instruction_chain": [
+                "branch A: NC Contact(风机手动) -> MOVE(风机自动输出->风机控制输出)",
+                "branch B: NO Contact(风机手动) -> MUL(风机手动频率*2.0->风机控制输出)"
+              ],
+              "instructions": [
+                "Contact",
+                "Move",
+                "Mul"
+              ],
+              "main_branch": [
+                "NC Contact: 信号数据.风机手动 -> MOVE: 信号数据.风机自动输出 -> 信号数据.风机控制输出"
+              ],
+              "network_key": "NW_FanAutoManual",
+              "parallel_branches": [
+                [
+                  "NO Contact: 信号数据.风机手动 -> MUL: 信号数据.风机手动频率 * 2.0 -> 信号数据.风机控制输出"
+                ]
+              ],
+              "purpose": "根据手动模式选择信号，切换自动MOVE或手动MUL写入风机控制输出",
+              "required_capabilities": [
+                "contact",
+                "move",
+                "mul",
+                "parameter_binding",
+                "automatic_typed",
+                "topology.parallel"
+              ],
+              "selected_knowledge_ids": [
+                "shell.fc_block.v17",
+                "topology.series_contact_coil.v17",
+                "instruction.move.v17",
+                "instruction.math_cascade.v17",
+                "topology.fan_out.v17",
+                "network_text.title_comment.v17"
+              ],
+              "split_reason": "互斥条件选择两个不同指令写入同一输出，非OR逻辑，分为两个独立分支",
+              "title": "风机自动/手动输出选择",
+              "topology": {
+                "description": "两个独立分支从Powerrail出发，分别由互斥条件控制",
+                "kind": "parallel"
+              },
+              "variables": [
+                "信号数据.风机手动",
+                "信号数据.风机自动输出",
+                "信号数据.风机控制输出",
+                "信号数据.风机手动频率"
+              ]
+            },
+            {
+              "block_name": "FC_MainControl",
+              "comment": "停止时清零风机控制输出；无条件执行CALCULATE=(IN1/100.0)*27648.0；CONV Real转Int；MOVE到模拟量输出QW44",
+              "depends_on": [
+                "NW_FanAutoManual"
+              ],
+              "instruction_chain": [
+                "rung A: NC Contact(风机运行按) -> MOVE(0.0->风机控制输出)",
+                "rung B: Powerrail -> CALCULATE((风机控制输出/100.0)*27648.0) -> CONV(Real->Int) -> MOVE(->风机控制QW44)"
+              ],
+              "instructions": [
+                "Contact",
+                "Move",
+                "Calc",
+                "Convert",
+                "Move"
+              ],
+              "main_branch": [
+                "NC Contact: 信号数据.风机运行按 -> MOVE: 0.0 -> 信号数据.风机控制输出"
+              ],
+              "network_key": "NW_FanCalc",
+              "parallel_branches": [
+                [
+                  "Powerrail -> CALCULATE: (风机控制输出/100.0)*27648.0 -> 内部数据.风机控制输出值 -> CONV: Real to Int -> 内部数据.风压过渡 -> MOVE: -> 风机控制(QW44)"
+                ]
+              ],
+              "purpose": "风机控制输出比例缩放为0-27648模拟量值并输出",
+              "required_capabilities": [
+                "contact",
+                "move",
+                "calc",
+                "equation",
+                "convert",
+                "automatic_typed",
+                "cascade",
+                "topology.series",
+                "topology.parallel"
+              ],
+              "selected_knowledge_ids": [
+                "shell.fc_block.v17",
+                "topology.series_contact_coil.v17",
+                "instruction.move.v17",
+                "instruction.math_cascade.v17",
+                "instruction.convert_divide.v17",
+                "instruction.arithmetic_guard.v17",
+                "network_text.title_comment.v17"
+              ],
+              "split_reason": null,
+              "title": "风机输出计算",
+              "topology": {
+                "description": "两个独立rung：条件清零rung和无条件计算链rung，计算链始终执行",
+                "kind": "parallel"
+              },
+              "variables": [
+                "信号数据.风机运行按",
+                "信号数据.风机控制输出",
+                "内部数据.风机控制输出值",
+                "内部数据.风压过渡",
+                "风机控制"
+              ]
+            },
+            {
+              "block_name": "FC_MainControl",
+              "comment": "风压测量值大于等于1.2时驱动烧嘴电源线圈Q4.6接通，低于1.2时断开",
+              "depends_on": [],
+              "instruction_chain": [
+                "Ge(风压测量值, 1.2, Real) -> Coil(烧嘴电源)"
+              ],
+              "instructions": [
+                "Ge",
+                "Coil"
+              ],
+              "main_branch": [
+                "Ge Compare: 信号数据.风压测量值 >= 1.2 -> Coil: 烧嘴电源(Q4.6)"
+              ],
+              "network_key": "NW_BurnerPower",
+              "parallel_branches": [],
+              "purpose": "风压条件判断控制烧嘴电源",
+              "required_capabilities": [
+                "compare.ge",
+                "coil",
+                "topology.series"
+              ],
+              "selected_knowledge_ids": [
+                "shell.fc_block.v17",
+                "instruction.comparison_or_chain.v17",
+                "instruction.tonr_trend_state.v17",
+                "network_text.title_comment.v17"
+              ],
+              "split_reason": null,
+              "title": "燃气开启烧嘴电源",
+              "topology": {
+                "description": "比较指令从Powerrail直接驱动线圈",
+                "kind": "series"
+              },
+              "variables": [
+                "信号数据.风压测量值",
+                "烧嘴电源"
+              ]
+            }
+          ]
+        },
+        "requirements": "风机燃气梯形图程序，三个程序段。(1)风机输出：NO触点风机运行按与NC触点风机故障反馈串联驱动Q4.4风机运行；风机手动=FALSE时MOVE自动输出→风机控制输出，TRUE时MUL手动频率×2.0→风机控制输出。(2)风机输出计算：风机运行按断开时MOVE 0.0→风机控制输出；CALCULATE=(IN1/100.0)*27648.0→内部数据.风机控制输出值；CONV Real→Int→内部数据.风压过渡；MOVE→QW44风机控制。(3)风压测量值>=1.2驱动Q4.6烧嘴电源。",
+        "target_device": "PLC_1"
+      },
+      "arguments_sha256": "187ad8fa60e332b7303af06812a104a48fa75aa4f818024825d180323b3cf8ca",
+      "code": "KNOWLEDGE_GAP",
+      "duplicate_of": null,
+      "duration_ms": 4.004,
+      "index": 18,
+      "result_chars": 1276,
+      "stage": "lad_plan",
+      "started_at": "2026-07-31T01:45:00.132679+08:00",
+      "success": false,
+      "tool": "save_lad_generation_plan"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "device_name": "PLC_1",
+        "network_key": "NW_FanCalcOutput",
+        "version": 6
+      },
+      "arguments_sha256": "826a10154ef991007e3c5747afc4e59b4045f08d11a028212b50cafb08b65f24",
+      "code": "TIA_XML_IMPORT_FAILED",
+      "duplicate_of": null,
+      "duration_ms": 1613.91,
+      "index": 30,
+      "result_chars": 3904,
+      "stage": "tia_import",
+      "started_at": "2026-07-31T01:47:55.391256+08:00",
+      "success": false,
+      "tool": "import_and_compile_artifact"
+    }
+  ],
+  "longest_calls": [
+    {
+      "arguments": {
+        "overwrite": false,
+        "project_name": "FanGasControl"
+      },
+      "arguments_sha256": "5fd29eff61ea3ecf184888c5b8ed98e1d6d849373534b536f2c678d530cd3f9d",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 23344.226,
+      "index": 3,
+      "result_chars": 448,
+      "stage": "init_tia_project",
+      "started_at": "2026-07-31T01:39:29.584970+08:00",
+      "success": true,
+      "tool": "init_tia_project"
+    },
+    {
+      "arguments": {
+        "device_name": "PLC_1",
+        "order_number": "OrderNumber:6ES7 214-1AG40-0XB0/V4.5"
+      },
+      "arguments_sha256": "e6f34c83078d3613be8b6cd7631749bf98d5792d0f3775965115287f02ad4cd1",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 10658.975,
+      "index": 4,
+      "result_chars": 363,
+      "stage": "add_plc_to_project",
+      "started_at": "2026-07-31T01:40:01.689206+08:00",
+      "success": true,
+      "tool": "add_plc_to_project"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "device_name": "PLC_1",
+        "network_key": "NW_FanRunCoil",
+        "version": 2
+      },
+      "arguments_sha256": "d6be074b4b3b57bf92c5be6de03312b04edc277b3adf6fa9bfbffc50672946eb",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 4918.65,
+      "index": 22,
+      "result_chars": 2517,
+      "stage": "workflow_verified",
+      "started_at": "2026-07-31T01:46:21.187722+08:00",
+      "success": true,
+      "tool": "import_and_compile_artifact"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "device_name": "PLC_1",
+        "network_key": "NW_BurnerPower",
+        "version": 8
+      },
+      "arguments_sha256": "489d78b5907952c5747ab200f4181d305acbd12a4a8edc0045783a82693b8096",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 3773.532,
+      "index": 34,
+      "result_chars": 4519,
+      "stage": "workflow_verified",
+      "started_at": "2026-07-31T01:48:39.026450+08:00",
+      "success": true,
+      "tool": "import_and_compile_artifact"
+    },
+    {
+      "arguments": {
+        "address_mode": "symbolic",
+        "db_name": "信号数据",
+        "db_number": 3,
+        "device_name": "PLC_1",
+        "variables_json": [
+          {
+            "data_type": "Bool",
+            "name": "风机运行按"
+          },
+          {
+            "data_type": "Bool",
+            "name": "风机故障反馈"
+          },
+          {
+            "data_type": "Bool",
+            "name": "风机手动"
+          },
+          {
+            "data_type": "Real",
+            "name": "风机自动输出"
+          },
+          {
+            "data_type": "Real",
+            "name": "风机手动频率"
+          },
+          {
+            "data_type": "Real",
+            "name": "风机控制输出"
+          },
+          {
+            "data_type": "Real",
+            "name": "风压测量值"
+          }
+        ]
+      },
+      "arguments_sha256": "1565699fcb73df00927a8acb952691ddd53cef29ba3e18e6a9cfcd4574ae63e7",
+      "code": "GLOBAL_DB_CREATED",
+      "duplicate_of": null,
+      "duration_ms": 2624.109,
+      "index": 7,
+      "result_chars": 2279,
+      "stage": "create_global_db",
+      "started_at": "2026-07-31T01:40:50.326391+08:00",
+      "success": true,
+      "tool": "create_global_db"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "device_name": "PLC_1",
+        "network_key": "NW_FanManualMul",
+        "version": 4
+      },
+      "arguments_sha256": "48bd015de16350b90fef4e70bb84885a407363a083d8327ebf593ae0c2a55820",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 2039.933,
+      "index": 26,
+      "result_chars": 2523,
+      "stage": "workflow_verified",
+      "started_at": "2026-07-31T01:47:08.222893+08:00",
+      "success": true,
+      "tool": "import_and_compile_artifact"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "device_name": "PLC_1",
+        "network_key": "NW_FanCalcOutput",
+        "version": 7
+      },
+      "arguments_sha256": "420500ed2bda07de1d46947d4a76f2ed081e8873616a01e5721ade4e3c2fe2c5",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 1969.69,
+      "index": 32,
+      "result_chars": 2526,
+      "stage": "workflow_verified",
+      "started_at": "2026-07-31T01:48:21.798444+08:00",
+      "success": true,
+      "tool": "import_and_compile_artifact"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "device_name": "PLC_1",
+        "network_key": "NW_FanAutoMove",
+        "version": 3
+      },
+      "arguments_sha256": "4cc0ce0d7530e18fa91b040e2059bba4db92ae3fce913d7b342e99b14e6b7584",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 1938.189,
+      "index": 24,
+      "result_chars": 2521,
+      "stage": "workflow_verified",
+      "started_at": "2026-07-31T01:46:44.513280+08:00",
+      "success": true,
+      "tool": "import_and_compile_artifact"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "device_name": "PLC_1",
+        "network_key": "NW_FanStopZero",
+        "version": 5
+      },
+      "arguments_sha256": "a6de505a18815e56f07a624a9ec0c3c02c70dfc340a792e2a2e78d1644cdc48b",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 1798.989,
+      "index": 28,
+      "result_chars": 2522,
+      "stage": "workflow_verified",
+      "started_at": "2026-07-31T01:47:23.745351+08:00",
+      "success": true,
+      "tool": "import_and_compile_artifact"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_919f07ae585963831dcb6285",
+        "device_name": "PLC_1",
+        "network_key": "NW_FanCalcOutput",
+        "version": 6
+      },
+      "arguments_sha256": "826a10154ef991007e3c5747afc4e59b4045f08d11a028212b50cafb08b65f24",
+      "code": "TIA_XML_IMPORT_FAILED",
+      "duplicate_of": null,
+      "duration_ms": 1613.91,
+      "index": 30,
+      "result_chars": 3904,
+      "stage": "tia_import",
+      "started_at": "2026-07-31T01:47:55.391256+08:00",
+      "success": false,
+      "tool": "import_and_compile_artifact"
+    }
+  ],
+  "run_id": "20260731_013900_188_8ee341",
+  "schema_version": 1,
+  "summary": {
+    "artifact_reads": 0,
+    "artifact_writes": 8,
+    "catalog_reads": 5,
+    "duplicate_calls": 1,
+    "failed_calls": 4,
+    "knowledge_body_reads": 2,
+    "knowledge_calls": 7,
+    "plan_calls": 3,
+    "run_duration_ms": 597033.662,
+    "tia_compiles": 7,
+    "tia_imports": 7,
+    "tool_duration_ms": 58168.425,
+    "total_tool_calls": 35
+  },
+  "termination": {
+    "event": "turn_completed",
+    "exception": null,
+    "recovery_available": false,
+    "success": true
+  }
+}

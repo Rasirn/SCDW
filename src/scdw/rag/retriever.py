@@ -6,6 +6,7 @@ application XML 位于 ``data/rag/raw``，不会被目录扫描或通过读取�
 from __future__ import annotations
 
 import json
+import hashlib
 import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
@@ -62,6 +63,7 @@ class KnowledgeLibrary:
         self._catalog_path = self._dir / CATALOG_FILE
         self._items: dict[str, KnowledgeItem] = {}
         self._catalog_meta: dict[str, Any] = {}
+        self._content_cache: dict[str, str] = {}
         self._load()
 
     @classmethod
@@ -89,6 +91,7 @@ class KnowledgeLibrary:
             raise KnowledgeCatalogError("catalog.json 的 items 必须是数组")
 
         loaded: dict[str, KnowledgeItem] = {}
+        content_cache: dict[str, str] = {}
         for index, metadata in enumerate(entries):
             if not isinstance(metadata, dict):
                 raise KnowledgeCatalogError(f"items[{index}] 必须是对象")
@@ -108,9 +111,11 @@ class KnowledgeLibrary:
                 self._validate_declared_xml(item_id, metadata.get("contains", {}), root)
             self._validate_sources(item_id, metadata["source_refs"])
             loaded[item_id] = KnowledgeItem(dict(metadata), content_path)
+            content_cache[item_id] = content
 
         self._catalog_meta = {key: value for key, value in document.items() if key != "items"}
         self._items = loaded
+        self._content_cache = content_cache
 
     def _resolve_published_path(self, item_id: str, relative: str) -> Path:
         candidate = (self._dir / relative).resolve()
@@ -175,6 +180,49 @@ class KnowledgeLibrary:
     def catalog(self) -> dict[str, Any]:
         return {**self._catalog_meta, "items": [item.catalog_entry() for item in self._items.values()]}
 
+    @staticmethod
+    def _verification_states(metadata: dict[str, Any]) -> list[str]:
+        states = ["source_exported"] if metadata.get("source_refs") else []
+        if metadata.get("status") in {"golden", "verified"}:
+            states.extend(["import_verified", "compile_verified"])
+        if metadata.get("generation_mode") == "knowledge_renderer_required":
+            states.append("generated_case_verified")
+        if metadata.get("status") == "draft":
+            states.append("experimental")
+        return states
+
+    def compact_catalog(self, *, roles: Iterable[str] | None = None, capabilities: Iterable[str] | None = None) -> dict[str, Any]:
+        """Return deterministic, non-scored catalog filtering for model selection."""
+        role_set = {str(value) for value in roles or []}
+        capability_set = {str(value) for value in capabilities or []}
+        items = []
+        for item in self._items.values():
+            metadata = item.metadata
+            if role_set and str(metadata.get("role")) not in role_set:
+                continue
+            provides = {str(value) for value in metadata.get("provides", [])}
+            if capability_set and not capability_set <= provides:
+                continue
+            items.append({
+                "id": item.id,
+                "title": metadata.get("title"),
+                "role": metadata.get("role"),
+                "provides": sorted(provides),
+                "status": metadata.get("status"),
+                "verification_states": self._verification_states(metadata),
+                "limitations": list(metadata.get("not_for", []))[:4],
+                "generation_mode": metadata.get("generation_mode"),
+            })
+        encoded = json.dumps(items, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        return {
+            "schema_version": self._catalog_meta.get("schema_version", 2),
+            "tia_version": self._catalog_meta.get("tia_version", "V17"),
+            "selection_mode": "explicit_ids",
+            "catalog_sha256": hashlib.sha256(encoded.encode("utf-8")).hexdigest(),
+            "filters": {"roles": sorted(role_set), "capabilities": sorted(capability_set)},
+            "items": items,
+        }
+
     def get_many(self, item_ids: Iterable[str]) -> list[dict[str, Any]]:
         requested = list(item_ids)
         if not requested:
@@ -184,7 +232,8 @@ class KnowledgeLibrary:
             raise KeyError(f"未知知识项 ID: {', '.join(unknown)}")
         return [
             {"id": item_id, "metadata": self._items[item_id].catalog_entry(),
-             "content": self._items[item_id].content_path.read_text(encoding="utf-8")}
+             "content": self._content_cache[item_id],
+             "content_sha256": hashlib.sha256(self._content_cache[item_id].encode("utf-8")).hexdigest()}
             for item_id in requested
         ]
 

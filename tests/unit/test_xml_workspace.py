@@ -53,7 +53,7 @@ def test_mcp_registration_includes_concise_artifact_tools():
     from scdw.mcp.tools import register_mcp_tools
     mcp = FastMCP("workspace-test"); register_mcp_tools(mcp)
     tools = {tool.name: tool.description for tool in mcp._tool_manager.list_tools()}
-    required = {"create_xml_artifact", "get_xml_artifact_status", "read_xml_fragment", "patch_xml_artifact", "validate_xml_artifact", "import_lad_xml", "list_xml_artifacts"}
+    required = {"create_xml_artifact", "get_xml_artifact_status", "read_xml_fragment", "patch_xml_artifact", "validate_xml_artifact", "import_and_compile_artifact", "list_xml_artifacts"}
     assert required <= tools.keys()
     assert all(len(tools[name]) < 500 and "<Document>" not in tools[name] for name in required)
 
@@ -70,7 +70,7 @@ def test_import_tool_records_mocked_tia_results(tmp_path, monkeypatch):
     import scdw.openness.tia_blocks as blocks
     monkeypatch.setattr(blocks, "import_lad_xml_block", lambda *_args: "ignored")
     mcp = FastMCP("import-test"); register_lad_runtime_tools(mcp, Session(), workspace)
-    call = mcp._tool_manager._tools["import_lad_xml"].fn
+    call = mcp._scdw_lad_runtime_internal["import_lad_xml"]
     assert json.loads(call(artifact.artifact_id, "PLC"))["success"] is True
     monkeypatch.setattr(blocks, "import_lad_xml_block", lambda *_args: (_ for _ in ()).throw(RuntimeError("mock failure")))
     failed = json.loads(call(artifact.artifact_id, "PLC"))

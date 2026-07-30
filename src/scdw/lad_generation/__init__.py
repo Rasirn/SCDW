@@ -5,6 +5,7 @@ from .models import (
     BlockPlan,
     InstanceDbPlan,
     KnowledgeGapError,
+    PlanValidationError,
     LadGenerationPlan,
     NetworkPlan,
 )
@@ -16,6 +17,7 @@ __all__ = [
     "BlockPlan",
     "InstanceDbPlan",
     "KnowledgeGapError",
+    "PlanValidationError",
     "LadGenerationPlan",
     "LadPlanner",
     "LadPlanService",

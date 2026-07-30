@@ -67,7 +67,7 @@ def create_tag_table_with_tags(
     table_name: str,
     tags: List[TagSpec],
     skip_duplicates: bool = True,
-) -> None:
+) -> dict:
     """
     创建变量表并批量写入 TagSpec 列表中的所有变量。
 
@@ -80,19 +80,26 @@ def create_tag_table_with_tags(
     Raises:
         RuntimeError: 添加某个变量失败时抛出。
     """
-    tag_table = create_tag_table(plc_software, table_name)
-
+    # PLC tag names are device-global even when they live in different tables.
+    # Resolve them before creating a new table so an idempotent replay creates
+    # neither an empty table nor duplicate tags.
     existing_names: set = set()
     if skip_duplicates:
         try:
-            for t in tag_table.Tags:
-                existing_names.add(str(t.Name))
+            for table in plc_software.TagTableGroup.TagTables:
+                for tag in table.Tags:
+                    existing_names.add(str(tag.Name))
         except Exception:
             pass
 
-    for spec in tags:
-        if skip_duplicates and spec.name in existing_names:
-            continue
+    pending = [spec for spec in tags if not (skip_duplicates and spec.name in existing_names)]
+    if not pending:
+        return {"created": 0, "skipped": len(tags), "table_name": table_name, "idempotent": True}
+
+    tag_table = create_tag_table(plc_software, table_name)
+
+    created = 0
+    for spec in pending:
         try:
             add_tag(
                 tag_table,
@@ -102,7 +109,9 @@ def create_tag_table_with_tags(
                 spec.comment,
             )
             existing_names.add(spec.name)
+            created += 1
         except Exception as exc:
             raise RuntimeError(
                 f"添加变量 '{spec.name}' 到变量表 '{table_name}' 失败：{exc}"
             ) from exc
+    return {"created": created, "skipped": len(tags) - created, "table_name": table_name, "idempotent": created == 0}

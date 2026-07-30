@@ -1,0 +1,17 @@
+{
+  "networks": [
+    {
+      "network_key": "nw_fan_output",
+      "sha256": "5af7d80e15950c47a8a90f549df58e8a99967231372c7e06d3908db89b3d74f3"
+    },
+    {
+      "network_key": "nw_fan_calc",
+      "sha256": "155e0588af2f186da1dbda963985289d64b55b7728810ffd22a286beccb24d49"
+    },
+    {
+      "network_key": "nw_gas_burner",
+      "sha256": "13bd133e8e948cc6f996c9570503a19b569eeb80d93dba54df6f26b0fe47b5c7"
+    }
+  ],
+  "version": 6
+}

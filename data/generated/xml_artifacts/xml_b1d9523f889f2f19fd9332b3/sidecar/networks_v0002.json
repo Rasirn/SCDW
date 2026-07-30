@@ -1,0 +1,9 @@
+{
+  "networks": [
+    {
+      "network_key": "NW_FanRunControl",
+      "sha256": "ab7d3261f2808b005fa0d4e50da7fd105c976812f4a8deff9d9e9dd3d710a5db"
+    }
+  ],
+  "version": 2
+}

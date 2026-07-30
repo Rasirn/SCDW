@@ -109,24 +109,18 @@ def test_tia_artifact_fb_instance_db_and_incremental_main_fc(temporary_tia_proje
 
     fb_interface = '<Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v5"><Section Name="Input" /><Section Name="Output" /><Section Name="InOut" /><Section Name="Static"><Member Name="State" Datatype="Bool" Remanence="SetInIDB" Accessibility="Public" /></Section><Section Name="Temp" /><Section Name="Constant" /></Sections></Interface>'
     fb = _invoke(mcp, "create_lad_block_artifact", plan.plan_id, fb_name, "FB", fb_interface, device, "tia-integration")["artifact"]
-    fb_v2 = _invoke(mcp, "append_xml_network", fb["artifact_id"], 1, "fb_state", _unit(1, "状态保持", "辅助FB状态程序段。", _coil_flgnet("State")))["version"]
-    _invoke(mcp, "import_lad_xml", fb["artifact_id"], device, fb_v2)
-    _invoke(mcp, "compile_check", device, fb_name, fb["artifact_id"], fb_v2, "fb_state", plan.plan_id)
-    _invoke(mcp, "compile_check", device, fb_name, fb["artifact_id"], fb_v2, None, plan.plan_id)
+    fb_v2 = _invoke(mcp, "append_network_and_prepare_import", fb["artifact_id"], 1, "fb_state", _unit(1, "状态保持", "辅助FB状态程序段。", _coil_flgnet("State")))["version"]
+    _invoke(mcp, "import_and_compile_artifact", fb["artifact_id"], device, fb_v2, "fb_state", True)
 
     _invoke(mcp, "create_instance_db", device, fb_name, db_name, None, plan.plan_id)
 
     main_interface = '<Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v5"><Section Name="Input" /><Section Name="Output" /><Section Name="InOut" /><Section Name="Temp"><Member Name="Dummy" Datatype="Bool" /></Section><Section Name="Constant" /><Section Name="Return"><Member Name="Ret_Val" Datatype="Void" Accessibility="Public" /></Section></Sections></Interface>'
     main = _invoke(mcp, "create_lad_block_artifact", plan.plan_id, fc_name, "FC", main_interface, device, "tia-integration")["artifact"]
-    main_v2 = _invoke(mcp, "append_xml_network", main["artifact_id"], 1, "call_fb", _unit(1, "调用辅助FB", "使用真实背景DB调用辅助FB。", _call_flgnet(fb_name, db_name)))["version"]
-    _invoke(mcp, "import_lad_xml", main["artifact_id"], device, main_v2)
-    _invoke(mcp, "compile_check", device, fc_name, main["artifact_id"], main_v2, "call_fb", plan.plan_id)
+    main_v2 = _invoke(mcp, "append_network_and_prepare_import", main["artifact_id"], 1, "call_fb", _unit(1, "调用辅助FB", "使用真实背景DB调用辅助FB。", _call_flgnet(fb_name, db_name)))["version"]
+    _invoke(mcp, "import_and_compile_artifact", main["artifact_id"], device, main_v2, "call_fb", True)
 
-    main_v3 = _invoke(mcp, "append_xml_network", main["artifact_id"], main_v2, "main_logic", _unit(10, "主FC组合逻辑", "第二个逐步追加的主FC程序段。", _coil_flgnet("Dummy")))["version"]
-    _invoke(mcp, "import_lad_xml", main["artifact_id"], device, main_v3)
-    _invoke(mcp, "compile_check", device, fc_name, main["artifact_id"], main_v3, "main_logic", plan.plan_id)
-    _invoke(mcp, "compile_check", device, fc_name, main["artifact_id"], main_v3, None, plan.plan_id)
-    _invoke(mcp, "compile_check", device, None, None, None, None, plan.plan_id)
+    main_v3 = _invoke(mcp, "append_network_and_prepare_import", main["artifact_id"], main_v2, "main_logic", _unit(10, "主FC组合逻辑", "第二个逐步追加的主FC程序段。", _coil_flgnet("Dummy")))["version"]
+    _invoke(mcp, "import_and_compile_artifact", main["artifact_id"], device, main_v3, "main_logic", True)
     _invoke(mcp, "save_verified_project", device, plan.plan_id)
 
     networks = artifacts.list_networks(main["artifact_id"], main_v3)
@@ -189,5 +183,4 @@ def test_tia_imports_reviewed_contact_or_pbox_scoil_renderer(temporary_tia_proje
         False,
     )
     version = rendered["version"]
-    _invoke(mcp, "import_lad_xml", artifact["artifact_id"], device, version)
-    _invoke(mcp, "compile_check", device, plan.main_fc.block_name, artifact["artifact_id"], version, plan.networks[0].network_key, plan.plan_id)
+    _invoke(mcp, "import_and_compile_artifact", artifact["artifact_id"], device, version, plan.networks[0].network_key, True)

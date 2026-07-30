@@ -21,3 +21,24 @@ def get_deepseek_api_key() -> str:
     """返回当前进程加载的 Key，避免 GUI 持有旧的模块级缓存值。"""
     load_dotenv(PROJECT_ROOT / ".env")
     return os.getenv("DEEPSEEK_API_KEY", "").strip()
+
+
+def _positive_int(name: str, default: int) -> int:
+    try:
+        value = int(os.getenv(name, str(default)))
+    except ValueError:
+        return default
+    return value if value > 0 else default
+
+
+def get_tool_budget() -> tuple[int, int]:
+    """Return the per-turn soft/hard tool-call budget.
+
+    The hard limit is intentionally bounded so configuration cannot turn a
+    runaway model loop into an unbounded TIA mutation loop.
+    """
+    soft = min(_positive_int("SCDW_TOOL_SOFT_LIMIT", 20), 30)
+    hard = min(_positive_int("SCDW_TOOL_HARD_LIMIT", 40), 50)
+    if hard <= soft:
+        hard = min(50, soft + 10)
+    return soft, hard

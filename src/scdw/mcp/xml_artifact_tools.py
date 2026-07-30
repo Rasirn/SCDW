@@ -2,7 +2,7 @@
 import json
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from scdw.common.run_logging import get_run_logger
 from scdw.lad_generation import LadPlanService
@@ -11,19 +11,29 @@ from scdw.xml_workspace import ArtifactError, PatchOperation, XmlArtifactService
 
 
 class PatchOperationInput(BaseModel):
-    """Public Patch schema; aliases are normalized by PatchOperation."""
+    """Strict public Patch schema validated before any Artifact write."""
 
-    op: Literal["replace_exact", "replace", "insert_before", "insert_after", "delete_exact"] | None = None
-    old: str | None = None
+    model_config = ConfigDict(extra="forbid")
+    op: Literal["replace_exact", "insert_before", "insert_after", "delete_exact"]
+    old: str = Field(min_length=1)
     new: str | None = None
-    search: str | None = None
-    replace: str | None = None
-    expected_occurrences: int = Field(default=1, ge=0)
+    expected_occurrences: int = Field(default=1, ge=1)
+
+    @model_validator(mode="after")
+    def validate_operation(self):
+        if self.op in {"replace_exact", "insert_before", "insert_after"} and self.new is None:
+            raise ValueError(f"{self.op} requires new")
+        if self.op == "delete_exact" and self.new is not None:
+            raise ValueError("delete_exact does not accept new")
+        if self.op == "replace_exact" and self.new == self.old:
+            raise ValueError("replace_exact old and new must differ")
+        return self
 
 
 class KnowledgeNetworkBindings(BaseModel):
-    contacts: list[list[str]]
-    output: list[str]
+    model_config = ConfigDict(extra="forbid")
+    contacts: list[list[str]] = Field(min_length=1)
+    output: list[str] = Field(min_length=1)
     edge_memory: list[str] | None = None
 
 
@@ -89,6 +99,21 @@ def register_xml_artifact_tools(mcp, session, service: XmlArtifactService | None
                 "this Network selected a reviewed renderable topology; use write_lad_network_from_knowledge with one of: " + ", ".join(required),
             )
 
+    def workflow_data(artifact_id: str, network_key: str | None = None) -> dict:
+        metadata = service.get_artifact(artifact_id)
+        data = {
+            "artifact_id": artifact_id,
+            "version": metadata.current_version,
+            "network_key": network_key,
+            "network_status": metadata.network_states.get(network_key) if network_key else None,
+            "plan_id": metadata.plan_id,
+            "block_name": metadata.block_name,
+            "device_name": metadata.device_name,
+        }
+        if metadata.plan_id:
+            data["next"] = plan_service.next_step(metadata.plan_id)
+        return data
+
     @mcp.tool(name="create_xml_artifact", description="Save parseable XML as immutable version 1. Returns artifact metadata. TIA Portal, not this tool, validates LAD semantics.")
     def create_xml_artifact(xml_content: str, block_name: str | None = None, device_name: str | None = None, conversation_id: str | None = None, plan_id: str | None = None, block_type: str | None = None, network_keys: list[str] | None = None) -> str:
         try:
@@ -134,7 +159,7 @@ def register_xml_artifact_tools(mcp, session, service: XmlArtifactService | None
         try: return ok(fragment=service.read_fragment(artifact_id, version, search, start_line, end_line, context_lines, min(max_chars, 12000)).to_dict())
         except ArtifactError as exc: return fail(exc)
 
-    @mcp.tool(name="patch_xml_artifact", description="Apply deterministic text/ID edits and create a new immutable version. Operation contract: {\"op\":\"replace_exact\",\"old\":\"...\",\"new\":\"...\",\"expected_occurrences\":1}. The aliases op=replace and search/replace are normalized. Part, Access, Wire, CallInfo or Instance repairs must use replace_xml_network with selected knowledge IDs; semantic changes require replanning.")
+    @mcp.tool(name="patch_xml_artifact", description="Apply strict replace_exact/insert/delete text or document-ID edits and create at most one immutable version. Structural subgraphs require replace_network_and_prepare_import; semantic changes require replanning.")
     def patch_xml_artifact(artifact_id: str, expected_version: int, operations: list[PatchOperationInput], change_source: str = "patch", affected_networks: list[str] | None = None, repair_kind: str = "text") -> str:
         try:
             operation_values = [item.dict(exclude_none=True) if isinstance(item, PatchOperationInput) else dict(item) for item in operations]
@@ -171,7 +196,7 @@ def register_xml_artifact_tools(mcp, session, service: XmlArtifactService | None
         try: return ok(network_key=network_key, xml=service.get_network(artifact_id, network_key, version))
         except ArtifactError as exc: return fail(exc)
 
-    @mcp.tool(name="append_xml_network", description="Append or insert one complete CompileUnit under a stable network_key and create a new artifact version.")
+    @mcp.tool(name="append_network_and_prepare_import", description="Append one complete CompileUnit under a stable network_key, create one immutable version, update the linked Plan, and return the exact import/compile resume state.")
     def append_xml_network(artifact_id: str, expected_version: int, network_key: str, compile_unit_xml: str, before_key: str | None = None, position: int | None = None) -> str:
         try:
             metadata = service.get_artifact(artifact_id)
@@ -183,13 +208,15 @@ def register_xml_artifact_tools(mcp, session, service: XmlArtifactService | None
             ensure_network_editable(artifact_id, [network_key])
             require_knowledge_renderer_when_published(artifact_id, network_key)
             version = service.append_network(artifact_id, expected_version, network_key, compile_unit_xml, before_key=before_key, position=position)
+            if version == expected_version:
+                return json.dumps({"success": True, "stage": "artifact", "code": "NO_CHANGES", "message": "CompileUnit is unchanged; no version was created", **workflow_data(artifact_id, network_key)}, ensure_ascii=False)
             metadata = service.get_artifact(artifact_id)
             if metadata.plan_id and metadata.block_name:
                 plan_service.record_artifact_version(metadata.plan_id, metadata.block_name, version, network_key)
-            return ok(artifact_id=artifact_id, version=version, network_key=network_key)
+            return ok(**workflow_data(artifact_id, network_key))
         except ArtifactError as exc: return fail(exc)
 
-    @mcp.tool(name="write_lad_network_from_knowledge", description="Render and append or replace one Network using an explicitly selected catalog recipe. For contact OR recipes, provide contacts as Component paths, output, and edge_memory when required. The tool preserves the reviewed V17 Part/port/Wire topology, assigns Card from the contact count, and creates one immutable Artifact version.")
+    @mcp.tool(name="write_lad_network_from_knowledge", description="Render one Network from an explicitly selected reviewed recipe and bindings, update the Artifact and Plan, and return the exact import/compile resume state.")
     def write_lad_network_from_knowledge(artifact_id: str, expected_version: int, network_key: str, knowledge_id: str, bindings: KnowledgeNetworkBindings, title: str, comment: str, replace_existing: bool = False) -> str:
         try:
             metadata, network = planned_network(artifact_id, network_key)
@@ -220,14 +247,16 @@ def register_xml_artifact_tools(mcp, session, service: XmlArtifactService | None
                 if network_key in keys:
                     raise ArtifactError("NETWORK_KEY_CONFLICT", "Network exists; set replace_existing=true to replace it")
                 version = service.append_network(artifact_id, expected_version, network_key, compile_unit, source="knowledge_renderer")
+            if version == expected_version:
+                return json.dumps({"success": True, "stage": "artifact", "code": "NO_CHANGES", "message": "Rendered Network is unchanged; no version was created", **workflow_data(artifact_id, network_key)}, ensure_ascii=False)
             plan_service.record_artifact_version(metadata.plan_id, metadata.block_name, version, network_key)
-            return ok(artifact_id=artifact_id, version=version, network_key=network_key, knowledge_id=knowledge_id, renderer=renderer["kind"])
+            return ok(**workflow_data(artifact_id, network_key), knowledge_id=knowledge_id, renderer=renderer["kind"])
         except ArtifactError as exc:
             return fail(exc)
         except (KeyError, TypeError, ValueError, OSError) as exc:
             return json.dumps({"success": False, "stage": "artifact", "code": getattr(exc, "code", type(exc).__name__), "message": str(exc), "retryable": False}, ensure_ascii=False)
 
-    @mcp.tool(name="replace_xml_network", description="Replace one complete CompileUnit. Structural repairs must cite the knowledge IDs selected by the Network plan; semantic behavior changes are rejected and returned to planning.")
+    @mcp.tool(name="replace_network_and_prepare_import", description="Replace one complete knowledge-backed CompileUnit, invalidate prior verification, create one immutable version, update the Plan, and return the import/compile resume state.")
     def replace_xml_network(artifact_id: str, expected_version: int, network_key: str, compile_unit_xml: str, repair_kind: str = "structural_subgraph", knowledge_ids: list[str] | None = None) -> str:
         try:
             if repair_kind == "semantic":
@@ -238,10 +267,12 @@ def register_xml_artifact_tools(mcp, session, service: XmlArtifactService | None
             ensure_network_editable(artifact_id, [network_key])
             require_knowledge_renderer_when_published(artifact_id, network_key)
             version = service.replace_network(artifact_id, expected_version, network_key, compile_unit_xml)
+            if version == expected_version:
+                return json.dumps({"success": True, "stage": "artifact", "code": "NO_CHANGES", "message": "Network content is unchanged; no version was created", **workflow_data(artifact_id, network_key)}, ensure_ascii=False)
             metadata = service.get_artifact(artifact_id)
             if metadata.plan_id and metadata.block_name:
                 plan_service.record_artifact_version(metadata.plan_id, metadata.block_name, version, network_key)
-            return ok(artifact_id=artifact_id, version=version, network_key=network_key)
+            return ok(**workflow_data(artifact_id, network_key))
         except ArtifactError as exc: return fail(exc)
 
     @mcp.tool(name="delete_xml_network", description="Delete only the CompileUnit selected by network_key and create a new artifact version.")
@@ -256,29 +287,16 @@ def register_xml_artifact_tools(mcp, session, service: XmlArtifactService | None
             return ok(artifact_id=artifact_id, version=version, network_key=network_key)
         except ArtifactError as exc: return fail(exc)
 
-    @mcp.tool(name="update_xml_network_title", description="Change only one Network title selected by stable network_key and create a new immutable Artifact version.")
-    def update_xml_network_title(artifact_id: str, expected_version: int, network_key: str, title: str) -> str:
+    @mcp.tool(name="update_xml_network_text", description="Atomically update the title and/or functional comment of one Network, create at most one immutable version, and update the linked Plan.")
+    def update_xml_network_text(artifact_id: str, expected_version: int, network_key: str, title: str | None = None, comment: str | None = None) -> str:
         try:
             ensure_network_editable(artifact_id, [network_key])
-            version = service.update_network_text(artifact_id, expected_version, network_key, title=title)
+            version = service.update_network_text(artifact_id, expected_version, network_key, title=title, comment=comment)
+            if version == expected_version:
+                return json.dumps({"success": True, "stage": "artifact", "code": "NO_CHANGES", "message": "Network text is unchanged; no version was created", **workflow_data(artifact_id, network_key)}, ensure_ascii=False)
             metadata = service.get_artifact(artifact_id)
             if metadata.plan_id and metadata.block_name: plan_service.record_artifact_version(metadata.plan_id, metadata.block_name, version, network_key)
-            return ok(artifact_id=artifact_id, version=version, network_key=network_key)
-        except ArtifactError as exc: return fail(exc)
-
-    @mcp.tool(name="update_xml_network_comment", description="Change only one Network functional comment selected by stable network_key and create a new immutable Artifact version.")
-    def update_xml_network_comment(artifact_id: str, expected_version: int, network_key: str, comment: str) -> str:
-        try:
-            ensure_network_editable(artifact_id, [network_key])
-            version = service.update_network_text(artifact_id, expected_version, network_key, comment=comment)
-            metadata = service.get_artifact(artifact_id)
-            if metadata.plan_id and metadata.block_name: plan_service.record_artifact_version(metadata.plan_id, metadata.block_name, version, network_key)
-            return ok(artifact_id=artifact_id, version=version, network_key=network_key)
-        except ArtifactError as exc: return fail(exc)
-
-    @mcp.tool(name="set_xml_network_state", description="Set a Network workflow state such as generated, importing, compiling, verified or needs_revision.")
-    def set_xml_network_state(artifact_id: str, network_key: str, state: str) -> str:
-        try: return ok(artifact=service.set_network_state(artifact_id, network_key, state).to_dict())
+            return ok(**workflow_data(artifact_id, network_key))
         except ArtifactError as exc: return fail(exc)
 
     @mcp.tool(name="list_xml_artifacts", description="List artifact IDs, block names, current versions, statuses and update times.")

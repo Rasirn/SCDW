@@ -1,0 +1,244 @@
+{
+  "planning": {
+    "main_fc": {
+      "block_name": "FC_MainControl",
+      "block_type": "FC",
+      "responsibility": "风机燃气无状态组合逻辑：运行控制、模式选择、输出计算、烧嘴电源判断",
+      "logic_scope": [
+        "风机运行控制",
+        "自动/手动模式输出选择",
+        "风机输出比例转换计算",
+        "风压比较驱动烧嘴电源"
+      ],
+      "interface": {
+        "Input": [],
+        "Output": [],
+        "InOut": [],
+        "Temp": [
+          {
+            "name": "风机控制输出值",
+            "data_type": "Real",
+            "comment": "CALCULATE计算中间结果"
+          },
+          {
+            "name": "风压过渡",
+            "data_type": "Int",
+            "comment": "CONV转换后INT中间值"
+          }
+        ],
+        "Constant": [],
+        "Return": [
+          {
+            "name": "Ret_Val",
+            "data_type": "Void"
+          }
+        ]
+      }
+    },
+    "main_fc_reason": "全部逻辑为无状态组合逻辑、计算、比较和转换，无跨扫描记忆需求，使用FC。",
+    "auxiliary_fbs": [],
+    "instance_dbs": [],
+    "block_dependency_order": [
+      "FC_MainControl"
+    ],
+    "interface_plan": {
+      "FC_MainControl": {
+        "Temp": [
+          {
+            "name": "风机控制输出值",
+            "data_type": "Real"
+          },
+          {
+            "name": "风压过渡",
+            "data_type": "Int"
+          }
+        ]
+      }
+    },
+    "networks": [
+      {
+        "network_key": "nw_fan_output",
+        "block_name": "FC_MainControl",
+        "title": "风机输出",
+        "comment": "风机运行条件判断：运行按接通且无故障反馈时驱动风机运行线圈。自动/手动模式选择：手动OFF时MOVE自动输出值，手动ON时MUL手动频率乘2.0，二者互斥写入风机控制输出。",
+        "purpose": "风机启停控制与自动/手动模式输出选择",
+        "main_branch": [
+          "NO_Contact:信号数据.风机运行按",
+          "NC_Contact:信号数据.风机故障反馈",
+          "Coil:风机运行"
+        ],
+        "parallel_branches": [
+          [
+            "NC_Contact:信号数据.风机手动",
+            "MOVE:信号数据.风机自动输出->信号数据.风机控制输出"
+          ],
+          [
+            "NO_Contact:信号数据.风机手动",
+            "MUL:信号数据.风机手动频率*2.0->信号数据.风机控制输出"
+          ]
+        ],
+        "instructions": [
+          "Contact",
+          "Contact.Negated",
+          "Coil",
+          "Move",
+          "Mul"
+        ],
+        "variables": [
+          "信号数据.风机运行按",
+          "信号数据.风机故障反馈",
+          "风机运行",
+          "信号数据.风机手动",
+          "信号数据.风机自动输出",
+          "信号数据.风机手动频率",
+          "信号数据.风机控制输出"
+        ],
+        "required_capabilities": [
+          "contact",
+          "coil",
+          "series_flow",
+          "move",
+          "mul",
+          "topology.parallel",
+          "network_title",
+          "network_comment"
+        ],
+        "selected_knowledge_ids": [
+          "topology.series_contact_coil.v17",
+          "instruction.move.v17",
+          "instruction.math_cascade.v17",
+          "instruction.comparison_or_chain.v17",
+          "network_text.title_comment.v17"
+        ],
+        "instruction_chain": [
+          "evaluate_contacts",
+          "series_flow",
+          "drive_coil",
+          "mode_select",
+          "move_or_mul",
+          "write_output"
+        ],
+        "topology": {
+          "kind": "parallel",
+          "description": "三条独立串联支路从Powerrail出发：RungA为触点串联驱动线圈，RungB/C为互斥模式选择各自串联功能框写入同一目标。"
+        },
+        "depends_on": [],
+        "split_reason": null
+      },
+      {
+        "network_key": "nw_fan_calc",
+        "block_name": "FC_MainControl",
+        "title": "风机输出计算",
+        "comment": "风机停止时控制输出清零。CALCULATE执行比例转换：(控制输出/100.0)*27648.0，经Real→Int转换后输出至模拟量通道。",
+        "purpose": "风机停止清零与输出比例转换计算",
+        "main_branch": [
+          "NC_Contact:信号数据.风机运行按",
+          "MOVE:0.0->信号数据.风机控制输出"
+        ],
+        "parallel_branches": [
+          [
+            "Calc:Equation=(IN1/IN2)*IN3",
+            "Convert:Real->Int"
+          ],
+          [
+            "Move:Temp风压过渡->风机控制"
+          ]
+        ],
+        "instructions": [
+          "Contact.Negated",
+          "Move",
+          "Calc",
+          "Convert",
+          "Move"
+        ],
+        "variables": [
+          "信号数据.风机运行按",
+          "信号数据.风机控制输出",
+          "风机控制输出值",
+          "风压过渡",
+          "风机控制"
+        ],
+        "required_capabilities": [
+          "contact",
+          "move",
+          "calc",
+          "equation",
+          "automatic_typed",
+          "convert",
+          "cascade",
+          "topology.parallel",
+          "network_title",
+          "network_comment"
+        ],
+        "selected_knowledge_ids": [
+          "topology.series_contact_coil.v17",
+          "instruction.move.v17",
+          "instruction.math_cascade.v17",
+          "instruction.convert_divide.v17",
+          "instruction.comparison_or_chain.v17",
+          "network_text.title_comment.v17"
+        ],
+        "instruction_chain": [
+          "stop_check",
+          "zero_output",
+          "calc_scale",
+          "convert_type",
+          "move_to_ao"
+        ],
+        "topology": {
+          "kind": "parallel",
+          "description": "两条独立支路从Powerrail出发：RungA为NC触点门控MOVE清零；RungB为Calc→Convert→Move无条件级联。"
+        },
+        "depends_on": [
+          "nw_fan_output"
+        ],
+        "split_reason": null
+      },
+      {
+        "network_key": "nw_gas_burner",
+        "block_name": "FC_MainControl",
+        "title": "燃气开启、烧嘴电源",
+        "comment": "风压测量值大于等于1.2时接通烧嘴电源，低于1.2时断开烧嘴电源。",
+        "purpose": "风压条件判断驱动烧嘴电源",
+        "main_branch": [
+          "CMP>=:信号数据.风压测量值>=1.2",
+          "Coil:烧嘴电源"
+        ],
+        "parallel_branches": [],
+        "instructions": [
+          "Ge",
+          "Coil"
+        ],
+        "variables": [
+          "信号数据.风压测量值",
+          "烧嘴电源"
+        ],
+        "required_capabilities": [
+          "compare.ge",
+          "coil",
+          "topology.series",
+          "network_title",
+          "network_comment"
+        ],
+        "selected_knowledge_ids": [
+          "instruction.tonr_trend_state.v17",
+          "topology.series_contact_coil.v17",
+          "network_text.title_comment.v17"
+        ],
+        "instruction_chain": [
+          "compare_ge",
+          "drive_coil"
+        ],
+        "topology": {
+          "kind": "series",
+          "description": "CMP>=功能框串联驱动烧嘴电源线圈"
+        },
+        "depends_on": [],
+        "split_reason": null
+      }
+    ]
+  },
+  "conversation_id": "fan_gas_control_20260730",
+  "requirements": "风机燃气梯形图程序，3个Network。变量：DB3信号数据(symbolic)，FC Temp(风机控制输出值Real,风压过渡Int)，IO(风机运行%Q4.4,烧嘴电源%Q4.6,风机控制%QW44)",
+  "target_device": "PLC_1"
+}

@@ -83,10 +83,6 @@ def register_lad_runtime_tools(mcp, session, artifact_service: XmlArtifactServic
             plans.record_import_result(metadata.plan_id, metadata.block_name, metadata.artifact_id, version, record, network_key)
         return record
 
-    @mcp.tool(
-        name="import_lad_xml",
-        description="将指定XML Artifact版本导入当前TIA Portal项目的目标PLC设备。只提交已保存的SimaticML并返回TIA实际结果；不生成、不修改、不自动修复XML。导入成功不代表编译成功。",
-    )
     def import_lad_xml(artifact_id: str, device_name: str, version: int | None = None) -> str:
         try:
             metadata = artifacts.get_artifact(artifact_id)
@@ -100,6 +96,15 @@ def register_lad_runtime_tools(mcp, session, artifact_service: XmlArtifactServic
             return output({"success": False, "stage": "artifact_read", "artifact_id": artifact_id, "version": version, "block_name": None, "block_type": None, "device_name": device_name, "code": exc.code, "messages": [_message(exc)]})
 
         network_key = current_network(metadata, used)
+        previous = metadata.last_import or {}
+        if (
+            previous.get("success") is True
+            and previous.get("version") == used
+            and previous.get("device_name") == device_name
+            and previous.get("network_key") == network_key
+            and metadata.network_states.get(network_key) in {"imported", "compiling", "verified"}
+        ):
+            return output({**previous, "code": "ALREADY_IMPORTED", "message": "Identical Artifact version is already imported; TIA import was not repeated", "idempotent": True})
         try:
             artifacts.set_workflow_state(artifact_id, "importing", network_key)
             if metadata.plan_id:
@@ -144,10 +149,6 @@ def register_lad_runtime_tools(mcp, session, artifact_service: XmlArtifactServic
             "recorded_at": _stamp(),
         }
 
-    @mcp.tool(
-        name="compile_check",
-        description="编译指定CodeBlock或整个PLC软件并返回递归CompilerResult。提供block_name时编译该块；省略时编译PLC。可将结果关联到Artifact版本和Network验证目标，不保存项目。",
-    )
     def compile_check(device_name: str, block_name: str | None = None, artifact_id: str | None = None, version: int | None = None, network_key: str | None = None, plan_id: str | None = None) -> str:
         metadata = None
         used = version
@@ -166,6 +167,25 @@ def register_lad_runtime_tools(mcp, session, artifact_service: XmlArtifactServic
                 return output(compile_failure(code="ARTIFACT_BLOCK_MISMATCH", stage="artifact_read", device_name=device_name, block_name=block_name, artifact_id=artifact_id, version=used, network_key=network_key, exc=ValueError("block_name does not match Artifact metadata")))
             block_name = block_name or metadata.block_name
             plan_id = plan_id or metadata.plan_id
+
+        if metadata and used is not None and network_key:
+            if metadata.network_states.get(network_key) == "verified" and metadata.verified_versions.get(network_key) == used:
+                previous = metadata.last_compile or {}
+                return output({**previous, "success": True, "stage": "tia_compile", "code": "ALREADY_VERIFIED", "message": "This Network and Artifact version are already verified; TIA compile was not repeated", "artifact_id": artifact_id, "version": used, "network_key": network_key, "idempotent": True})
+        if plan_id and block_name is None:
+            try:
+                if plans.get(plan_id).step_status.get("plc_compile") == "verified":
+                    return output({"success": True, "stage": "tia_compile", "scope": "plc", "code": "ALREADY_VERIFIED", "message": "PLC compile is already verified; TIA compile was not repeated", "plan_id": plan_id, "device_name": device_name, "idempotent": True})
+            except (KeyError, ValueError, OSError):
+                pass
+        if plan_id and block_name and network_key is None:
+            try:
+                plan_value = plans.get(plan_id)
+                block_value = next(item for item in [plan_value.main_fc, *plan_value.auxiliary_fbs] if item.block_name == block_name)
+                if block_value.status == "verified" and (used is None or block_value.verified_version == used):
+                    return output({"success": True, "stage": "tia_compile", "scope": "block", "code": "ALREADY_VERIFIED", "message": "Final block compile is already verified; TIA compile was not repeated", "plan_id": plan_id, "block_name": block_name, "artifact_id": artifact_id, "version": used, "idempotent": True})
+            except (KeyError, ValueError, OSError, StopIteration):
+                pass
 
         try:
             if plan_id and block_name and network_key:
@@ -225,6 +245,79 @@ def register_lad_runtime_tools(mcp, session, artifact_service: XmlArtifactServic
         if plan_id:
             plans.record_compile_result(plan_id, value, block_name=block_name, artifact_id=artifact_id, version=used, network_key=network_key)
         return output(value)
+
+    # Kept private for the composite workflow and focused unit tests.  These
+    # primitives are deliberately absent from the MCP tool surface so the LLM
+    # cannot split import, compile, and state recording into redundant calls.
+    mcp._scdw_lad_runtime_internal = {
+        "import_lad_xml": import_lad_xml,
+        "compile_check": compile_check,
+    }
+
+    @mcp.tool(
+        name="import_and_compile_artifact",
+        description="Import one immutable Artifact version and compile its current Network in one call. On success it atomically records Artifact/Plan verification and, when ready, chains final block and PLC compilation. Identical verified versions are not re-run.",
+    )
+    def import_and_compile_artifact(artifact_id: str, device_name: str, version: int | None = None, network_key: str | None = None, finalize_ready: bool = True) -> str:
+        try:
+            metadata = artifacts.get_artifact(artifact_id)
+            used = version or metadata.current_version
+            if not metadata.plan_id or not metadata.block_name:
+                return output({"success": False, "stage": "workflow", "code": "PLAN_PRECONDITION_FAILED", "message": "Artifact must be linked to an active Plan and block", "artifact_id": artifact_id, "version": used})
+            plan = plans.get(metadata.plan_id)
+            selected_network = network_key or plan.current_network
+            if not selected_network:
+                return output({"success": False, "stage": "workflow", "code": "NETWORK_REQUIRED", "message": "No current Network is available to import and compile", "artifact_id": artifact_id, "version": used, "plan_id": metadata.plan_id})
+            network = next((item for item in plan.networks if item.network_key == selected_network), None)
+            if network is None or network.block_name != metadata.block_name:
+                return output({"success": False, "stage": "workflow", "code": "PLAN_PRECONDITION_FAILED", "message": "Network does not belong to the Artifact block", "artifact_id": artifact_id, "version": used, "network_key": selected_network})
+            plans.set_cursor(plan.plan_id, metadata.block_name, selected_network)
+        except (ArtifactError, KeyError, ValueError, OSError) as exc:
+            return output({"success": False, "stage": "workflow", "code": getattr(exc, "code", type(exc).__name__), "message": str(exc), "artifact_id": artifact_id, "version": version})
+
+        imported = json.loads(import_lad_xml(artifact_id, device_name, used))
+        if not imported.get("success"):
+            return output({"success": False, "stage": "tia_import", "code": imported.get("code", "TIA_XML_IMPORT_FAILED"), "message": imported.get("message", "TIA import failed"), "artifact_id": artifact_id, "version": used, "network_key": selected_network, "import": imported, "next": plans.next_step(plan.plan_id)})
+
+        compiled = json.loads(compile_check(device_name, metadata.block_name, artifact_id, used, selected_network, plan.plan_id))
+        if not compiled.get("success"):
+            return output({"success": False, "stage": "tia_compile", "code": compiled.get("code", "TIA_COMPILE_FAILED"), "message": "Network compile failed", "artifact_id": artifact_id, "version": used, "network_key": selected_network, "import": imported, "compile": compiled, "next": plans.next_step(plan.plan_id)})
+
+        final_block = None
+        final_plc = None
+        if finalize_ready:
+            try:
+                plans.validate_final_block_compile(plan.plan_id, metadata.block_name)
+            except ValueError:
+                pass
+            else:
+                final_block = json.loads(compile_check(device_name, metadata.block_name, artifact_id, used, None, plan.plan_id))
+            if final_block is None or final_block.get("success"):
+                try:
+                    plans.validate_final_plc_compile(plan.plan_id)
+                except ValueError:
+                    pass
+                else:
+                    final_plc = json.loads(compile_check(device_name, None, None, None, None, plan.plan_id))
+
+        success = bool(compiled.get("success")) and (final_block is None or bool(final_block.get("success"))) and (final_plc is None or bool(final_plc.get("success")))
+        return output({
+            "success": success,
+            "stage": "workflow_verified" if success else "tia_compile",
+            "code": "OK" if success else "TIA_COMPILE_FAILED",
+            "message": "Artifact import and required compilation completed" if success else "A chained compilation step failed",
+            "artifact_id": artifact_id,
+            "version": used,
+            "network_key": selected_network,
+            "plan_id": plan.plan_id,
+            "block_name": metadata.block_name,
+            "device_name": device_name,
+            "import": imported,
+            "compile": compiled,
+            "final_block_compile": final_block,
+            "final_plc_compile": final_plc,
+            "next": plans.next_step(plan.plan_id),
+        })
 
     def resolve_plan_id(plan_id: str | None, device_name: str, fb_name: str, instance_db_name: str) -> str:
         if plan_id:

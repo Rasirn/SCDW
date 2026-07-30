@@ -63,18 +63,15 @@ def temporary_tia_project(tia_session):
 
 @pytest.fixture
 def test_plc_software(temporary_tia_project):
-    """向临时工程添加测试 CPU 并返回 PLC Software。"""
-    from scdw.openness.tia_hardware import add_plc_device
-
-    session, project, _ = temporary_tia_project
+    """向临时工程添加测试 CPU，并只返回可安全跨线程传递的设备名。"""
+    session, _, _ = temporary_tia_project
     order_number = os.getenv("SCDW_TEST_CPU", "OrderNumber:6ES7 214-1BG40-0XB0/V4.4")
     device_name = "SCDW_TEST_PLC"
     try:
-        device, plc_software = add_plc_device(project, order_number, device_name, device_name)
+        session.add_plc(order_number, device_name, device_name)
     except Exception as exc:
         pytest.fail(
             "无法向临时工程添加测试 CPU。可通过 SCDW_TEST_CPU 指定本机硬件目录中的完整订货号。"
             f" 原始错误：{exc}"
         )
-    session.register_device(device_name, device, plc_software)
-    return session, project, plc_software
+    return session, device_name

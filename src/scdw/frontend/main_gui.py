@@ -19,6 +19,7 @@ import webbrowser
 import urllib.request
 import urllib.error
 from pathlib import Path
+from typing import Any
 
 # ── 支持直接执行本文件与包方式执行 ──────────────────────────────────────────────
 # 文件路径：<项目根>/src/scdw/frontend/main_gui.py。
@@ -38,39 +39,69 @@ def _find_free_port() -> int:
 PORT = _find_free_port()
 os.environ["FRONTEND_PORT"] = str(PORT)
 URL = f"http://127.0.0.1:{PORT}/"
+_LOCAL_HTTP = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+_BACKEND_SERVER: Any | None = None
+_BACKEND_ERROR: BaseException | None = None
 
 
 # ── server thread ──────────────────────────────────────────────────────────────
 def _run_server() -> None:
     """Run uvicorn in its own thread with a fresh event loop."""
+    global _BACKEND_SERVER, _BACKEND_ERROR
     import asyncio
     if sys.platform == "win32":
         asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
     from scdw.common.run_logging import get_run_logger
-    get_run_logger().log_event("backend_thread_started", component="gui", port=PORT)
-    import uvicorn
-    from scdw.frontend.app import app  # 在设置端口后导入应用
+    run_logger = get_run_logger()
+    run_logger.log_event("backend_thread_started", component="gui", port=PORT)
+    try:
+        import uvicorn
+        from scdw.frontend.app import app  # 在设置端口后导入应用
 
-    uvicorn.run(
-        app,
-        host="127.0.0.1",
-        port=PORT,
-        log_level="warning",
-        # Disable reload; we manage lifecycle via lifespan
-        reload=False,
-    )
+        config = uvicorn.Config(
+            app,
+            host="127.0.0.1",
+            port=PORT,
+            log_level="warning",
+            reload=False,
+        )
+        _BACKEND_SERVER = uvicorn.Server(config)
+        _BACKEND_SERVER.run()
+        run_logger.log_event(
+            "backend_thread_stopped",
+            component="gui",
+            port=PORT,
+            started=bool(getattr(_BACKEND_SERVER, "started", False)),
+        )
+    except BaseException as exc:
+        _BACKEND_ERROR = exc
+        run_logger.log_exception("backend_thread_failed", exc, component="gui", port=PORT)
 
 
-def _wait_for_server(timeout: float = 30.0) -> bool:
+def _http_health_reachable() -> bool:
+    """Probe loopback directly without inheriting system HTTP proxy settings."""
+    try:
+        with _LOCAL_HTTP.open(f"http://127.0.0.1:{PORT}/health", timeout=0.5) as response:
+            return response.status == 200
+    except (OSError, urllib.error.URLError):
+        return False
+
+
+def _wait_for_server(timeout: float = 30.0, server_thread: threading.Thread | None = None) -> bool:
+    """Wait for Uvicorn's actual listen state, retaining HTTP as a fallback."""
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        try:
-            with urllib.request.urlopen(f"http://127.0.0.1:{PORT}/health", timeout=0.5) as response:
-                if response.status == 200:
-                    return True
-        except (OSError, urllib.error.URLError):
-            time.sleep(0.25)
+        server = _BACKEND_SERVER
+        if server is not None and bool(getattr(server, "started", False)):
+            return True
+        if _BACKEND_ERROR is not None:
+            return False
+        if server_thread is not None and not server_thread.is_alive():
+            return False
+        if _http_health_reachable():
+            return True
+        time.sleep(0.25)
     return False
 
 
@@ -84,10 +115,25 @@ def main() -> None:
     server_thread = threading.Thread(target=_run_server, daemon=True, name="uvicorn")
     server_thread.start()
 
-    if not _wait_for_server():
-        run_logger.log_event("backend_start_timeout", port=PORT)
-        print("[MACtrl] 服务未能在 30 秒内启动。", file=sys.stderr)
+    if not _wait_for_server(server_thread=server_thread):
+        details = {
+            "port": PORT,
+            "thread_alive": server_thread.is_alive(),
+            "server_created": _BACKEND_SERVER is not None,
+            "server_started": bool(getattr(_BACKEND_SERVER, "started", False)),
+            "error": str(_BACKEND_ERROR) if _BACKEND_ERROR is not None else None,
+        }
+        run_logger.log_event("backend_start_failed", **details)
+        reason = f"：{_BACKEND_ERROR}" if _BACKEND_ERROR is not None else "，详情见最新 runtime.log"
+        print(f"[MACtrl] 服务未能启动{reason}。", file=sys.stderr)
         sys.exit(1)
+
+    run_logger.log_event(
+        "backend_listening",
+        component="gui",
+        port=PORT,
+        detection="uvicorn_started" if bool(getattr(_BACKEND_SERVER, "started", False)) else "http_health",
+    )
 
     # Try pywebview for a floating native window
     try:

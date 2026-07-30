@@ -10,7 +10,7 @@ from typing import Any, AsyncIterator, Callable
 from openai import AsyncOpenAI, OpenAI
 from dotenv import load_dotenv
 
-from scdw.common.config import DEEPSEEK_BASE_URL, DEEPSEEK_DEFAULT_MODEL, DEEPSEEK_FAST_MODEL
+from scdw.common.config import DEEPSEEK_BASE_URL, DEEPSEEK_DEFAULT_MODEL, DEEPSEEK_FAST_MODEL, get_tool_budget
 from scdw.common.exceptions import (
     LlmAuthenticationError, LlmError, LlmOutputTruncatedError,
     LlmRateLimitError, LlmResponseError, LlmTimeoutError,
@@ -21,7 +21,9 @@ from scdw.common.run_logging import get_run_logger
 # 本地开发阶段沿用原项目密钥。不得在日志、异常、测试结果或文档中输出该值。
 DEFAULT_MODEL = DEEPSEEK_DEFAULT_MODEL
 FAST_MODEL = DEEPSEEK_FAST_MODEL
-MAX_TOOL_ROUNDS = 20
+# Compatibility name for callers that still display a round limit.  Budgeting
+# is enforced by actual tool calls in the chat loop, not by LLM round count.
+MAX_TOOL_ROUNDS = get_tool_budget()[1]
 
 
 @dataclass(frozen=True)

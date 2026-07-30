@@ -53,6 +53,7 @@ def registered(tmp_path):
     mcp = FastMCP("runtime-test")
     register_lad_runtime_tools(mcp, session, artifacts, plans)
     calls = {name: tool.fn for name, tool in mcp._tool_manager._tools.items()}
+    calls.update(mcp._scdw_lad_runtime_internal)
     return artifacts, plans, session, mcp, calls
 
 
@@ -70,14 +71,13 @@ def simple_plan_artifact(tmp_path, requirement="条件A或条件B任一有效时
 
 
 @pytest.mark.unit
-def test_import_lad_xml_public_signature_accepts_artifact_only(tmp_path):
+def test_low_level_import_is_private_and_accepts_artifact_only(tmp_path):
     _, _, _, mcp, _ = registered(tmp_path)
-    tool = mcp._tool_manager._tools["import_lad_xml"]
-    assert set(tool.parameters["properties"]) == {"artifact_id", "device_name", "version"}
-    assert "xml_content" not in tool.parameters["properties"]
+    assert "import_lad_xml" not in mcp._tool_manager._tools
+    tool = mcp._scdw_lad_runtime_internal["import_lad_xml"]
     assert all(
         not isinstance(parameter.annotation, str)
-        for parameter in inspect.signature(tool.fn).parameters.values()
+        for parameter in inspect.signature(tool).parameters.values()
     )
 
 
@@ -236,7 +236,9 @@ def test_public_tools_have_only_one_lad_import_entry():
     mcp = FastMCP("all-tools")
     register_mcp_tools(mcp)
     names = {tool.name for tool in mcp._tool_manager.list_tools()}
-    assert "import_lad_xml" in names
+    assert "import_lad_xml" not in names
+    assert "compile_check" not in names
+    assert "import_and_compile_artifact" in names
     assert "import_xml_artifact" not in names
     assert "import_lad_xml_from_file" not in names
     assert "save_lad_xml" not in names

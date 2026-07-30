@@ -11,23 +11,57 @@ from typing import Any, AsyncGenerator
 
 from scdw.cli.cli_chat import CliChat
 from scdw.mcp.tool_manager import ToolManager
-from scdw.common.exceptions import LlmToolCallError
-from scdw.llm.providers.deepseek import MAX_TOOL_ROUNDS, LlmStreamResult
+from scdw.common.config import get_tool_budget
+from scdw.common.tool_results import tool_result
+from scdw.llm.providers.deepseek import LlmStreamResult
 from scdw.common.run_logging import get_run_logger
 from scdw.frontend.events import summarize_tool_arguments
 
 TOOL_DISPLAY_NAMES = {"refresh_tia_context": "刷新 TIA 上下文", "get_tia_context": "读取 TIA 工程信息",
-                      "connect_to_open_tia": "连接已打开的 TIA", "compile_check": "编译检查",
-                      "import_lad_xml": "导入 LAD 程序块", "import_scl_block": "导入 SCL 程序块",
+                      "connect_to_open_tia": "连接已打开的 TIA", "import_and_compile_artifact": "导入并编译 Artifact",
+                      "import_scl_block": "导入 SCL 程序块",
                       "create_instance_db": "创建背景 DB", "save_verified_project": "保存已验证项目",
                       "create_global_db": "创建全局 DB", "create_plc_tag_table": "创建 PLC 变量表",
                       "get_plc_knowledge_catalog": "读取 PLC 知识目录",
                       "get_plc_knowledge_items": "读取 PLC 知识项"}
 TOOL_ACTIVITY_MESSAGES = {
-    "import_lad_xml": "正在导入 Artifact XML 到 TIA Portal",
+    "import_and_compile_artifact": "正在导入 Artifact 并执行块级编译",
     "create_instance_db": "正在创建并绑定背景 DB",
-    "compile_check": "正在执行编译检查",
 }
+
+_READ_CACHE_TOOLS = {
+    "get_plc_knowledge_catalog", "get_plc_knowledge_items",
+    "get_lad_generation_plan", "list_lad_generation_plans",
+    "get_xml_artifact_status", "get_lad_block_info", "list_xml_networks",
+    "get_xml_network", "read_xml_fragment", "list_xml_artifacts",
+    "get_tia_context", "list_tia_processes", "list_workspace_files",
+}
+_SINGLE_READ_TOOLS = {"get_plc_knowledge_catalog", "get_plc_knowledge_items"}
+_MUTATING_TOOLS = {
+    "init_tia_project", "close_tia_session", "detach_tia_session",
+    "add_plc_to_project", "add_hardware_module", "create_plc_tag_table",
+    "create_global_db", "import_scl_block", "delete_plc_block",
+    "save_lad_generation_plan", "revise_lad_network_plan",
+    "create_xml_artifact", "create_lad_block_artifact", "patch_xml_artifact",
+    "append_network_and_prepare_import", "write_lad_network_from_knowledge",
+    "replace_network_and_prepare_import", "delete_xml_network", "update_xml_network_text",
+    "import_and_compile_artifact", "create_instance_db", "save_verified_project",
+    "reconcile_lad_workflow",
+}
+
+
+def _merge_workflow_context(target: dict[str, Any], value: Any) -> None:
+    """Collect stable recovery identifiers from compact or legacy tool results."""
+    if isinstance(value, dict):
+        for key in ("plan_id", "artifact_id", "version", "network_key", "device_name", "block_name"):
+            item = value.get(key)
+            if item not in (None, ""):
+                target[key] = item
+        for child in value.values():
+            _merge_workflow_context(target, child)
+    elif isinstance(value, list):
+        for child in value:
+            _merge_workflow_context(target, child)
 
 
 class StreamingChat(CliChat):
@@ -47,16 +81,21 @@ class StreamingChat(CliChat):
         yield {"type": "turn_status", "stage": "analyzing", "message": "正在分析需求"}
         await self._process_query(query)
         tia_prompt = await self._tia_context_prompt()
-        mutation_ledger: set[tuple[str, str]] = set()
-        mutating_tools = {"init_tia_project", "close_tia_session", "detach_tia_session", "add_plc_to_project"}
+        soft_limit, hard_limit = get_tool_budget()
+        tool_schemas = await ToolManager.get_all_tools(self.clients)
+        successful_mutations: set[tuple[str, str]] = set()
+        read_cache: dict[tuple[str, str], dict[str, Any]] = {}
+        workflow_context: dict[str, Any] = {}
+        tool_trace: list[dict[str, Any]] = []
+        tool_call_count = 0
+        soft_warning_sent = False
         try:
-            for round_index in range(MAX_TOOL_ROUNDS + 1):
+            for round_index in range(hard_limit + 2):
                 yield {"type": "turn_status", "stage": "generating", "message": "正在生成回复", "round": round_index}
                 run_logger.log_event("llm_round_started", component="chat", round=round_index, history_size=len(self.messages))
-                tools = await ToolManager.get_all_tools(self.clients)
                 messages = ([{"role": "system", "content": tia_prompt}] if tia_prompt else []) + list(self.messages)
                 result: LlmStreamResult | None = None
-                async for event in self.deepseek_service.stream_chat(messages, tools=tools, mode=mode, cancel_event=cancel_event):
+                async for event in self.deepseek_service.stream_chat(messages, tools=tool_schemas, mode=mode, cancel_event=cancel_event):
                     if event["type"] == "stream_end":
                         result = event["result"]
                     elif event["type"] == "stream_cancelled":
@@ -79,12 +118,11 @@ class StreamingChat(CliChat):
                 self.messages.append(assistant)
                 if result.finish_reason != "tool_calls":
                     yield {"type": "turn_status", "stage": "completed", "message": "已完成"}
-                    yield {"type": "turn_end", "usage": asdict(result.usage)}
+                    yield {"type": "turn_end", "usage": asdict(result.usage), "tool_calls": tool_call_count}
                     return
-                if round_index == MAX_TOOL_ROUNDS:
-                    raise LlmToolCallError(f"工具调用达到上限 {MAX_TOOL_ROUNDS}。")
 
                 yield {"type": "turn_status", "stage": "preparing_tool", "message": "正在准备工具调用", "round": round_index}
+                hard_exhausted = False
                 for call in result.tool_calls:
                     function = SimpleNamespace(name=call["function"]["name"], arguments=call["function"]["arguments"])
                     try:
@@ -102,13 +140,46 @@ class StreamingChat(CliChat):
                     }
                     yield start_event
                     fingerprint = (function.name, canonical)
-                    if function.name in mutating_tools and fingerprint in mutation_ledger:
-                        item = {"role": "tool", "tool_call_id": call["id"], "content": json.dumps({"success": False, "code": "DUPLICATE_MUTATING_TOOL_CALL", "message": "同一回合已执行相同的破坏性工具调用。", "retryable": False, "needs_user_action": False}, ensure_ascii=False), "success": False}
+                    read_fingerprint = (
+                        function.name,
+                        "__workflow_single_read__" if function.name in _SINGLE_READ_TOOLS else canonical,
+                    )
+                    if tool_call_count >= hard_limit:
+                        hard_exhausted = True
+                        payload = tool_result(
+                            False, stage="tool_budget", code="TOOL_BUDGET_EXHAUSTED",
+                            message="本回合工具预算已用尽；请从持久化 Plan 的恢复位置继续。",
+                            data={"soft_limit": soft_limit, "hard_limit": hard_limit, "recovery": workflow_context},
+                        )
+                        item = {"role": "tool", "tool_call_id": call["id"], "content": json.dumps(payload, ensure_ascii=False), "success": False}
+                    elif function.name in _MUTATING_TOOLS and fingerprint in successful_mutations:
+                        payload = tool_result(
+                            True, stage="deduplication", code="NO_CHANGES",
+                            message="相同参数的写操作已成功完成；未重复执行。",
+                            data={"tool_name": function.name},
+                        )
+                        item = {"role": "tool", "tool_call_id": call["id"], "content": json.dumps(payload, ensure_ascii=False), "success": True}
+                        tool_call_count += 1
+                    elif function.name in _READ_CACHE_TOOLS and read_fingerprint in read_cache:
+                        cached = read_cache[read_fingerprint]
+                        item = {**cached, "tool_call_id": call["id"]}
+                        tool_call_count += 1
+                    elif soft_warning_sent and function.name in _READ_CACHE_TOOLS:
+                        payload = tool_result(
+                            False, stage="tool_budget", code="SOFT_BUDGET_READ_BLOCKED",
+                            message="软预算后禁止新的非必要只读调用；请使用当前工作流缓存并完成当前 Network。",
+                            data={"tool_name": function.name, "recovery": workflow_context},
+                        )
+                        item = {"role": "tool", "tool_call_id": call["id"], "content": json.dumps(payload, ensure_ascii=False), "success": False}
+                        tool_call_count += 1
+                    else:
+                        item = None
+
+                    if item is not None:
                         self.messages.append({key: value for key, value in item.items() if key != "success"})
-                        yield {"type": "tool_result", "id": call["id"], "content": item["content"], "round": round_index, "success": False, "elapsed_ms": 0}
+                        yield {"type": "tool_result", "id": call["id"], "content": item["content"], "round": round_index, "success": bool(item.get("success")), "elapsed_ms": 0}
+                        tool_trace.append({"name": function.name, "success": bool(item.get("success")), "elapsed_ms": 0, "code": "cached_or_blocked"})
                         continue
-                    if function.name in mutating_tools:
-                        mutation_ledger.add(fingerprint)
 
                     request = SimpleNamespace(id=call["id"], function=function)
                     started = time.monotonic()
@@ -134,8 +205,19 @@ class StreamingChat(CliChat):
                             with suppress(asyncio.CancelledError):
                                 await task
                     elapsed_ms = round((time.monotonic() - started) * 1000)
+                    tool_call_count += 1
                     text = item.get("content", "")
                     success = bool(item.get("success", True))
+                    if success and function.name in _MUTATING_TOOLS:
+                        successful_mutations.add(fingerprint)
+                    if success and function.name in _READ_CACHE_TOOLS:
+                        read_cache[read_fingerprint] = dict(item)
+                    try:
+                        decoded = json.loads(text)
+                    except (TypeError, json.JSONDecodeError):
+                        decoded = None
+                    _merge_workflow_context(workflow_context, decoded)
+                    tool_trace.append({"name": function.name, "success": success, "elapsed_ms": elapsed_ms})
                     yield {"type": "tool_result", "id": item.get("tool_call_id", ""), "content": text, "round": round_index,
                            "success": success, "elapsed_ms": elapsed_ms}
                     self.messages.append({key: value for key, value in item.items() if key != "success"})
@@ -144,6 +226,45 @@ class StreamingChat(CliChat):
                         yield {"type": "turn_status", "stage": "cancelled", "message": "已取消"}
                         yield {"type": "cancelled"}
                         return
+                if hard_exhausted:
+                    summary = {
+                        "success": False,
+                        "stage": "tool_budget",
+                        "code": "TOOL_BUDGET_EXHAUSTED",
+                        "message": "本回合已安全暂停，可从 Plan 恢复，不会从头开始。",
+                        "data": {
+                            "tool_calls": tool_call_count,
+                            "soft_limit": soft_limit,
+                            "hard_limit": hard_limit,
+                            "recovery": workflow_context,
+                            "unfinished_steps": ["恢复 active Plan", "完成当前 Network 导入与编译", "继续后续 Network"],
+                        },
+                        "retryable": True,
+                        "needs_user_action": False,
+                    }
+                    self.messages.append({"role": "assistant", "content": json.dumps(summary, ensure_ascii=False)})
+                    run_logger.log_event("tool_budget_exhausted", component="chat", summary=summary, tool_trace=tool_trace)
+                    yield {"type": "turn_status", "stage": "paused", "message": "工具预算已用尽，已保存恢复位置"}
+                    yield {"type": "turn_end", "usage": asdict(result.usage), "tool_calls": tool_call_count, "paused": True, "recovery": summary["data"]}
+                    return
+                if tool_call_count >= soft_limit and not soft_warning_sent:
+                    soft_warning_sent = True
+                    counts: dict[str, int] = {}
+                    for trace in tool_trace:
+                        counts[trace["name"]] = counts.get(trace["name"], 0) + 1
+                    budget_summary = {
+                        "tool_calls": tool_call_count,
+                        "soft_limit": soft_limit,
+                        "hard_limit": hard_limit,
+                        "by_tool": counts,
+                        "recovery": workflow_context,
+                    }
+                    self.messages.append({
+                        "role": "system",
+                        "content": "工具软预算已达到。禁止重复读取状态或知识；合并后续操作，优先使用 import_and_compile_artifact 完成当前 Network，然后直接继续未验证 Network。当前摘要：" + json.dumps(budget_summary, ensure_ascii=False),
+                    })
+                    run_logger.log_event("tool_budget_soft_warning", component="chat", summary=budget_summary)
+                    yield {"type": "tool_budget_warning", **budget_summary}
                 yield {"type": "turn_status", "stage": "summarizing", "message": "正在整理执行结果", "round": round_index}
         except Exception as exc:
             run_logger.log_exception("chat_bridge_failed", exc, component="chat")

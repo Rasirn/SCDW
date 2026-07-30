@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Document>
+  <Engineering version="V17" />
+  <SW.Blocks.FC ID="0">
+    <AttributeList>
+      <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v5"><Section Name="Input" /><Section Name="Output" /><Section Name="InOut" /><Section Name="Temp"><Member Name="风机控制输出值" Datatype="Real" /><Member Name="风压过渡" Datatype="Int" /></Section><Section Name="Constant" /><Section Name="Return"><Member Name="Ret_Val" Datatype="Void" Accessibility="Public" /></Section></Sections></Interface>
+      <MemoryLayout>Optimized</MemoryLayout><Name>FC_MainControl</Name><ProgrammingLanguage>LAD</ProgrammingLanguage>
+    </AttributeList>
+    <ObjectList>
+    <SW.Blocks.CompileUnit ID="1" CompositionName="CompileUnits">
+  <AttributeList>
+    <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+      <Parts>
+        <Access Scope="GlobalVariable" UId="1"><Symbol><Component Name="信号数据" /><Component Name="风机运行按" /></Symbol></Access>
+        <Access Scope="GlobalVariable" UId="2"><Symbol><Component Name="信号数据" /><Component Name="风机故障反馈" /></Symbol></Access>
+        <Access Scope="GlobalVariable" UId="3"><Symbol><Component Name="风机运行" /></Symbol></Access>
+        <Access Scope="GlobalVariable" UId="4"><Symbol><Component Name="信号数据" /><Component Name="风机手动" /></Symbol></Access>
+        <Access Scope="GlobalVariable" UId="5"><Symbol><Component Name="信号数据" /><Component Name="风机自动输出" /></Symbol></Access>
+        <Access Scope="GlobalVariable" UId="6"><Symbol><Component Name="信号数据" /><Component Name="风机控制输出" /></Symbol></Access>
+        <Access Scope="GlobalVariable" UId="7"><Symbol><Component Name="信号数据" /><Component Name="风机手动频率" /></Symbol></Access>
+        <Access Scope="LiteralConstant" UId="8"><Constant><ConstantType>Real</ConstantType><ConstantValue>2.0</ConstantValue></Constant></Access>
+        <Access Scope="GlobalVariable" UId="9"><Symbol><Component Name="信号数据" /><Component Name="风机手动" /></Symbol></Access>
+        <Access Scope="GlobalVariable" UId="17"><Symbol><Component Name="信号数据" /><Component Name="风机控制输出" /></Symbol></Access>
+        <Part Name="Contact" UId="10" />
+        <Part Name="Contact" UId="11"><Negated Name="operand" /></Part>
+        <Part Name="Coil" UId="12" />
+        <Part Name="Contact" UId="13"><Negated Name="operand" /></Part>
+        <Part Name="Move" UId="14"><TemplateValue Name="Card" Type="Cardinality">1</TemplateValue></Part>
+        <Part Name="Contact" UId="15" />
+        <Part Name="Mul" UId="16"><TemplateValue Name="Card" Type="Cardinality">2</TemplateValue><AutomaticTyped Name="SrcType" /></Part>
+      </Parts>
+      <Wires>
+        <Wire UId="20"><Powerrail /><NameCon UId="10" Name="in" /><NameCon UId="13" Name="in" /><NameCon UId="15" Name="in" /></Wire>
+        <Wire UId="21"><IdentCon UId="1" /><NameCon UId="10" Name="operand" /></Wire>
+        <Wire UId="22"><NameCon UId="10" Name="out" /><NameCon UId="11" Name="in" /></Wire>
+        <Wire UId="23"><IdentCon UId="2" /><NameCon UId="11" Name="operand" /></Wire>
+        <Wire UId="24"><NameCon UId="11" Name="out" /><NameCon UId="12" Name="in" /></Wire>
+        <Wire UId="25"><IdentCon UId="3" /><NameCon UId="12" Name="operand" /></Wire>
+        <Wire UId="27"><IdentCon UId="4" /><NameCon UId="13" Name="operand" /></Wire>
+        <Wire UId="28"><NameCon UId="13" Name="out" /><NameCon UId="14" Name="en" /></Wire>
+        <Wire UId="29"><IdentCon UId="5" /><NameCon UId="14" Name="in" /></Wire>
+        <Wire UId="30"><NameCon UId="14" Name="out1" /><IdentCon UId="6" /></Wire>
+        <Wire UId="32"><IdentCon UId="9" /><NameCon UId="15" Name="operand" /></Wire>
+        <Wire UId="33"><NameCon UId="15" Name="out" /><NameCon UId="16" Name="en" /></Wire>
+        <Wire UId="34"><IdentCon UId="7" /><NameCon UId="16" Name="in1" /></Wire>
+        <Wire UId="35"><IdentCon UId="8" /><NameCon UId="16" Name="in2" /></Wire>
+        <Wire UId="36"><NameCon UId="16" Name="out" /><IdentCon UId="17" /></Wire>
+      </Wires>
+    </FlgNet></NetworkSource>
+    <ProgrammingLanguage>LAD</ProgrammingLanguage>
+  </AttributeList>
+  <ObjectList>
+    <MultilingualText ID="2" CompositionName="Comment"><ObjectList><MultilingualTextItem ID="3" CompositionName="Items"><AttributeList><Culture>zh-CN</Culture><Text>风机运行条件判断：运行按接通且无故障反馈时驱动风机运行线圈。自动/手动模式选择：手动OFF时MOVE自动输出值，手动ON时MUL手动频率乘2.0，二者互斥写入风机控制输出。</Text></AttributeList></MultilingualTextItem></ObjectList></MultilingualText>
+    <MultilingualText ID="4" CompositionName="Title"><ObjectList><MultilingualTextItem ID="5" CompositionName="Items"><AttributeList><Culture>zh-CN</Culture><Text>风机输出</Text></AttributeList></MultilingualTextItem></ObjectList></MultilingualText>
+  </ObjectList>
+</SW.Blocks.CompileUnit>
+<SW.Blocks.CompileUnit ID="6" CompositionName="CompileUnits">
+  <AttributeList>
+    <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+      <Parts>
+        <Access Scope="GlobalVariable" UId="1"><Symbol><Component Name="信号数据" /><Component Name="风机运行按" /></Symbol></Access>
+        <Access Scope="LiteralConstant" UId="2"><Constant><ConstantType>Real</ConstantType><ConstantValue>0.0</ConstantValue></Constant></Access>
+        <Access Scope="GlobalVariable" UId="3"><Symbol><Component Name="信号数据" /><Component Name="风机控制输出" /></Symbol></Access>
+        <Access Scope="GlobalVariable" UId="4"><Symbol><Component Name="信号数据" /><Component Name="风机控制输出" /></Symbol></Access>
+        <Access Scope="LiteralConstant" UId="5"><Constant><ConstantType>Real</ConstantType><ConstantValue>100.0</ConstantValue></Constant></Access>
+        <Access Scope="LiteralConstant" UId="6"><Constant><ConstantType>Real</ConstantType><ConstantValue>27648.0</ConstantValue></Constant></Access>
+        <Access Scope="LocalVariable" UId="7"><Symbol><Component Name="风机控制输出值" /></Symbol></Access>
+        <Access Scope="LocalVariable" UId="8"><Symbol><Component Name="风机控制输出值" /></Symbol></Access>
+        <Access Scope="LocalVariable" UId="9"><Symbol><Component Name="风压过渡" /></Symbol></Access>
+        <Access Scope="LocalVariable" UId="10"><Symbol><Component Name="风压过渡" /></Symbol></Access>
+        <Access Scope="GlobalVariable" UId="11"><Symbol><Component Name="风机控制" /></Symbol></Access>
+        <Part Name="Contact" UId="20"><Negated Name="operand" /></Part>
+        <Part Name="Move" UId="21"><TemplateValue Name="Card" Type="Cardinality">1</TemplateValue></Part>
+        <Part Name="Calc" UId="22"><Equation>(IN1/IN2)*IN3</Equation><TemplateValue Name="Card" Type="Cardinality">3</TemplateValue><TemplateValue Name="SrcType" Type="Type">Real</TemplateValue></Part>
+        <Part Name="Convert" UId="23" DisabledENO="true"><TemplateValue Name="SrcType" Type="Type">Real</TemplateValue><TemplateValue Name="DestType" Type="Type">Int</TemplateValue></Part>
+        <Part Name="Move" UId="24"><TemplateValue Name="Card" Type="Cardinality">1</TemplateValue></Part>
+      </Parts>
+      <Wires>
+        <Wire UId="30"><Powerrail /><NameCon UId="20" Name="in" /><NameCon UId="22" Name="en" /></Wire>
+        <Wire UId="31"><IdentCon UId="1" /><NameCon UId="20" Name="operand" /></Wire>
+        <Wire UId="32"><NameCon UId="20" Name="out" /><NameCon UId="21" Name="en" /></Wire>
+        <Wire UId="33"><IdentCon UId="2" /><NameCon UId="21" Name="in" /></Wire>
+        <Wire UId="34"><NameCon UId="21" Name="out1" /><IdentCon UId="3" /></Wire>
+        <Wire UId="35"><IdentCon UId="4" /><NameCon UId="22" Name="in1" /></Wire>
+        <Wire UId="36"><IdentCon UId="5" /><NameCon UId="22" Name="in2" /></Wire>
+        <Wire UId="37"><IdentCon UId="6" /><NameCon UId="22" Name="in3" /></Wire>
+        <Wire UId="38"><NameCon UId="22" Name="out" /><IdentCon UId="7" /></Wire>
+        <Wire UId="39"><NameCon UId="22" Name="eno" /><NameCon UId="23" Name="en" /></Wire>
+        <Wire UId="40"><IdentCon UId="8" /><NameCon UId="23" Name="in" /></Wire>
+        <Wire UId="41"><NameCon UId="23" Name="out" /><IdentCon UId="9" /></Wire>
+        <Wire UId="42"><NameCon UId="23" Name="eno" /><NameCon UId="24" Name="en" /></Wire>
+        <Wire UId="43"><IdentCon UId="10" /><NameCon UId="24" Name="in" /></Wire>
+        <Wire UId="44"><NameCon UId="24" Name="out1" /><IdentCon UId="11" /></Wire>
+      </Wires>
+    </FlgNet></NetworkSource>
+    <ProgrammingLanguage>LAD</ProgrammingLanguage>
+  </AttributeList>
+  <ObjectList>
+    <MultilingualText ID="7" CompositionName="Comment"><ObjectList><MultilingualTextItem ID="8" CompositionName="Items"><AttributeList><Culture>zh-CN</Culture><Text>风机停止时控制输出清零。CALCULATE执行比例转换：(控制输出/100.0)*27648.0，经Real→Int转换后输出至模拟量通道。</Text></AttributeList></MultilingualTextItem></ObjectList></MultilingualText>
+    <MultilingualText ID="9" CompositionName="Title"><ObjectList><MultilingualTextItem ID="10" CompositionName="Items"><AttributeList><Culture>zh-CN</Culture><Text>风机输出计算</Text></AttributeList></MultilingualTextItem></ObjectList></MultilingualText>
+  </ObjectList>
+</SW.Blocks.CompileUnit>
+<SW.Blocks.CompileUnit ID="11" CompositionName="CompileUnits">
+  <AttributeList>
+    <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+      <Parts>
+        <Access Scope="GlobalVariable" UId="1"><Symbol><Component Name="信号数据" /><Component Name="风压测量值" /></Symbol></Access>
+        <Access Scope="LiteralConstant" UId="2"><Constant><ConstantType>Real</ConstantType><ConstantValue>1.2</ConstantValue></Constant></Access>
+        <Access Scope="GlobalVariable" UId="3"><Symbol><Component Name="烧嘴电源" /></Symbol></Access>
+        <Part Name="Ge" UId="10"><TemplateValue Name="SrcType" Type="Type">Real</TemplateValue></Part>
+        <Part Name="Coil" UId="11" />
+      </Parts>
+      <Wires>
+        <Wire UId="20"><Powerrail /><NameCon UId="10" Name="pre" /></Wire>
+        <Wire UId="21"><IdentCon UId="1" /><NameCon UId="10" Name="in1" /></Wire>
+        <Wire UId="22"><IdentCon UId="2" /><NameCon UId="10" Name="in2" /></Wire>
+        <Wire UId="23"><NameCon UId="10" Name="out" /><NameCon UId="11" Name="in" /></Wire>
+        <Wire UId="24"><IdentCon UId="3" /><NameCon UId="11" Name="operand" /></Wire>
+      </Wires>
+    </FlgNet></NetworkSource>
+    <ProgrammingLanguage>LAD</ProgrammingLanguage>
+  </AttributeList>
+  <ObjectList>
+    <MultilingualText ID="12" CompositionName="Comment"><ObjectList><MultilingualTextItem ID="13" CompositionName="Items"><AttributeList><Culture>zh-CN</Culture><Text>风压测量值大于等于1.2时接通烧嘴电源，低于1.2时断开烧嘴电源。</Text></AttributeList></MultilingualTextItem></ObjectList></MultilingualText>
+    <MultilingualText ID="14" CompositionName="Title"><ObjectList><MultilingualTextItem ID="15" CompositionName="Items"><AttributeList><Culture>zh-CN</Culture><Text>燃气开启、烧嘴电源</Text></AttributeList></MultilingualTextItem></ObjectList></MultilingualText>
+  </ObjectList>
+</SW.Blocks.CompileUnit>
+</ObjectList>
+  </SW.Blocks.FC>
+</Document>

@@ -25,6 +25,7 @@ from .models import (
 from .patching import apply_operations
 from .store import ArtifactStore
 from .validation import validate_xml
+from scdw.lad_generation.models import require_state_transition
 
 
 _COMPILE_UNIT = re.compile(r"<SW\.Blocks\.CompileUnit\b.*?</SW\.Blocks\.CompileUnit>", re.DOTALL)
@@ -279,6 +280,9 @@ class XmlArtifactService:
         return result
 
     def _write_version(self, metadata: ArtifactMetadata, content: str, *, source: str, affected: list[str], network_keys: list[str], states: dict[str, str] | None = None) -> int:
+        current = self.store.version_path(metadata.artifact_id, metadata.current_version).read_text(encoding="utf-8")
+        if content == current:
+            return metadata.current_version
         validation = validate_xml(content)
         if not validation.valid:
             raise ArtifactError("XML_VALIDATION_FAILED", "edited XML is not parseable")
@@ -289,6 +293,10 @@ class XmlArtifactService:
         self.store.write_network_index(metadata.artifact_id, new_version, network_keys, [_digest(item["xml"]) for item in units])
         updated_states = {key: value for key, value in metadata.network_states.items() if key in network_keys}
         updated_states.update(states or {})
+        verified_versions = {
+            key: value for key, value in metadata.verified_versions.items()
+            if key in network_keys and key not in affected
+        }
         self.store.write_metadata(replace(
             metadata,
             current_version=new_version,
@@ -298,6 +306,7 @@ class XmlArtifactService:
             change_source=source,
             affected_networks=affected,
             network_states=updated_states,
+            verified_versions=verified_versions,
         ))
         return new_version
 
@@ -330,6 +339,8 @@ class XmlArtifactService:
             keys = self._reconcile_keys(old_units, self._units(patched), affected)
             states = {key: "import_pending" for key in affected}
             new_version = self._write_version(metadata, patched, source=change_source, affected=affected, network_keys=keys, states=states)
+            if new_version == version:
+                return PatchResult(artifact_id, version, version, [], validate_xml(patched))
             path = self.store.artifact_dir(artifact_id) / "patches" / f"v{version:04d}_to_v{new_version:04d}.json"
             self.store._atomic(path, json.dumps({
                 "artifact_id": artifact_id,
@@ -427,21 +438,43 @@ class XmlArtifactService:
 
     @staticmethod
     def _next_object_id(content: str) -> int:
-        values = [int(value) for value in re.findall(r"(?<!U)ID=\"(\d+)\"", content)]
-        return max(values, default=0) + 1
+        try:
+            root = ET.fromstring(content)
+            values = [element.attrib["ID"] for element in root.iter() if "ID" in element.attrib]
+        except ET.ParseError as exc:
+            raise ArtifactError("XML_VALIDATION_FAILED", str(exc)) from exc
+        numeric = [int(value) for value in values if value.isdecimal()]
+        candidate = max(numeric, default=0) + 1
+        used = set(values)
+        while str(candidate) in used:
+            candidate += 1
+        return candidate
 
     @classmethod
     def _allocate_document_ids(cls, content: str, unit: str) -> str:
-        """Allocate document-scoped ID values without touching Network-local UId."""
+        """Allocate document-scoped IDs of any source style without touching UId."""
+        try:
+            existing_root = ET.fromstring(content)
+            unit_root = ET.fromstring(unit)
+        except ET.ParseError as exc:
+            raise ArtifactError("PATCH_PRECONDITION_FAILED", f"XML ID allocation parse failed: {exc}") from exc
+        used = {element.attrib["ID"] for element in existing_root.iter() if "ID" in element.attrib}
+        document_id_count = sum(1 for element in unit_root.iter() if "ID" in element.attrib)
         next_id = cls._next_object_id(content)
 
         def replace_id(match: re.Match[str]) -> str:
             nonlocal next_id
+            while str(next_id) in used:
+                next_id += 1
             value = f'ID="{next_id}"'
+            used.add(str(next_id))
             next_id += 1
             return value
 
-        return re.sub(r'(?<!U)\bID="\d+"', replace_id, unit)
+        result, count = re.subn(r'(?<!U)\bID="[^"]+"', replace_id, unit)
+        if count != document_id_count:
+            raise ArtifactError("PATCH_PRECONDITION_FAILED", "unable to allocate every document-scoped ID")
+        return result
 
     @classmethod
     def _set_network_text(cls, unit: str, field: str, text: str, next_id: int) -> str:
@@ -496,6 +529,7 @@ class XmlArtifactService:
             if network_key not in {item["network_key"] for item in units}:
                 raise ArtifactError("NETWORK_NOT_FOUND", "network key was not found")
             states = dict(metadata.network_states)
+            require_state_transition(states.get(network_key, "planned"), state)
             states[network_key] = state
             updated = replace(metadata, network_states=states, updated_at=_iso(_now()), affected_networks=[network_key], change_source="network_state")
             self.store.write_metadata(updated)
@@ -510,6 +544,10 @@ class XmlArtifactService:
             if network_key:
                 if network_key not in states:
                     raise ArtifactError("NETWORK_NOT_FOUND", "network key was not found")
+                try:
+                    require_state_transition(states[network_key], state)
+                except ValueError as exc:
+                    raise ArtifactError("INVALID_STATE_TRANSITION", str(exc)) from exc
                 states[network_key] = state
             updated = replace(metadata, status=state, network_states=states, updated_at=_iso(_now()), affected_networks=[network_key] if network_key else [], change_source="workflow_state")
             self.store.write_metadata(updated)

@@ -1,0 +1,19 @@
+{
+  "artifact_id": "xml_b1d9523f889f2f19fd9332b3",
+  "block_name": "FC_风机燃气控制",
+  "block_type": "FC",
+  "code": "OK",
+  "device_name": "PLC_1",
+  "message": "TIA import completed",
+  "messages": [],
+  "network_key": "NW_FanRunControl",
+  "plan_id": "ladplan_25f3105edca9f5a9",
+  "recorded_at": "2026-07-30T16:48:47.410155Z",
+  "stage": "tia_import",
+  "success": true,
+  "target": {
+    "device_name": "PLC_1",
+    "project": "风机燃气"
+  },
+  "version": 2
+}

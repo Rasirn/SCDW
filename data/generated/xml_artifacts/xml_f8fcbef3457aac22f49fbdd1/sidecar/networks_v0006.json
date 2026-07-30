@@ -1,0 +1,25 @@
+{
+  "networks": [
+    {
+      "network_key": "nw_fan_run_interlock",
+      "sha256": "733d73f984788f2e883b742bddaa67ab32da0a0439c1fbdc03a84cea84774467"
+    },
+    {
+      "network_key": "nw_fan_auto_output",
+      "sha256": "0897c8504ffa206688a65690c76d5f570c9126bfca2d9943b122c0faeb9fcf86"
+    },
+    {
+      "network_key": "nw_fan_manual_output",
+      "sha256": "fc2429854e6d19498c08f2317cd92fedccb8b61d9a1b850c187778d4611e406b"
+    },
+    {
+      "network_key": "nw_fan_stop_clear",
+      "sha256": "516258442d6574f65468072ec83ae7a6ba5daff1540b1608078c94523c0ca773"
+    },
+    {
+      "network_key": "nw_fan_calc_chain",
+      "sha256": "26dc98b4c78add929d640555480ecfd59780eb1a09b8e1b78616204e44f50158"
+    }
+  ],
+  "version": 6
+}

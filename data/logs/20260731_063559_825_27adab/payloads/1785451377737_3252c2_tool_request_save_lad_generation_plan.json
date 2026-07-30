@@ -1,0 +1,298 @@
+{
+  "requirements": "风机燃气梯形图程序，共3个程序段：\n程序段1-风机输出：(a) 常开触点\"信号数据\".\"风机运行按\"与常闭触点\"信号数据\".\"风机故障反馈\"串联，驱动%Q4.4\"风机运行\"线圈；(b) 风机自动/手动输出逻辑：当\"信号数据\".\"风机手动\"=FALSE时MOVE\"信号数据\".\"风机自动输出\"→\"信号数据\".\"风机控制输出\"；当TRUE时MUL\"信号数据\".\"风机手动频率\"×2.0→\"信号数据\".\"风机控制输出\"。\n程序段2-风机输出计算：(a) 常闭\"信号数据\".\"风机运行按\"→MOVE 0.0→\"信号数据\".\"风机控制输出\"(停止清零)；(b) CALCULATE (IN1/IN2)*IN3: IN1=\"信号数据\".\"风机控制输出\", IN2=100.0, IN3=27648.0 →\"内部数据\".\"风机控制输出值\"；(c) CONV Real→Int: →\"内部数据\".\"风压过渡\"；(d) MOVE→%QW44\"风机控制\"。\n程序段3-烧嘴电源：Ge(\"信号数据\".\"风压测量值\" >= 1.2)→%Q4.6\"烧嘴电源\"线圈。",
+  "conversation_id": "FanGasControl_20260730",
+  "target_device": "PLC_1",
+  "planning": {
+    "main_fc": {
+      "block_name": "FC_MainControl",
+      "block_type": "FC",
+      "responsibility": "组织无状态组合逻辑：风机运行联锁、自动/手动输出选择、停止清零、输出计算链、烧嘴电源控制",
+      "logic_scope": [
+        "风机运行联锁",
+        "风机自动/手动输出选择",
+        "风机停止清零",
+        "风机输出比例计算",
+        "烧嘴电源条件控制"
+      ],
+      "interface": {
+        "Input": [],
+        "Output": [],
+        "InOut": [],
+        "Temp": [],
+        "Constant": [],
+        "Return": [
+          "Ret_Val:Void"
+        ]
+      }
+    },
+    "main_fc_reason": "所有逻辑均为无状态组合逻辑、条件判断和数值计算，无跨扫描状态需求，使用FC即可",
+    "auxiliary_fbs": [],
+    "instance_dbs": [],
+    "block_dependency_order": [
+      "FC_MainControl"
+    ],
+    "interface_plan": {
+      "FC_MainControl": {
+        "Input": [],
+        "Output": [],
+        "InOut": [],
+        "Temp": [],
+        "Constant": [],
+        "Return": [
+          "Ret_Val:Void"
+        ]
+      }
+    },
+    "networks": [
+      {
+        "network_key": "nw_fan_run_interlock",
+        "block_name": "FC_MainControl",
+        "title": "风机运行联锁",
+        "comment": "当风机运行按接通且风机故障反馈未动作时，驱动风机运行线圈",
+        "purpose": "风机运行条件联锁：运行按钮与故障反馈串联控制风机启停",
+        "main_branch": [
+          "常开触点 信号数据.风机运行按",
+          "常闭触点 信号数据.风机故障反馈",
+          "线圈 %Q4.4 风机运行"
+        ],
+        "parallel_branches": [],
+        "instructions": [
+          "Contact",
+          "Contact",
+          "Coil"
+        ],
+        "variables": [
+          "信号数据.风机运行按",
+          "信号数据.风机故障反馈",
+          "风机运行"
+        ],
+        "required_capabilities": [
+          "contact",
+          "series_flow",
+          "coil",
+          "topology.series"
+        ],
+        "selected_knowledge_ids": [
+          "topology.series_contact_coil.v17",
+          "network_text.title_comment.v17"
+        ],
+        "instruction_chain": [
+          "常开触点→常闭触点→线圈"
+        ],
+        "topology": {
+          "kind": "series",
+          "description": "两个触点串联驱动线圈"
+        },
+        "depends_on": [],
+        "split_reason": null
+      },
+      {
+        "network_key": "nw_fan_auto_output",
+        "block_name": "FC_MainControl",
+        "title": "风机自动输出",
+        "comment": "当风机手动模式为FALSE时，将风机自动输出值传送至风机控制输出",
+        "purpose": "自动模式下直接传送自动输出值到控制输出",
+        "main_branch": [
+          "常闭触点 信号数据.风机手动",
+          "MOVE 信号数据.风机自动输出→信号数据.风机控制输出"
+        ],
+        "parallel_branches": [],
+        "instructions": [
+          "Contact",
+          "Move"
+        ],
+        "variables": [
+          "信号数据.风机手动",
+          "信号数据.风机自动输出",
+          "信号数据.风机控制输出"
+        ],
+        "required_capabilities": [
+          "contact",
+          "move",
+          "series_flow",
+          "topology.series"
+        ],
+        "selected_knowledge_ids": [
+          "topology.series_contact_coil.v17",
+          "instruction.move.v17",
+          "network_text.title_comment.v17"
+        ],
+        "instruction_chain": [
+          "常闭触点→MOVE功能框"
+        ],
+        "topology": {
+          "kind": "series",
+          "description": "常闭触点使能MOVE指令"
+        },
+        "depends_on": [],
+        "split_reason": "程序段1第二部分自动/手动选择无法用单一并联知识项同时覆盖MOVE和MUL分支；拆分为NW2(常闭→MOVE)和NW3(常开→MUL)，风机手动信号互斥保证同一时刻仅一路写入"
+      },
+      {
+        "network_key": "nw_fan_manual_output",
+        "block_name": "FC_MainControl",
+        "title": "风机手动输出",
+        "comment": "当风机手动模式为TRUE时，将风机手动频率乘以2.0后写入风机控制输出",
+        "purpose": "手动模式下计算手动频率×2.0并写入控制输出",
+        "main_branch": [
+          "常开触点 信号数据.风机手动",
+          "MUL 信号数据.风机手动频率×2.0→信号数据.风机控制输出"
+        ],
+        "parallel_branches": [],
+        "instructions": [
+          "Contact",
+          "Mul"
+        ],
+        "variables": [
+          "信号数据.风机手动",
+          "信号数据.风机手动频率",
+          "信号数据.风机控制输出"
+        ],
+        "required_capabilities": [
+          "contact",
+          "mul",
+          "series_flow",
+          "topology.series"
+        ],
+        "selected_knowledge_ids": [
+          "topology.series_contact_coil.v17",
+          "instruction.math_cascade.v17",
+          "network_text.title_comment.v17"
+        ],
+        "instruction_chain": [
+          "常开触点→MUL功能框"
+        ],
+        "topology": {
+          "kind": "series",
+          "description": "常开触点使能MUL指令"
+        },
+        "depends_on": [],
+        "split_reason": "同nw_fan_auto_output拆分原因"
+      },
+      {
+        "network_key": "nw_fan_stop_clear",
+        "block_name": "FC_MainControl",
+        "title": "风机停止清零",
+        "comment": "当风机运行按断开时，将风机控制输出清零",
+        "purpose": "风机停止时将控制输出复位为零",
+        "main_branch": [
+          "常闭触点 信号数据.风机运行按",
+          "MOVE 0.0→信号数据.风机控制输出"
+        ],
+        "parallel_branches": [],
+        "instructions": [
+          "Contact",
+          "Move"
+        ],
+        "variables": [
+          "信号数据.风机运行按",
+          "信号数据.风机控制输出"
+        ],
+        "required_capabilities": [
+          "contact",
+          "move",
+          "series_flow",
+          "topology.series"
+        ],
+        "selected_knowledge_ids": [
+          "topology.series_contact_coil.v17",
+          "instruction.move.v17",
+          "network_text.title_comment.v17"
+        ],
+        "instruction_chain": [
+          "常闭触点→MOVE功能框(0.0)"
+        ],
+        "topology": {
+          "kind": "series",
+          "description": "常闭触点使能MOVE写入零值"
+        },
+        "depends_on": [],
+        "split_reason": "程序段2中停止清零(条件MOVE)与计算链(无条件CALCULATE→CONV→MOVE级联)逻辑独立、执行条件不同，拆分为NW4和NW5"
+      },
+      {
+        "network_key": "nw_fan_calc_chain",
+        "block_name": "FC_MainControl",
+        "title": "风机输出计算链",
+        "comment": "将风机控制输出按比例(÷100×27648)转换为模拟量输出值",
+        "purpose": "风机频率百分比→模拟量输出值(0～27648)比例转换",
+        "main_branch": [
+          "CALCULATE (IN1/IN2)*IN3: IN1=信号数据.风机控制输出, IN2=100.0, IN3=27648.0",
+          "CONV Real→Int",
+          "MOVE→%QW44 风机控制"
+        ],
+        "parallel_branches": [],
+        "instructions": [
+          "Calc",
+          "Convert",
+          "Move"
+        ],
+        "variables": [
+          "信号数据.风机控制输出",
+          "内部数据.风机控制输出值",
+          "内部数据.风压过渡",
+          "风机控制"
+        ],
+        "required_capabilities": [
+          "calc",
+          "cascade",
+          "convert",
+          "move",
+          "topology.series",
+          "automatic_typed"
+        ],
+        "selected_knowledge_ids": [
+          "instruction.math_cascade.v17",
+          "instruction.convert_divide.v17",
+          "instruction.move.v17",
+          "network_text.title_comment.v17"
+        ],
+        "instruction_chain": [
+          "CALCULATE→CONV→MOVE级联"
+        ],
+        "topology": {
+          "kind": "series",
+          "description": "CALCULATE、CONV、MOVE三个功能框级联"
+        },
+        "depends_on": [],
+        "split_reason": "同nw_fan_stop_clear拆分原因"
+      },
+      {
+        "network_key": "nw_burner_power",
+        "block_name": "FC_MainControl",
+        "title": "烧嘴电源控制",
+        "comment": "当风压测量值大于或等于1.2时，驱动烧嘴电源线圈",
+        "purpose": "风压条件判断：风压≥1.2时接通烧嘴电源",
+        "main_branch": [
+          "Ge比较 信号数据.风压测量值>=1.2",
+          "线圈 %Q4.6 烧嘴电源"
+        ],
+        "parallel_branches": [],
+        "instructions": [
+          "Ge",
+          "Coil"
+        ],
+        "variables": [
+          "信号数据.风压测量值",
+          "烧嘴电源"
+        ],
+        "required_capabilities": [
+          "compare.ge",
+          "coil",
+          "topology.series"
+        ],
+        "selected_knowledge_ids": [
+          "instruction.compare_ge_real_coil.v17",
+          "network_text.title_comment.v17"
+        ],
+        "instruction_chain": [
+          "Ge比较→线圈"
+        ],
+        "topology": {
+          "kind": "series",
+          "description": "Ge功能框驱动线圈"
+        },
+        "depends_on": [],
+        "split_reason": null
+      }
+    ]
+  }
+}

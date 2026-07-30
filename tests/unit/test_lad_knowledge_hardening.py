@@ -63,7 +63,7 @@ def test_one_active_plan_per_conversation(tmp_path):
 
 
 @pytest.mark.unit
-def test_patch_aliases_normalize_to_replace_exact(tmp_path):
+def test_internal_patch_aliases_normalize_but_public_schema_is_strict(tmp_path):
     canonical = PatchOperation.from_dict({"op": "replace_exact", "old": "A", "new": "B", "expected_occurrences": 1})
     op_alias = PatchOperation.from_dict({"op": "replace", "old": "A", "new": "B"})
     field_alias = PatchOperation.from_dict({"search": "A", "replace": "B"})
@@ -83,7 +83,7 @@ def test_public_patch_schema_documents_canonical_and_alias_fields():
     register_xml_artifact_tools(mcp, object())
     tool = mcp._tool_manager._tools["patch_xml_artifact"]
     properties = tool.parameters["$defs"]["PatchOperationInput"]["properties"]
-    assert {"op", "old", "new", "search", "replace", "expected_occurrences"} <= properties.keys()
+    assert set(properties) == {"op", "old", "new", "expected_occurrences"}
     assert "replace_exact" in tool.description
 
 
@@ -99,7 +99,7 @@ def test_semantic_repair_returns_to_planning(tmp_path):
     plans.link_artifact(plan.plan_id, plan.main_fc.block_name, artifact.artifact_id, 1)
     mcp = FastMCP("semantic-repair")
     register_xml_artifact_tools(mcp, object(), artifacts, plans)
-    call = mcp._tool_manager._tools["replace_xml_network"].fn
+    call = mcp._tool_manager._tools["replace_network_and_prepare_import"].fn
     result = json.loads(call(artifact.artifact_id, 1, plan.networks[0].network_key, compile_unit(1, "changed"), "semantic", None))
     assert result["code"] == "SEMANTIC_CHANGE_REQUIRES_REPLAN"
     restored = plans.get(plan.plan_id)
@@ -213,7 +213,7 @@ def test_knowledge_renderer_prevents_latest_invalid_multi_output_wire(tmp_path):
     mcp = FastMCP("knowledge-renderer")
     register_xml_artifact_tools(mcp, object(), artifacts, plans)
 
-    manual = mcp._tool_manager._tools["append_xml_network"].fn
+    manual = mcp._tool_manager._tools["append_network_and_prepare_import"].fn
     rejected = json.loads(manual(artifact.artifact_id, 1, network.network_key, compile_unit(1, "guessed"), None, None))
     assert rejected["code"] == "KNOWLEDGE_RENDERER_REQUIRED"
 
@@ -244,20 +244,20 @@ def test_knowledge_renderer_prevents_latest_invalid_multi_output_wire(tmp_path):
 
 
 @pytest.mark.unit
-def test_replacement_plan_relinks_artifact_sidecar(tmp_path):
+def test_block_artifact_creation_links_plan_without_second_tool_call(tmp_path):
     from mcp.server.fastmcp import FastMCP
     from scdw.mcp.lad_plan_tools import register_lad_plan_tools
 
     plans = LadPlanService(tmp_path / "plans")
     artifacts = XmlArtifactService(tmp_path / "artifacts")
-    first = plans.create_from_requirements("条件A时输出", conversation_id="relink", target_device="PLC")
-    artifact = artifacts.create_block_artifact(first.main_fc.block_name, "FC", plan_id=first.plan_id)
-    plans.link_artifact(first.plan_id, first.main_fc.block_name, artifact.artifact_id, 1)
-    second = plans.create_from_requirements("条件B时输出", conversation_id="relink", target_device="PLC")
+    plan = plans.create_from_requirements("条件A时输出", conversation_id="relink", target_device="PLC")
     mcp = FastMCP("plan-relink")
-    register_lad_plan_tools(mcp, plans, artifacts)
-    call = mcp._tool_manager._tools["link_lad_plan_artifact"].fn
-    result = json.loads(call(second.plan_id, second.main_fc.block_name, artifact.artifact_id, 1))
+    from scdw.mcp.xml_artifact_tools import register_xml_artifact_tools
+    register_xml_artifact_tools(mcp, object(), artifacts, plans)
+    call = mcp._tool_manager._tools["create_lad_block_artifact"].fn
+    result = json.loads(call(plan.plan_id, plan.main_fc.block_name, "FC", None, "PLC", "relink"))
     assert result["success"] is True
-    assert artifacts.get_artifact(artifact.artifact_id).plan_id == second.plan_id
-    assert plans.get(first.plan_id).status == "replaced"
+    artifact_id = result["artifact"]["artifact_id"]
+    assert artifacts.get_artifact(artifact_id).plan_id == plan.plan_id
+    assert plans.get(plan.plan_id).artifacts[plan.main_fc.block_name]["artifact_id"] == artifact_id
+    assert "link_lad_plan_artifact" not in mcp._tool_manager._tools

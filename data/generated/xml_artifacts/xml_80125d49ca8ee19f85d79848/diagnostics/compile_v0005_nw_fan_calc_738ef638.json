@@ -1,0 +1,59 @@
+{
+  "artifact_id": "xml_80125d49ca8ee19f85d79848",
+  "block_name": "FC_MainControl",
+  "block_type": "FC",
+  "code": "OK",
+  "device_name": "PLC_1",
+  "error_count": 0,
+  "messages": [
+    {
+      "description": "",
+      "messages": [
+        {
+          "description": "",
+          "messages": [
+            {
+              "description": "Block was successfully compiled.",
+              "messages": [],
+              "path": "FC_MainControl (FC1)",
+              "severity": "success"
+            }
+          ],
+          "path": "Program blocks",
+          "severity": "success"
+        },
+        {
+          "description": "",
+          "messages": [
+            {
+              "description": "Inputs or outputs are used that do not exist in the configured hardware.",
+              "messages": [],
+              "path": "",
+              "severity": "warning"
+            }
+          ],
+          "path": "General warnings",
+          "severity": "warning"
+        }
+      ],
+      "path": "PLC_1",
+      "severity": "warning"
+    },
+    {
+      "description": "Compiling finished (errors: 0; warnings: 1)",
+      "messages": [],
+      "path": "",
+      "severity": "warning"
+    }
+  ],
+  "network_key": "nw_fan_calc",
+  "plan_id": "ladplan_0c76756aab5d53c2",
+  "recorded_at": "2026-07-30T18:02:40.376115Z",
+  "scope": "block",
+  "stage": "tia_compile",
+  "state": "Warning",
+  "success": true,
+  "target_name": "FC_MainControl",
+  "version": 5,
+  "warning_count": 1
+}

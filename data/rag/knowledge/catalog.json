@@ -1238,6 +1238,62 @@
       }
     },
     {
+      "id": "instruction.compare_ge_real_coil.v17",
+      "title": "REAL大于等于比较驱动线圈",
+      "description": "真实生成案例经TIA V17导入和编译验证的Ge(REAL)到Coil完整Network。",
+      "role": "instruction_pattern",
+      "status": "verified",
+      "intent": [
+        "REAL大于等于",
+        "Ge",
+        "比较驱动线圈"
+      ],
+      "not_for": [
+        "并联OR条件",
+        "不同数据类型混用"
+      ],
+      "provides": [
+        "compare.ge",
+        "coil",
+        "topology.series"
+      ],
+      "requires": [
+        "in1与in2均为Real"
+      ],
+      "replace": [
+        "变量路径",
+        "常量",
+        "UId"
+      ],
+      "preserve": [
+        "Ge SrcType=Real",
+        "pre/in1/in2/out端口",
+        "Ge到Coil的功率流"
+      ],
+      "topology": [
+        "series"
+      ],
+      "tia_version": "V17",
+      "content_type": "xml_fragment",
+      "content_path": "instructions/compare_ge_real_coil.xml",
+      "source_refs": [
+        "data/rag/raw/generated_case/compare_ge_real_coil_v17.xml",
+        "data/rag/raw/generated_case/compare_ge_real_coil_v17.compile.json"
+      ],
+      "generation_mode": "knowledge_renderer_required",
+      "contains": {
+        "parts": [
+          "Ge",
+          "Coil"
+        ],
+        "calls": [],
+        "access_scopes": [
+          "GlobalVariable",
+          "LiteralConstant"
+        ]
+      }
+    },
+    {
       "id": "instruction.arithmetic_guard.v17",
       "title": "Sub、Mul、Ne、Div、Eq算术保护链",
       "description": "TIA V17导出的算术级联Network，保留AutomaticTyped、比较保护和数据/功率流连接。",

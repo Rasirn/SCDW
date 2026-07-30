@@ -21,6 +21,7 @@ from scdw.frontend.events import to_json_safe, validate_event_payload
 from scdw.llm.providers.deepseek import DeepSeekProvider
 from scdw.mcp.client import MCPClient
 from scdw.common.run_logging import get_run_logger
+from scdw.common.workflow_analysis import write_workflow_analysis
 from scdw.common.resources import mac_logo_path
 
 PORT = int(os.environ.get("FRONTEND_PORT", "17788"))
@@ -137,6 +138,11 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
                     if payload.get("type") in {"turn_end", "cancelled", "stream_error"}:
                         terminal_sent = True
             run_logger.log_event("turn_completed", component="frontend", conversation_id=conversation_id, turn_id=turn_id, terminal_sent=terminal_sent)
+            run_logger.flush()
+            try:
+                write_workflow_analysis(run_logger.run_dir)
+            except Exception as exc:
+                run_logger.log_exception("workflow_analysis_failed", exc, component="frontend")
         except asyncio.CancelledError:
             run_logger.log_event("turn_cancelled", component="frontend", conversation_id=conversation_id, turn_id=turn_id)
             if not terminal_sent:

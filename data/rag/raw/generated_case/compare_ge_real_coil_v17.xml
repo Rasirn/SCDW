@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Source: regression run 20260731_015151_424_e2c5d3, immutable Artifact v0006, TIA Portal V17. -->
+<SW.Blocks.CompileUnit ID="11" CompositionName="CompileUnits">
+  <AttributeList>
+    <NetworkSource><FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+      <Parts>
+        <Access Scope="GlobalVariable" UId="1"><Symbol><Component Name="信号数据" /><Component Name="风压测量值" /></Symbol></Access>
+        <Access Scope="LiteralConstant" UId="2"><Constant><ConstantType>Real</ConstantType><ConstantValue>1.2</ConstantValue></Constant></Access>
+        <Access Scope="GlobalVariable" UId="3"><Symbol><Component Name="烧嘴电源" /></Symbol></Access>
+        <Part Name="Ge" UId="10"><TemplateValue Name="SrcType" Type="Type">Real</TemplateValue></Part>
+        <Part Name="Coil" UId="11" />
+      </Parts>
+      <Wires>
+        <Wire UId="20"><Powerrail /><NameCon UId="10" Name="pre" /></Wire>
+        <Wire UId="21"><IdentCon UId="1" /><NameCon UId="10" Name="in1" /></Wire>
+        <Wire UId="22"><IdentCon UId="2" /><NameCon UId="10" Name="in2" /></Wire>
+        <Wire UId="23"><NameCon UId="10" Name="out" /><NameCon UId="11" Name="in" /></Wire>
+        <Wire UId="24"><IdentCon UId="3" /><NameCon UId="11" Name="operand" /></Wire>
+      </Wires>
+    </FlgNet></NetworkSource>
+    <ProgrammingLanguage>LAD</ProgrammingLanguage>
+  </AttributeList>
+</SW.Blocks.CompileUnit>

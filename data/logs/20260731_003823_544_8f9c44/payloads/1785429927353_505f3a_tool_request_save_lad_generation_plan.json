@@ -1,0 +1,262 @@
+{
+  "conversation_id": "风机燃气_20260730",
+  "target_device": "PLC_1",
+  "requirements": "程序段1-风机输出：常开触点\"风机运行按\"(DB3.信号数据)与常闭触点\"风机故障反馈\"(DB3.信号数据)串联驱动\"风机运行\"线圈(%Q4.4)。随后建立手动/自动输出逻辑：常闭\"风机手动\"→MOVE(\"风机自动输出\"→\"风机控制输出\")；常开\"风机手动\"→MUL(\"风机手动频率\"*2.0→\"风机控制输出\")。\n\n程序段2-风机输出计算：常闭\"风机运行按\"→MOVE 0.0→\"风机控制输出\"(停止清零)。CALCULATE: OUT=(IN1/IN2)*IN3即(\"风机控制输出\"/100.0)*27648.0→\"风机控制输出值\"(TEMP)。CONV Real to Int→\"风压过渡\"(TEMP)。MOVE→%QW44\"风机控制\"。\n\n程序段3-燃气开启烧嘴电源：REAL >=比较\"风压测量值\">=1.2驱动\"烧嘴电源\"线圈(%Q4.6)。",
+  "planning": {
+    "main_fc": {
+      "block_name": "FC_风机燃气控制",
+      "block_type": "FC",
+      "responsibility": "组织风机燃气控制全部无状态逻辑：风机运行控制、手动/自动输出选择、输出计算转换、烧嘴电源控制",
+      "logic_scope": [
+        "风机运行控制：串联触点驱动线圈",
+        "手动/自动输出选择：并联MOVE/MUL",
+        "风机输出计算：CALCULATE+CONV+MOVE级联",
+        "烧嘴电源控制：REAL>=比较驱动线圈"
+      ],
+      "interface": {
+        "Temp": [
+          {
+            "Name": "风机控制输出值",
+            "Datatype": "Real"
+          },
+          {
+            "Name": "风压过渡",
+            "Datatype": "Int"
+          }
+        ],
+        "Input": [],
+        "Output": [],
+        "InOut": [],
+        "Constant": [],
+        "Return": [
+          {
+            "Name": "Ret_Val",
+            "Datatype": "Void"
+          }
+        ]
+      }
+    },
+    "main_fc_reason": "全部逻辑为组合逻辑、判断、计算和无状态控制，无跨扫描状态需求，使用FC即可",
+    "auxiliary_fbs": [],
+    "instance_dbs": [],
+    "block_dependency_order": [
+      "FC_风机燃气控制"
+    ],
+    "interface_plan": {
+      "FC_风机燃气控制": {
+        "Temp": [
+          {
+            "Name": "风机控制输出值",
+            "Datatype": "Real"
+          },
+          {
+            "Name": "风压过渡",
+            "Datatype": "Int"
+          }
+        ],
+        "Input": [],
+        "Output": [],
+        "InOut": [],
+        "Constant": [],
+        "Return": [
+          {
+            "Name": "Ret_Val",
+            "Datatype": "Void"
+          }
+        ]
+      }
+    },
+    "networks": [
+      {
+        "network_key": "NW_FanRunControl",
+        "block_name": "FC_风机燃气控制",
+        "title": "风机运行控制",
+        "comment": "常开触点风机运行按与常闭触点风机故障反馈串联，当风机运行按接通且风机故障反馈未动作时，驱动风机运行线圈Q4.4",
+        "purpose": "实现风机启动条件串联判断并驱动输出",
+        "main_branch": [
+          "Contact(NO, 信号数据.风机运行按)",
+          "Contact(NC, 信号数据.风机故障反馈)",
+          "Coil(风机运行,%Q4.4)"
+        ],
+        "parallel_branches": [],
+        "instructions": [
+          "Contact",
+          "Coil"
+        ],
+        "variables": [
+          "信号数据.风机运行按",
+          "信号数据.风机故障反馈",
+          "IO变量.风机运行"
+        ],
+        "required_capabilities": [
+          "series_flow",
+          "contact",
+          "coil",
+          "topology.series"
+        ],
+        "selected_knowledge_ids": [
+          "topology.series_contact_coil.v17",
+          "network_text.title_comment.v17"
+        ],
+        "instruction_chain": [
+          "Powerrail→Contact(NO)→Contact(NC)→Coil"
+        ],
+        "topology": {
+          "kind": "series",
+          "description": "常开与常闭触点串联驱动线圈"
+        },
+        "depends_on": [],
+        "split_reason": null
+      },
+      {
+        "network_key": "NW_FanModeSelect",
+        "block_name": "FC_风机燃气控制",
+        "title": "风机手动/自动输出选择",
+        "comment": "基于风机手动信号选择输出源：FALSE时MOVE将风机自动输出赋给风机控制输出；TRUE时MUL将风机手动频率乘以2.0赋给风机控制输出",
+        "purpose": "实现手动与自动模式下的风机控制输出源切换",
+        "main_branch": [
+          "Powerrail共享起点"
+        ],
+        "parallel_branches": [
+          [
+            "Contact(NC, 信号数据.风机手动)",
+            "Move(信号数据.风机自动输出→信号数据.风机控制输出)"
+          ],
+          [
+            "Contact(NO, 信号数据.风机手动)",
+            "Mul(信号数据.风机手动频率*2.0→信号数据.风机控制输出)"
+          ]
+        ],
+        "instructions": [
+          "Contact",
+          "Move",
+          "Mul"
+        ],
+        "variables": [
+          "信号数据.风机手动",
+          "信号数据.风机自动输出",
+          "信号数据.风机手动频率",
+          "信号数据.风机控制输出"
+        ],
+        "required_capabilities": [
+          "move",
+          "mul",
+          "contact",
+          "automatic_typed",
+          "parallel_branches",
+          "topology.parallel"
+        ],
+        "selected_knowledge_ids": [
+          "instruction.move.v17",
+          "instruction.math_cascade.v17",
+          "network_text.title_comment.v17"
+        ],
+        "instruction_chain": [
+          "并联: Powerrail→[支路1:Contact(NC)→Move, 支路2:Contact(NO)→Mul]"
+        ],
+        "topology": {
+          "kind": "parallel",
+          "description": "共享Powerrail的两条独立并联支路：自动模式支路(常闭触点+MOVE)和手动模式支路(常开触点+MUL)"
+        },
+        "depends_on": [],
+        "split_reason": "程序段1包含两个独立输出逻辑(触点-线圈控制和模式选择)，无共享条件且输出目标不同(Q4.4 vs DBD138)，拆分为不同Network避免拓扑过度复杂"
+      },
+      {
+        "network_key": "NW_FanCalcOutput",
+        "block_name": "FC_风机燃气控制",
+        "title": "风机输出计算",
+        "comment": "风机停止时MOVE清零控制输出；CALCULATE执行OUT=(IN1/IN2)*IN3将控制输出百分比转换为0~27648模拟量值，CONV转为Int后MOVE写入模拟量输出QW44",
+        "purpose": "实现风机控制输出百分比到模拟量输出值的比例转换",
+        "main_branch": [
+          "Calc(Equation:OUT=(IN1/IN2)*IN3)",
+          "Convert(Real→Int)",
+          "Move(风压过渡→风机控制,%QW44)"
+        ],
+        "parallel_branches": [
+          [
+            "Contact(NC, 信号数据.风机运行按)",
+            "Move(0.0→信号数据.风机控制输出)"
+          ]
+        ],
+        "instructions": [
+          "Contact",
+          "Move",
+          "Calc",
+          "Convert",
+          "Move"
+        ],
+        "variables": [
+          "信号数据.风机运行按",
+          "信号数据.风机控制输出",
+          "风机控制输出值(Temp)",
+          "风压过渡(Temp)",
+          "IO变量.风机控制"
+        ],
+        "required_capabilities": [
+          "move",
+          "calc",
+          "equation",
+          "convert",
+          "automatic_typed",
+          "topology.series",
+          "local_variable"
+        ],
+        "selected_knowledge_ids": [
+          "instruction.move.v17",
+          "instruction.math_cascade.v17",
+          "instruction.convert_divide.v17",
+          "interface.local_variable_access.v17",
+          "network_text.title_comment.v17"
+        ],
+        "instruction_chain": [
+          "支路1: Powerrail→Contact(NC)→Move(清零)",
+          "支路2: Powerrail→Calc→Convert→Move(输出)"
+        ],
+        "topology": {
+          "kind": "parallel",
+          "description": "两条独立支路共享Powerrail：停止清零支路和计算转换输出支路"
+        },
+        "depends_on": [],
+        "split_reason": null
+      },
+      {
+        "network_key": "NW_BurnerPower",
+        "block_name": "FC_风机燃气控制",
+        "title": "燃气开启、烧嘴电源",
+        "comment": "使用REAL大于等于比较指令，当风压测量值大于或等于1.2时驱动烧嘴电源线圈Q4.6接通",
+        "purpose": "根据风压条件控制烧嘴电源通断",
+        "main_branch": [
+          "Ge(信号数据.风压测量值>=1.2)",
+          "Coil(烧嘴电源,%Q4.6)"
+        ],
+        "parallel_branches": [],
+        "instructions": [
+          "Ge",
+          "Coil"
+        ],
+        "variables": [
+          "信号数据.风压测量值",
+          "IO变量.烧嘴电源"
+        ],
+        "required_capabilities": [
+          "compare.ge",
+          "coil",
+          "topology.series"
+        ],
+        "selected_knowledge_ids": [
+          "instruction.comparison_or_chain.v17",
+          "network_text.title_comment.v17"
+        ],
+        "instruction_chain": [
+          "Powerrail→Ge(>=)→Coil"
+        ],
+        "topology": {
+          "kind": "series",
+          "description": "比较指令串联驱动线圈"
+        },
+        "depends_on": [],
+        "split_reason": null
+      }
+    ]
+  }
+}
