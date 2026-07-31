@@ -105,6 +105,7 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
     chat = StreamingChat(
         doc_client=_template.doc_client, clients=_template.clients, deepseek_service=_template.deepseek_service
     )
+    chat.conversation_id = conversation_id
     active: asyncio.Task | None = None
     cancel = asyncio.Event()
     current_turn = ""

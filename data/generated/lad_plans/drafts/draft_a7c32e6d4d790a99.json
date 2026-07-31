@@ -1,0 +1,217 @@
+{
+  "artifacts": {},
+  "auxiliary_fbs": [],
+  "block_dependency_order": [
+    "FC_BurnerAlarm"
+  ],
+  "blueprint_schema_version": 1,
+  "blueprint_sha256": null,
+  "blueprint_status": "draft",
+  "capability_catalog_sha256": "",
+  "closed_at": null,
+  "conversation_id": "burner_alarm_lad",
+  "created_at": "2026-07-31T03:22:10.254590Z",
+  "current_block": "FC_BurnerAlarm",
+  "current_network": "main_combined_logic",
+  "frozen_at": null,
+  "instance_dbs": [],
+  "instruction_pipeline": [
+    "main_combined_logic"
+  ],
+  "interface_change_log": [],
+  "interface_plan": {
+    "FC_BurnerAlarm": {
+      "Constant": [],
+      "InOut": [],
+      "Input": [],
+      "Output": [],
+      "Return": [
+        "Ret_Val:Void"
+      ],
+      "Temp": []
+    }
+  },
+  "knowledge_snapshot": {},
+  "main_fc": {
+    "artifact_id": null,
+    "artifact_version": null,
+    "block_name": "FC_BurnerAlarm",
+    "block_type": "FC",
+    "compile_result": null,
+    "compiled_at": null,
+    "import_result": null,
+    "imported_at": null,
+    "interface": {
+      "Constant": [],
+      "InOut": [],
+      "Input": [],
+      "Output": [],
+      "Return": [
+        "Ret_Val:Void"
+      ],
+      "Temp": []
+    },
+    "logic_scope": [
+      "烧嘴报警梯形图程序",
+      "Network1: 7个故障反馈(%I0.1, %I0.4, %I0.7, %I1.2, %I1.5, %I2.2, %I2.5)作为常开触点并联，汇总信号接入P_TRIG上升沿检测指令，P_TRIG存储变量为\"内部数据\".\"报警脉冲\"，检测到任意故障反馈上升沿时置位%Q4.7蜂鸣器",
+      "Network2: 6个超温标志(\"数字量信号\".超温标志_1区 至 _6区)作为常开触点并联，任意超温标志接通时驱动\"内部数据\".\"控温超温标志\"(普通线圈)",
+      "使用主FC，状态存储于全局DB\"内部数据\""
+    ],
+    "responsibility": "组织无状态组合逻辑并直接调用需要跨扫描状态的辅助FB",
+    "status": "planned",
+    "verified_version": null
+  },
+  "main_fc_reason": "主块选择FC，因为组合逻辑和调度本身不需要跨扫描Static状态；仅将确有状态的职责提取到辅助FB。",
+  "networks": [
+    {
+      "artifact_id": null,
+      "artifact_version": null,
+      "block_name": "FC_BurnerAlarm",
+      "blueprint": {
+        "attributes": {},
+        "capability_id": "topology.series",
+        "children": [
+          {
+            "attributes": {},
+            "capability_id": "logic.contact_no",
+            "children": [],
+            "kind": "contact",
+            "knowledge_ids": [
+              "topology.series_contact_coil.v17"
+            ],
+            "label": "条件",
+            "node_id": "main_combined_logic_contact",
+            "operands": {
+              "operand": {
+                "data_type": "Bool",
+                "kind": "variable",
+                "path": [
+                  "内部数据",
+                  "报警脉冲"
+                ],
+                "scope": "GlobalVariable"
+              }
+            },
+            "renderer_id": "blueprint_network_v17"
+          },
+          {
+            "attributes": {},
+            "capability_id": "output.coil",
+            "children": [],
+            "kind": "coil",
+            "knowledge_ids": [
+              "topology.series_contact_coil.v17"
+            ],
+            "label": "输出",
+            "node_id": "main_combined_logic_coil",
+            "operands": {
+              "operand": {
+                "data_type": "Bool",
+                "kind": "variable",
+                "path": [
+                  "输出"
+                ],
+                "scope": "GlobalVariable"
+              }
+            },
+            "renderer_id": "blueprint_network_v17"
+          }
+        ],
+        "kind": "series",
+        "knowledge_ids": [
+          "topology.series_contact_coil.v17"
+        ],
+        "label": "条件到输出",
+        "node_id": "main_combined_logic_root",
+        "operands": {},
+        "renderer_id": "blueprint_network_v17"
+      },
+      "comment": "将无明确扫描依赖且可合并的条件、判断和动作集中表达；OR条件使用同一Network的并联支路。",
+      "compile_result": null,
+      "compiled_at": null,
+      "depends_on": [],
+      "frozen_semantic_sha256": null,
+      "import_result": null,
+      "imported_at": null,
+      "instruction_chain": [
+        "evaluate Contact branches",
+        "merge each Contact.out through O.inN",
+        "detect rising edge with PBox bit",
+        "drive SCoil"
+      ],
+      "instructions": [
+        "Contact",
+        "O",
+        "PBox",
+        "SCoil"
+      ],
+      "knowledge_ids": [
+        "shell.fc_block.v17",
+        "topology.contact_or_pbox_scoil.v17",
+        "topology.series_contact_coil.v17",
+        "network_text.title_comment.v17",
+        "access.multilevel_db_member.v17"
+      ],
+      "main_branch": [
+        "烧嘴报警梯形图程序",
+        "Network1: 7个故障反馈(%I0.1, %I0.4, %I0.7, %I1.2, %I1.5, %I2.2, %I2.5)作为常开触点并联，汇总信号接入P_TRIG上升沿检测指令，P_TRIG存储变量为\"内部数据\".\"报警脉冲\"，检测到任意故障反馈上升沿时置位%Q4.7蜂鸣器",
+        "Network2: 6个超温标志(\"数字量信号\".超温标志_1区 至 _6区)作为常开触点并联，任意超温标志接通时驱动\"内部数据\".\"控温超温标志\"(普通线圈)",
+        "使用主FC，状态存储于全局DB\"内部数据\""
+      ],
+      "network_key": "main_combined_logic",
+      "parallel_branches": [
+        [
+          "烧嘴报警梯形图程序；Network1: 7个故障反馈(%I0.1, %I0.4, %I0.7, %I1.2, %I1.5, %I2.2, %I2.5)作为常开触点并联，汇总信号接入P_TRIG上升沿检测指令，P_TRIG存储变量为\"内部数据\".\"报警脉冲\"，检测到任意故障反馈上升沿时置位%Q4.7蜂鸣器；Network2: 6个超温标志(\"数字量信号\".超温标志_1区 至 _6区)作为常开触点并联，任意超温标志接通时驱动\"内部数据\".\"控温超温标志\"(普通线圈)；使用主FC，状态存储于全局DB\"内部数据\""
+        ]
+      ],
+      "purpose": "普通组合逻辑、条件判断、计算、转换和无状态控制",
+      "renderer_id": "blueprint_network_v17",
+      "required_capabilities": [
+        "fc_shell",
+        "multi_contact_or_pbox_scoil",
+        "network_title",
+        "network_comment",
+        "topology.parallel",
+        "topology.merge"
+      ],
+      "selected_knowledge_ids": [
+        "shell.fc_block.v17",
+        "topology.contact_or_pbox_scoil.v17",
+        "topology.series_contact_coil.v17",
+        "network_text.title_comment.v17",
+        "access.multilevel_db_member.v17"
+      ],
+      "split_reason": null,
+      "status": "planned",
+      "title": "组合条件与业务动作",
+      "topology": {
+        "description": "Alternative conditions merge before one action.",
+        "kind": "parallel_merge"
+      },
+      "uncovered_capabilities": [],
+      "variables": [
+        "condition_1",
+        "condition_2",
+        "condition_3",
+        "condition_4",
+        "result"
+      ],
+      "verified_version": null
+    }
+  ],
+  "plan_id": "ladplan_44006b186f637021",
+  "planned_network_count": 1,
+  "replaced_by": null,
+  "requested_network_count": null,
+  "requirements": "烧嘴报警梯形图程序。Network1: 7个故障反馈(%I0.1, %I0.4, %I0.7, %I1.2, %I1.5, %I2.2, %I2.5)作为常开触点并联，汇总信号接入P_TRIG上升沿检测指令，P_TRIG存储变量为\"内部数据\".\"报警脉冲\"，检测到任意故障反馈上升沿时置位%Q4.7蜂鸣器。Network2: 6个超温标志(\"数字量信号\".超温标志_1区 至 _6区)作为常开触点并联，任意超温标志接通时驱动\"内部数据\".\"控温超温标志\"(普通线圈)。使用主FC，状态存储于全局DB\"内部数据\"。",
+  "status": "active",
+  "step_status": {
+    "artifact_creation": "planned",
+    "network_generation": "planned",
+    "planning": "planned"
+  },
+  "target_device": "PLC_1",
+  "uncovered_capabilities": [],
+  "updated_at": "2026-07-31T03:22:10.254590Z",
+  "verification_history": []
+}

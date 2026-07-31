@@ -1,0 +1,19 @@
+{
+  "artifact_id": "xml_8f62c2c2e10dd31b3e2f107c",
+  "block_name": "FC_BurnerAlarm",
+  "block_type": "FC",
+  "code": "OK",
+  "device_name": "PLC_1",
+  "message": "TIA import completed",
+  "messages": [],
+  "network_key": "nw1_fault_alarm",
+  "plan_id": "ladplan_21b7ef7da6516c53",
+  "recorded_at": "2026-07-31T03:29:30.574982Z",
+  "stage": "tia_import",
+  "success": true,
+  "target": {
+    "device_name": "PLC_1",
+    "project": "BurnerAlarm_LAD"
+  },
+  "version": 2
+}

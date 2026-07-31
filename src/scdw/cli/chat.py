@@ -11,21 +11,29 @@ class Chat:
         self.deepseek_service: DeepSeekProvider = deepseek_service
         self.clients: dict[str, MCPClient] = clients
         self.messages: list = [{"role": "system", "content": SYSTEM_PROMPT}]
+        self._tia_context_prompt_cache: str | None = None
 
     async def _process_query(self, query: str):
         self.messages.append({"role": "user", "content": query})
 
     async def _tia_context_prompt(self) -> str | None:
         """Read the cached TIA summary without rescanning on every user turn."""
+        if self._tia_context_prompt_cache is not None:
+            return self._tia_context_prompt_cache
         for client in self.clients.values():
             try:
                 result = await client.call_tool("get_tia_context", {})
                 texts = [item.text for item in getattr(result, "content", []) if hasattr(item, "text")]
                 if texts:
-                    return "当前 TIA 状态（仅本轮有效）：\n" + "\n".join(texts)
+                    self._tia_context_prompt_cache = "当前 TIA 状态（缓存；仅在 TIA 状态写入后刷新）：\n" + "\n".join(texts)
+                    return self._tia_context_prompt_cache
             except Exception:
                 continue
         return None
+
+    def invalidate_tia_context(self) -> None:
+        """Call after a successful TIA/project mutation."""
+        self._tia_context_prompt_cache = None
 
     async def run(
         self,

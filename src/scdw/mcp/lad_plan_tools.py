@@ -115,7 +115,6 @@ def _model_dict(value: BaseModel | dict) -> dict:
 def register_lad_plan_tools(mcp, service: LadPlanService | None = None, artifact_service: XmlArtifactService | None = None) -> None:
     service = service or LadPlanService()
     artifact_service = artifact_service or XmlArtifactService()
-    draft_cache: dict[tuple[str, str, str, str], dict[str, Any]] = {}
 
     def ok(**data):
         return json.dumps({"success": True, **data}, ensure_ascii=False, sort_keys=True)
@@ -149,24 +148,39 @@ def register_lad_plan_tools(mcp, service: LadPlanService | None = None, artifact
     @mcp.tool(name="draft_lad_generation_plan", description="Return a deterministic non-persisted LAD draft. It never creates or replaces the single active formal Plan; save_lad_generation_plan persists the reviewed plan.")
     def draft_lad_generation_plan(requirements: str, conversation_id: str, target_device: str, main_fc_name: str = "FC_MainControl") -> str:
         try:
-            from scdw.lad_generation import LadPlanner
             import hashlib
             requirements_hash = hashlib.sha256(requirements.encode("utf-8")).hexdigest()
-            cache_key = (conversation_id, requirements_hash, target_device, main_fc_name)
-            cached = draft_cache.get(cache_key)
-            if cached is not None:
-                return ok(**cached, reused=True)
-            value = LadPlanner().plan(requirements, conversation_id=conversation_id, target_device=target_device, main_fc_name=main_fc_name)
+            draft_id, value, reused = service.create_or_get_draft(requirements, conversation_id=conversation_id, target_device=target_device, main_fc_name=main_fc_name)
             payload = dict(
                 draft=True, persisted=False, plan=value.to_dict(),
                 blueprint_tree=service.render_blueprint_tree(value),
                 required_next="save_lad_generation_plan",
-                draft_id=f"draft_{requirements_hash[:16]}", requirements_hash=requirements_hash,
+                draft_id=draft_id, requirements_hash=requirements_hash,
                 missing_fields=[], preflight={"capabilities": "passed", "knowledge": "passed", "renderer": "passed", "connections": "passed"},
             )
-            draft_cache[cache_key] = payload
-            return ok(**payload, reused=False)
+            return ok(**payload, reused=reused)
         except (KeyError, ValueError, OSError) as exc:
+            return fail(exc)
+
+    @mcp.tool(name="update_lad_plan_draft", description="Apply a small typed Network revision to a persisted draft. Do not resend the complete Plan.")
+    def update_lad_plan_draft(draft_id: str, network_key: str, revision: NetworkRevisionInput) -> str:
+        try:
+            value = service.update_draft_network(draft_id, network_key, _model_dict(revision))
+            return ok(draft_id=draft_id, draft=True, persisted=False, network_key=network_key,
+                      blueprint_tree=service.render_blueprint_tree(value), missing_fields=[])
+        except (KeyError, ValueError, OSError) as exc:
+            return fail(exc)
+
+    @mcp.tool(name="validate_and_save_lad_plan", description="Validate and persist a server-side draft by draft_id; no complete planning object is accepted.")
+    def validate_and_save_lad_plan(draft_id: str) -> str:
+        try:
+            draft = service.get_draft(draft_id)
+            planning = draft.to_dict()
+            plan = service.create_from_planning(planning, requirements=draft.requirements,
+                                                conversation_id=draft.conversation_id, target_device=draft.target_device)
+            return ok(draft_id=draft_id, plan_id=plan.plan_id, blueprint_status=plan.blueprint_status,
+                      blueprint_tree=service.render_blueprint_tree(plan), next=service.next_step(plan.plan_id))
+        except (KeyError, TypeError, ValueError, OSError) as exc:
             return fail(exc)
 
     @mcp.tool(name="save_lad_generation_plan", description="Persist the complete overall LAD plan already formed in this conversation, including explicit Network knowledge IDs, merge decisions and split reasons.")

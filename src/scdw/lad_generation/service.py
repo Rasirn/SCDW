@@ -56,7 +56,56 @@ class LadPlanService:
     def __init__(self, root: Path | None = None) -> None:
         self.root = Path(root or LAD_GENERATION_PLANS_DIR).resolve()
         self.root.mkdir(parents=True, exist_ok=True)
+        self.draft_root = self.root / "drafts"
+        self.draft_root.mkdir(exist_ok=True)
         self._lock = threading.RLock()
+
+    def _draft_path(self, draft_id: str) -> Path:
+        if not re.fullmatch(r"draft_[a-f0-9]{16,64}", draft_id):
+            raise KeyError("invalid draft id")
+        return self.draft_root / f"{draft_id}.json"
+
+    def create_or_get_draft(self, requirements: str, *, conversation_id: str, target_device: str, main_fc_name: str = "FC_MainControl") -> tuple[str, LadGenerationPlan, bool]:
+        digest = hashlib.sha256(f"{conversation_id}\0{requirements}\0{target_device}\0{main_fc_name}".encode("utf-8")).hexdigest()
+        draft_id = f"draft_{digest[:16]}"
+        path = self._draft_path(draft_id)
+        if path.exists():
+            return draft_id, LadGenerationPlan.from_dict(json.loads(path.read_text(encoding="utf-8"))), True
+        plan = LadPlanner().plan(requirements, conversation_id=conversation_id, target_device=target_device, main_fc_name=main_fc_name)
+        self._atomic(path, json.dumps(plan.to_dict(), ensure_ascii=False, sort_keys=True, indent=2) + "\n")
+        return draft_id, plan, False
+
+    def get_draft(self, draft_id: str) -> LadGenerationPlan:
+        path = self._draft_path(draft_id)
+        if not path.exists(): raise KeyError("draft not found")
+        return LadGenerationPlan.from_dict(json.loads(path.read_text(encoding="utf-8")))
+
+    def find_active_draft(self, conversation_id: str) -> tuple[str, LadGenerationPlan] | None:
+        candidates: list[tuple[float, str, LadGenerationPlan]] = []
+        for path in self.draft_root.glob("draft_*.json"):
+            try:
+                plan = LadGenerationPlan.from_dict(json.loads(path.read_text(encoding="utf-8")))
+                if plan.conversation_id == conversation_id:
+                    candidates.append((path.stat().st_mtime, path.stem, plan))
+            except (OSError, ValueError, TypeError, json.JSONDecodeError):
+                continue
+        if not candidates: return None
+        _, draft_id, plan = max(candidates)
+        return draft_id, plan
+
+    def update_draft_network(self, draft_id: str, network_key: str, revision: dict[str, Any]) -> LadGenerationPlan:
+        plan = self.get_draft(draft_id)
+        network = self._network(plan, network_key)
+        allowed = {"title", "comment", "purpose", "main_branch", "parallel_branches", "instructions", "variables", "required_capabilities", "selected_knowledge_ids", "instruction_chain", "topology", "depends_on", "split_reason", "blueprint", "renderer_id"}
+        unexpected = set(revision) - allowed
+        if unexpected: raise ValueError("unsupported draft fields: " + ", ".join(sorted(unexpected)))
+        for name, value in revision.items():
+            if name == "blueprint" and isinstance(value, dict):
+                from .models import BlueprintNode
+                value = BlueprintNode.from_dict(value)
+            setattr(network, name, value)
+        self._atomic(self._draft_path(draft_id), json.dumps(plan.to_dict(), ensure_ascii=False, sort_keys=True, indent=2) + "\n")
+        return plan
 
     def _path(self, plan_id: str) -> Path:
         if not _PLAN_ID.fullmatch(plan_id):

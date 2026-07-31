@@ -1,0 +1,110 @@
+{
+  "affected_networks": [],
+  "artifact_id": "xml_8f62c2c2e10dd31b3e2f107c",
+  "block_name": "FC_BurnerAlarm",
+  "block_type": "FC",
+  "change_source": "workflow_state",
+  "conversation_id": "burner_alarm_lad",
+  "created_at": "2026-07-31T03:29:14.575958Z",
+  "current_version": 3,
+  "device_name": "PLC_1",
+  "expires_at": "2026-08-02T03:29:14.575958Z",
+  "last_compile": {
+    "artifact_id": "xml_8f62c2c2e10dd31b3e2f107c",
+    "block_name": "FC_BurnerAlarm",
+    "block_type": "FC",
+    "code": "OK",
+    "device_name": "PLC_1",
+    "error_count": 0,
+    "messages": [
+      {
+        "description": "",
+        "messages": [
+          {
+            "description": "",
+            "messages": [
+              {
+                "description": "Inputs or outputs are used that do not exist in the configured hardware.",
+                "messages": [],
+                "path": "",
+                "severity": "warning"
+              }
+            ],
+            "path": "General warnings",
+            "severity": "warning"
+          },
+          {
+            "description": "",
+            "messages": [
+              {
+                "description": "No block was compiled. All blocks are up-to-date.",
+                "messages": [],
+                "path": "",
+                "severity": "information"
+              }
+            ],
+            "path": "Program blocks",
+            "severity": "information"
+          }
+        ],
+        "path": "PLC_1",
+        "severity": "warning"
+      },
+      {
+        "description": "Compiling finished (errors: 0; warnings: 1)",
+        "messages": [],
+        "path": "",
+        "severity": "warning"
+      }
+    ],
+    "network_key": null,
+    "plan_id": "ladplan_21b7ef7da6516c53",
+    "recorded_at": "2026-07-31T03:29:47.502840Z",
+    "scope": "block",
+    "stage": "tia_compile",
+    "state": "Warning",
+    "success": true,
+    "target_name": "FC_BurnerAlarm",
+    "version": 3,
+    "warning_count": 1
+  },
+  "last_import": {
+    "artifact_id": "xml_8f62c2c2e10dd31b3e2f107c",
+    "block_name": "FC_BurnerAlarm",
+    "block_type": "FC",
+    "code": "OK",
+    "device_name": "PLC_1",
+    "message": "TIA import completed",
+    "messages": [],
+    "network_key": "nw2_temp_overtemp",
+    "plan_id": "ladplan_21b7ef7da6516c53",
+    "recorded_at": "2026-07-31T03:29:45.416938Z",
+    "stage": "tia_import",
+    "success": true,
+    "target": {
+      "device_name": "PLC_1",
+      "project": "BurnerAlarm_LAD"
+    },
+    "version": 3
+  },
+  "last_validation": {
+    "errors": [],
+    "summary": {
+      "bytes": 7570,
+      "root": "Document"
+    },
+    "valid": true,
+    "warnings": []
+  },
+  "network_states": {
+    "nw1_fault_alarm": "verified",
+    "nw2_temp_overtemp": "verified"
+  },
+  "plan_id": "ladplan_21b7ef7da6516c53",
+  "status": "verified",
+  "updated_at": "2026-07-31T03:29:47.564452Z",
+  "verified_versions": {
+    "nw1_fault_alarm": 2,
+    "nw2_temp_overtemp": 3
+  }
+}

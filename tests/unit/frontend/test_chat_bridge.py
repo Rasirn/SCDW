@@ -59,6 +59,35 @@ class _ToolProvider:
         yield {"type": "stream_end", "result": result}
 
 
+class _TruncatedToolProvider:
+    def __init__(self): self.round = 0
+    async def stream_chat(self, *_, **__):
+        if self.round == 0:
+            result = LlmStreamResult("partial", "", [{"id": "bad", "function": {"name": "save_lad_generation_plan", "arguments": '{"planning":'}}], "length", "test", LlmUsage())
+        else:
+            result = LlmStreamResult("recovered", "", [], "stop", "test", LlmUsage())
+        self.round += 1
+        yield {"type": "stream_end", "result": result}
+
+
+@pytest.mark.unit
+def test_truncated_stream_discards_partial_tool_call_and_recovers(monkeypatch):
+    async def no_tools(_): return []
+    async def should_not_run(*_): raise AssertionError("partial tool call must not execute")
+    monkeypatch.setattr("scdw.frontend.chat_bridge.ToolManager.get_all_tools", no_tools)
+    monkeypatch.setattr("scdw.frontend.chat_bridge.ToolManager.execute_tool_request", should_not_run)
+    chat = StreamingChat(doc_client=_DocClient(), clients={}, deepseek_service=_TruncatedToolProvider())
+    events = asyncio.run(_collect(chat.run_stream("生成 LAD", "fast")))
+    assert any(event.get("stage") == "model_output_truncated" for event in events)
+    assert events[-1]["type"] == "turn_end"
+    assert not any(event["type"] == "tool_call_start" for event in events)
+    assert not any(item.get("tool_calls") for item in chat.messages if isinstance(item, dict))
+
+
+async def _collect(stream):
+    return [event async for event in stream]
+
+
 @pytest.mark.unit
 def test_tool_has_independent_heartbeat_elapsed_and_stops_after_result(monkeypatch):
     async def no_tools(_):

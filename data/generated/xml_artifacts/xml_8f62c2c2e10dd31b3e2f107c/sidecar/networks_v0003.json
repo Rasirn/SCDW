@@ -1,0 +1,13 @@
+{
+  "networks": [
+    {
+      "network_key": "nw1_fault_alarm",
+      "sha256": "d5bf09bbc1a2315b3cae4145057886ca79d6f2dcd3a392f0420735e8d09fa7fc"
+    },
+    {
+      "network_key": "nw2_temp_overtemp",
+      "sha256": "9a367a78d9701167ea5e75c9178fe810bc3163b3338a318cea240ea7292ce915"
+    }
+  ],
+  "version": 3
+}

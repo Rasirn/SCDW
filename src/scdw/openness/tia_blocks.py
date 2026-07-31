@@ -19,6 +19,30 @@ from .tia_core import safe_filename, write_text_file
 _VAR_NAME_RE = re.compile(r'^[A-Za-z_\u4e00-\u9fff][A-Za-z0-9_\u4e00-\u9fff]*$')
 
 
+def normalise_tia_member_name(requested_name: str, existing: set[str] | None = None) -> str:
+    """Return a stable TIA-safe member name while preserving the request elsewhere.
+
+    Numeric zone prefixes are moved after the semantic name (``1区超温标志``
+    becomes ``超温标志_1区``); illegal characters become underscores and a
+    deterministic suffix avoids collisions.
+    """
+    text = str(requested_name).strip()
+    match = re.match(r"^(\d+)(区)(.+)$", text)
+    if match:
+        text = f"{match.group(3)}_{match.group(1)}{match.group(2)}"
+    text = re.sub(r"[^A-Za-z0-9_\u4e00-\u9fff]", "_", text).strip("_")
+    if not text:
+        text = "变量"
+    if text[0].isdigit():
+        text = f"变量_{text}"
+    used = existing or set()
+    candidate, suffix = text, 2
+    while candidate in used:
+        candidate = f"{text}_{suffix}"
+        suffix += 1
+    return candidate
+
+
 def _validate_var_name(name: str) -> None:
     """校验 TIA Portal 变量名，不合法时抛出 ValueError。"""
     if not name:

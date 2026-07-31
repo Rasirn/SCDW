@@ -16,6 +16,7 @@ from scdw.common.tool_results import tool_result
 from scdw.llm.providers.deepseek import LlmStreamResult
 from scdw.common.run_logging import get_run_logger
 from scdw.frontend.events import summarize_tool_arguments
+from scdw.lad_generation import LadPlanService
 
 TOOL_DISPLAY_NAMES = {"refresh_tia_context": "刷新 TIA 上下文", "get_tia_context": "读取 TIA 工程信息",
                       "connect_to_open_tia": "连接已打开的 TIA", "import_and_compile_artifact": "导入并编译 Artifact",
@@ -120,12 +121,41 @@ class StreamingChat(CliChat):
         """清除用户、模型和工具历史，仅保留系统身份。"""
         self.messages[:] = self.messages[:1]
 
+    def _resume_context(self, query: str) -> dict[str, Any] | None:
+        if query.strip().lower() not in {"继续", "接着", "恢复", "continue", "resume"}:
+            return {}
+        conversation_id = getattr(self, "conversation_id", None)
+        if not conversation_id:
+            return None
+        service = LadPlanService()
+        plans = [item for item in service.list(conversation_id) if item.status == "active"]
+        draft = service.find_active_draft(conversation_id)
+        if not plans and draft is None:
+            return None
+        plan = plans[0] if plans else None
+        return {
+            "conversation_id": conversation_id,
+            "active_plan_id": plan.plan_id if plan else None,
+            "active_draft_id": draft[0] if draft else None,
+            "current_network": plan.current_network if plan else draft[1].current_network,
+            "next_action": service.next_step(plan.plan_id) if plan else "validate_and_save_lad_plan",
+        }
+
     async def run_stream(self, query: str, mode: str = "thinking", cancel_event: Any = None) -> AsyncGenerator[dict[str, Any], None]:
         run_logger = get_run_logger()
         run_logger.log_event("chat_bridge_query", component="chat", mode=mode, query=run_logger.save_payload("chat_query", query), history_size=len(self.messages))
         # Emit immediately; query/context preparation can itself take noticeable time.
         yield {"type": "turn_start", "mode": mode, "round": 0}
         yield {"type": "turn_status", "stage": "analyzing", "message": "正在分析需求"}
+        resume = self._resume_context(query)
+        if resume is None:
+            failure = {"success": False, "stage": "workflow_resume", "code": "NO_ACTIVE_WORKFLOW",
+                       "message": "没有可恢复的 active draft 或 Plan。", "retryable": False, "needs_user_action": False}
+            yield {"type": "stream_error", "message": json.dumps(failure, ensure_ascii=False)}
+            return
+        if resume:
+            query = "恢复已中断工作流。先调用 reconcile_lad_workflow（如有 Plan），再按 next_action 完成一个短增量步骤：" + json.dumps(resume, ensure_ascii=False)
+            run_logger.log_event("workflow_resume_requested", component="chat", recovery=resume)
         await self._process_query(query)
         tia_prompt = await self._tia_context_prompt()
         soft_limit, hard_limit = get_tool_budget()
@@ -137,6 +167,7 @@ class StreamingChat(CliChat):
         tool_call_count = 0
         soft_warning_sent = False
         completion_nudges = 0
+        truncation_retries = 0
         try:
             for round_index in range(hard_limit + 2):
                 yield {"type": "turn_status", "stage": "generating", "message": "正在生成回复", "round": round_index}
@@ -157,6 +188,38 @@ class StreamingChat(CliChat):
                 if result is None:
                     yield {"type": "turn_status", "stage": "failed", "message": "执行失败"}
                     yield {"type": "stream_error", "message": "模型流异常结束，未返回 stream_end。"}
+                    return
+                # A length-limited response can contain only the first half of
+                # a tool call.  Never persist or execute that partial call.
+                if (result.finish_reason or "").lower() in {"length", "max_tokens"}:
+                    truncation_retries += 1
+                    recovery = {
+                        "success": False, "stage": "model_output", "code": "MODEL_OUTPUT_TRUNCATED",
+                        "message": "模型输出被长度限制截断；未执行或写入任何不完整工具调用。",
+                        "finish_reason": result.finish_reason, "retryable": True,
+                        "needs_user_action": False, "recovery": workflow_context,
+                    }
+                    run_logger.log_event("model_output_truncated", component="chat", round=round_index,
+                                         finish_reason=result.finish_reason, tool_call_count=len(result.tool_calls), recovery=recovery)
+                    yield {"type": "turn_status", "stage": "model_output_truncated", "message": recovery["message"], "round": round_index}
+                    if truncation_retries > 2:
+                        yield {"type": "stream_error", "message": json.dumps(recovery, ensure_ascii=False)}
+                        return
+                    self.messages.append({
+                        "role": "system",
+                        "content": (
+                            "上一轮模型输出因长度限制被丢弃，不能复用其中任何 tool_calls。"
+                            "请从已保存的 Plan/Artifact 恢复，仅执行一个短的增量下一步；"
+                            "不要重新传递完整 Plan 或长 JSON。恢复信息：" + json.dumps(workflow_context, ensure_ascii=False)
+                        ),
+                    })
+                    continue
+                if (result.finish_reason or "stop").lower() not in {"tool_calls", "stop"}:
+                    failure = {"success": False, "stage": "model_output", "code": "MODEL_OUTPUT_FINISH_REASON_UNSUPPORTED",
+                               "message": "模型以未支持的结束原因终止，未执行工具调用。", "finish_reason": result.finish_reason,
+                               "retryable": True, "needs_user_action": False}
+                    run_logger.log_event("model_output_finish_reason_unsupported", component="chat", round=round_index, failure=failure)
+                    yield {"type": "stream_error", "message": json.dumps(failure, ensure_ascii=False)}
                     return
                 assistant = {"role": "assistant", "content": result.content or None}
                 if result.reasoning_content:
@@ -282,6 +345,12 @@ class StreamingChat(CliChat):
                     success = bool(item.get("success", True))
                     if success and function.name in _MUTATING_TOOLS:
                         successful_mutations.add(fingerprint)
+                        if function.name in {
+                            "init_tia_project", "connect_to_open_tia", "add_plc_to_project", "add_hardware_module",
+                            "create_plc_tag_table", "create_global_db", "import_scl_block", "import_and_compile_artifact",
+                            "create_instance_db", "save_verified_project",
+                        }:
+                            self.invalidate_tia_context()
                     if success and function.name in _READ_CACHE_TOOLS:
                         read_cache[read_fingerprint] = dict(item)
                     try:

@@ -1,0 +1,604 @@
+{
+  "conversation_id": "burner_alarm_lad",
+  "planning": {
+    "auxiliary_fbs": [],
+    "block_dependency_order": [
+      "FC_BurnerAlarm"
+    ],
+    "instance_dbs": [],
+    "instruction_pipeline": [
+      "generate_nw1_fault_alarm",
+      "generate_nw2_temp_overtemp"
+    ],
+    "interface_plan": {
+      "FC_BurnerAlarm": {
+        "Constant": [],
+        "InOut": [],
+        "Input": [],
+        "Output": [],
+        "Return": [
+          "Ret_Val:Void"
+        ],
+        "Temp": []
+      }
+    },
+    "main_fc": {
+      "block_name": "FC_BurnerAlarm",
+      "block_type": "FC",
+      "interface": {
+        "Constant": [],
+        "InOut": [],
+        "Input": [],
+        "Output": [],
+        "Return": [
+          "Ret_Val:Void"
+        ],
+        "Temp": []
+      },
+      "logic_scope": [
+        "烧嘴故障报警置位蜂鸣器",
+        "控温超温汇总标志"
+      ],
+      "responsibility": "烧嘴报警：7路故障反馈并联+P_TRIG上升沿置位蜂鸣器(NW1)；6路超温标志并联驱动控温超温标志(NW2)"
+    },
+    "main_fc_reason": "整体为组合逻辑+边沿/置位状态存储于全局DB内部数据，不涉及FB Static跨扫描状态，故全部放入主FC。",
+    "networks": [
+      {
+        "block_name": "FC_BurnerAlarm",
+        "blueprint": {
+          "attributes": {},
+          "capability_id": "topology.series",
+          "children": [
+            {
+              "attributes": {},
+              "capability_id": "logic.contact_no",
+              "children": [],
+              "kind": "contact",
+              "knowledge_ids": [
+                "topology.series_contact_coil.v17"
+              ],
+              "label": "1#故障反馈",
+              "node_id": "nw1_c1",
+              "operands": {
+                "operand": {
+                  "data_type": "Bool",
+                  "kind": "variable",
+                  "path": [
+                    "1#故障反馈"
+                  ],
+                  "scope": "GlobalVariable"
+                }
+              },
+              "renderer_id": "blueprint_network_v17"
+            },
+            {
+              "attributes": {},
+              "capability_id": "logic.contact_no",
+              "children": [],
+              "kind": "contact",
+              "knowledge_ids": [
+                "topology.series_contact_coil.v17"
+              ],
+              "label": "2#故障反馈",
+              "node_id": "nw1_c2",
+              "operands": {
+                "operand": {
+                  "data_type": "Bool",
+                  "kind": "variable",
+                  "path": [
+                    "2#故障反馈"
+                  ],
+                  "scope": "GlobalVariable"
+                }
+              },
+              "renderer_id": "blueprint_network_v17"
+            },
+            {
+              "attributes": {},
+              "capability_id": "logic.contact_no",
+              "children": [],
+              "kind": "contact",
+              "knowledge_ids": [
+                "topology.series_contact_coil.v17"
+              ],
+              "label": "3#故障反馈",
+              "node_id": "nw1_c3",
+              "operands": {
+                "operand": {
+                  "data_type": "Bool",
+                  "kind": "variable",
+                  "path": [
+                    "3#故障反馈"
+                  ],
+                  "scope": "GlobalVariable"
+                }
+              },
+              "renderer_id": "blueprint_network_v17"
+            },
+            {
+              "attributes": {},
+              "capability_id": "logic.contact_no",
+              "children": [],
+              "kind": "contact",
+              "knowledge_ids": [
+                "topology.series_contact_coil.v17"
+              ],
+              "label": "4#故障反馈",
+              "node_id": "nw1_c4",
+              "operands": {
+                "operand": {
+                  "data_type": "Bool",
+                  "kind": "variable",
+                  "path": [
+                    "4#故障反馈"
+                  ],
+                  "scope": "GlobalVariable"
+                }
+              },
+              "renderer_id": "blueprint_network_v17"
+            },
+            {
+              "attributes": {},
+              "capability_id": "logic.contact_no",
+              "children": [],
+              "kind": "contact",
+              "knowledge_ids": [
+                "topology.series_contact_coil.v17"
+              ],
+              "label": "5#故障反馈",
+              "node_id": "nw1_c5",
+              "operands": {
+                "operand": {
+                  "data_type": "Bool",
+                  "kind": "variable",
+                  "path": [
+                    "5#故障反馈"
+                  ],
+                  "scope": "GlobalVariable"
+                }
+              },
+              "renderer_id": "blueprint_network_v17"
+            },
+            {
+              "attributes": {},
+              "capability_id": "logic.contact_no",
+              "children": [],
+              "kind": "contact",
+              "knowledge_ids": [
+                "topology.series_contact_coil.v17"
+              ],
+              "label": "6#故障反馈",
+              "node_id": "nw1_c6",
+              "operands": {
+                "operand": {
+                  "data_type": "Bool",
+                  "kind": "variable",
+                  "path": [
+                    "6#故障反馈"
+                  ],
+                  "scope": "GlobalVariable"
+                }
+              },
+              "renderer_id": "blueprint_network_v17"
+            },
+            {
+              "attributes": {},
+              "capability_id": "logic.contact_no",
+              "children": [],
+              "kind": "contact",
+              "knowledge_ids": [
+                "topology.series_contact_coil.v17"
+              ],
+              "label": "7#故障反馈",
+              "node_id": "nw1_c7",
+              "operands": {
+                "operand": {
+                  "data_type": "Bool",
+                  "kind": "variable",
+                  "path": [
+                    "7#故障反馈"
+                  ],
+                  "scope": "GlobalVariable"
+                }
+              },
+              "renderer_id": "blueprint_network_v17"
+            },
+            {
+              "attributes": {},
+              "capability_id": "logic.rising_edge_external_bit",
+              "children": [],
+              "kind": "rising_edge",
+              "knowledge_ids": [
+                "instruction.pbox_edge_memory.v17"
+              ],
+              "label": "P_TRIG上升沿",
+              "node_id": "nw1_ptrig",
+              "operands": {
+                "memory": {
+                  "data_type": "Bool",
+                  "kind": "variable",
+                  "path": [
+                    "内部数据",
+                    "报警脉冲"
+                  ],
+                  "scope": "GlobalVariable"
+                }
+              },
+              "renderer_id": "blueprint_network_v17"
+            },
+            {
+              "attributes": {},
+              "capability_id": "output.set_coil",
+              "children": [],
+              "kind": "set_coil",
+              "knowledge_ids": [
+                "topology.parallel_set_reset.v17"
+              ],
+              "label": "蜂鸣器置位",
+              "node_id": "nw1_setcoil",
+              "operands": {
+                "operand": {
+                  "data_type": "Bool",
+                  "kind": "variable",
+                  "path": [
+                    "蜂鸣器"
+                  ],
+                  "scope": "GlobalVariable"
+                }
+              },
+              "renderer_id": "blueprint_network_v17"
+            }
+          ],
+          "kind": "series",
+          "knowledge_ids": [
+            "topology.series_contact_coil.v17"
+          ],
+          "label": "故障反馈上升沿置位蜂鸣器",
+          "node_id": "nw1_root",
+          "operands": {},
+          "renderer_id": "blueprint_network_v17"
+        },
+        "comment": "七个烧嘴故障反馈常开触点并联，汇总信号接入P_TRIG上升沿检测，任意故障反馈上升沿置位蜂鸣器输出。",
+        "depends_on": [],
+        "instruction_chain": [
+          "or all 7 fault contacts as parallel NO branches",
+          "merge into P_TRIG rising edge detection",
+          "P_TRIG stores edge into 内部数据.报警脉冲",
+          "rising edge sets buzzer %Q4.7 coil"
+        ],
+        "instructions": [
+          "常开触点并联x7",
+          "P_TRIG上升沿",
+          "置位线圈"
+        ],
+        "main_branch": [
+          "7路故障反馈常开触点并联",
+          "P_TRIG上升沿检测",
+          "置位蜂鸣器%Q4.7"
+        ],
+        "network_key": "nw1_fault_alarm",
+        "parallel_branches": [
+          [
+            "%I0.1 1#故障反馈"
+          ],
+          [
+            "%I0.4 2#故障反馈"
+          ],
+          [
+            "%I0.7 3#故障反馈"
+          ],
+          [
+            "%I1.2 4#故障反馈"
+          ],
+          [
+            "%I1.5 5#故障反馈"
+          ],
+          [
+            "%I2.2 6#故障反馈"
+          ],
+          [
+            "%I2.5 7#故障反馈"
+          ]
+        ],
+        "purpose": "检测任一烧嘴故障反馈的上升沿并置位蜂鸣器。",
+        "renderer_id": "blueprint_network_v17",
+        "required_capabilities": [
+          "logic.contact_no",
+          "logic.rising_edge_external_bit",
+          "output.set_coil",
+          "access.global",
+          "network.text"
+        ],
+        "selected_knowledge_ids": [
+          "topology.series_contact_coil.v17",
+          "instruction.pbox_edge_memory.v17",
+          "topology.parallel_set_reset.v17",
+          "access.multilevel_db_member.v17",
+          "network_text.title_comment.v17",
+          "shell.fc_block.v17"
+        ],
+        "split_reason": null,
+        "title": "烧嘴故障报警置位蜂鸣器",
+        "topology": {
+          "description": "7路故障反馈常开触点并联，接上升沿与置位线圈。",
+          "kind": "parallel"
+        },
+        "variables": [
+          "%I0.1 1#故障反馈",
+          "%I0.4 2#故障反馈",
+          "%I0.7 3#故障反馈",
+          "%I1.2 4#故障反馈",
+          "%I1.5 5#故障反馈",
+          "%I2.2 6#故障反馈",
+          "%I2.5 7#故障反馈",
+          "内部数据.报警脉冲",
+          "%Q4.7 蜂鸣器"
+        ]
+      },
+      {
+        "block_name": "FC_BurnerAlarm",
+        "blueprint": {
+          "attributes": {},
+          "capability_id": "topology.series",
+          "children": [
+            {
+              "attributes": {},
+              "capability_id": "topology.parallel",
+              "children": [
+                {
+                  "attributes": {},
+                  "capability_id": "logic.contact_no",
+                  "children": [],
+                  "kind": "contact",
+                  "knowledge_ids": [
+                    "topology.series_contact_coil.v17"
+                  ],
+                  "label": "超温标志_1区",
+                  "node_id": "nw2_c1",
+                  "operands": {
+                    "operand": {
+                      "data_type": "Bool",
+                      "kind": "variable",
+                      "path": [
+                        "数字量信号",
+                        "超温标志_1区"
+                      ],
+                      "scope": "GlobalVariable"
+                    }
+                  },
+                  "renderer_id": "blueprint_network_v17"
+                },
+                {
+                  "attributes": {},
+                  "capability_id": "logic.contact_no",
+                  "children": [],
+                  "kind": "contact",
+                  "knowledge_ids": [
+                    "topology.series_contact_coil.v17"
+                  ],
+                  "label": "超温标志_2区",
+                  "node_id": "nw2_c2",
+                  "operands": {
+                    "operand": {
+                      "data_type": "Bool",
+                      "kind": "variable",
+                      "path": [
+                        "数字量信号",
+                        "超温标志_2区"
+                      ],
+                      "scope": "GlobalVariable"
+                    }
+                  },
+                  "renderer_id": "blueprint_network_v17"
+                },
+                {
+                  "attributes": {},
+                  "capability_id": "logic.contact_no",
+                  "children": [],
+                  "kind": "contact",
+                  "knowledge_ids": [
+                    "topology.series_contact_coil.v17"
+                  ],
+                  "label": "超温标志_3区",
+                  "node_id": "nw2_c3",
+                  "operands": {
+                    "operand": {
+                      "data_type": "Bool",
+                      "kind": "variable",
+                      "path": [
+                        "数字量信号",
+                        "超温标志_3区"
+                      ],
+                      "scope": "GlobalVariable"
+                    }
+                  },
+                  "renderer_id": "blueprint_network_v17"
+                },
+                {
+                  "attributes": {},
+                  "capability_id": "logic.contact_no",
+                  "children": [],
+                  "kind": "contact",
+                  "knowledge_ids": [
+                    "topology.series_contact_coil.v17"
+                  ],
+                  "label": "超温标志_4区",
+                  "node_id": "nw2_c4",
+                  "operands": {
+                    "operand": {
+                      "data_type": "Bool",
+                      "kind": "variable",
+                      "path": [
+                        "数字量信号",
+                        "超温标志_4区"
+                      ],
+                      "scope": "GlobalVariable"
+                    }
+                  },
+                  "renderer_id": "blueprint_network_v17"
+                },
+                {
+                  "attributes": {},
+                  "capability_id": "logic.contact_no",
+                  "children": [],
+                  "kind": "contact",
+                  "knowledge_ids": [
+                    "topology.series_contact_coil.v17"
+                  ],
+                  "label": "超温标志_5区",
+                  "node_id": "nw2_c5",
+                  "operands": {
+                    "operand": {
+                      "data_type": "Bool",
+                      "kind": "variable",
+                      "path": [
+                        "数字量信号",
+                        "超温标志_5区"
+                      ],
+                      "scope": "GlobalVariable"
+                    }
+                  },
+                  "renderer_id": "blueprint_network_v17"
+                },
+                {
+                  "attributes": {},
+                  "capability_id": "logic.contact_no",
+                  "children": [],
+                  "kind": "contact",
+                  "knowledge_ids": [
+                    "topology.series_contact_coil.v17"
+                  ],
+                  "label": "超温标志_6区",
+                  "node_id": "nw2_c6",
+                  "operands": {
+                    "operand": {
+                      "data_type": "Bool",
+                      "kind": "variable",
+                      "path": [
+                        "数字量信号",
+                        "超温标志_6区"
+                      ],
+                      "scope": "GlobalVariable"
+                    }
+                  },
+                  "renderer_id": "blueprint_network_v17"
+                }
+              ],
+              "kind": "fan_out",
+              "knowledge_ids": [
+                "topology.fan_out.v17",
+                "topology.contact_or_coil.v17"
+              ],
+              "label": "6路超温标志并联",
+              "node_id": "nw2_fanout",
+              "operands": {},
+              "renderer_id": "blueprint_network_v17"
+            },
+            {
+              "attributes": {},
+              "capability_id": "output.coil",
+              "children": [],
+              "kind": "coil",
+              "knowledge_ids": [
+                "topology.series_contact_coil.v17"
+              ],
+              "label": "控温超温标志",
+              "node_id": "nw2_coil",
+              "operands": {
+                "operand": {
+                  "data_type": "Bool",
+                  "kind": "variable",
+                  "path": [
+                    "内部数据",
+                    "控温超温标志"
+                  ],
+                  "scope": "GlobalVariable"
+                }
+              },
+              "renderer_id": "blueprint_network_v17"
+            }
+          ],
+          "kind": "series",
+          "knowledge_ids": [
+            "topology.series_contact_coil.v17"
+          ],
+          "label": "超温标志并联驱动控温超温标志",
+          "node_id": "nw2_root",
+          "operands": {},
+          "renderer_id": "blueprint_network_v17"
+        },
+        "comment": "六个区超温标志常开触点并联，任意一区超温时驱动控温超温标志。",
+        "depends_on": [],
+        "instruction_chain": [
+          "or all 6 overtemp contacts as parallel NO branches",
+          "merge via fan_out",
+          "drive 内部数据.控温超温标志 coil"
+        ],
+        "instructions": [
+          "常开触点并联x6",
+          "普通线圈"
+        ],
+        "main_branch": [
+          "6路超温标志常开触点并联",
+          "驱动控温超温标志普通线圈"
+        ],
+        "network_key": "nw2_temp_overtemp",
+        "parallel_branches": [
+          [
+            "数字量信号.超温标志_1区"
+          ],
+          [
+            "数字量信号.超温标志_2区"
+          ],
+          [
+            "数字量信号.超温标志_3区"
+          ],
+          [
+            "数字量信号.超温标志_4区"
+          ],
+          [
+            "数字量信号.超温标志_5区"
+          ],
+          [
+            "数字量信号.超温标志_6区"
+          ]
+        ],
+        "purpose": "将任一区超温标志汇总为控温超温标志。",
+        "renderer_id": "blueprint_network_v17",
+        "required_capabilities": [
+          "logic.contact_no",
+          "output.coil",
+          "access.global",
+          "network.text"
+        ],
+        "selected_knowledge_ids": [
+          "topology.series_contact_coil.v17",
+          "topology.fan_out.v17",
+          "topology.contact_or_coil.v17",
+          "access.multilevel_db_member.v17",
+          "network_text.title_comment.v17",
+          "shell.fc_block.v17"
+        ],
+        "split_reason": null,
+        "title": "控温超温汇总标志",
+        "topology": {
+          "description": "6路超温标志常开触点并联，驱动普通线圈。",
+          "kind": "parallel"
+        },
+        "variables": [
+          "数字量信号.超温标志_1区",
+          "数字量信号.超温标志_2区",
+          "数字量信号.超温标志_3区",
+          "数字量信号.超温标志_4区",
+          "数字量信号.超温标志_5区",
+          "数字量信号.超温标志_6区",
+          "内部数据.控温超温标志"
+        ]
+      }
+    ],
+    "planned_network_count": 2,
+    "requested_network_count": 2
+  },
+  "requirements": "烧嘴报警梯形图程序（主FC）。Network1(\"烧嘴故障报警置位蜂鸣器\"): %I0.1\"1#故障反馈\"、%I0.4\"2#故障反馈\"、%I0.7\"3#故障反馈\"、%I1.2\"4#故障反馈\"、%I1.5\"5#故障反馈\"、%I2.2\"6#故障反馈\"、%I2.5\"7#故障反馈\"作为常开触点并联，汇总信号接入P_TRIG上升沿检测指令(P_TRIG存储变量为\"内部数据\".\"报警脉冲\")，检测到任意故障反馈上升沿时置位%Q4.7\"蜂鸣器\"。Network2(\"控温超温汇总标志\"): \"数字量信号\".超温标志_1区.._6区作为常开触点并联，任意超温标志接通时驱动\"内部数据\".\"控温超温标志\"(普通线圈)。状态存储于全局DB\"内部数据\"，无需辅助FB。",
+  "target_device": "PLC_1"
+}

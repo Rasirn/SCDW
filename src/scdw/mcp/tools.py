@@ -460,9 +460,17 @@ def register_mcp_tools(mcp) -> None:
 
             _check_session()
 
+            from scdw.openness.tia_blocks import normalise_tia_member_name
+            used_names: set[str] = set()
+            actual_names: dict[str, str] = {}
+            for item in vars_data:
+                requested = str(item.get("name", ""))
+                actual = normalise_tia_member_name(requested, used_names)
+                used_names.add(actual)
+                actual_names[requested] = actual
             db_vars = [
                 DBVariable(
-                    name=v["name"],
+                    name=actual_names[str(v["name"])],
                     data_type=v.get("data_type", "Bool"),
                     initial_value="" if v.get("initial_value") is None else str(v.get("initial_value")),
                     comment=v.get("comment", ""),
@@ -477,7 +485,7 @@ def register_mcp_tools(mcp) -> None:
                                        lambda _project, plc_sw: _openness_create_global_db(plc_sw, temp_dir, db_name, db_number, db_vars))
 
             mappings = [{
-                "requested_name": item.name,
+                "requested_name": next((requested for requested, actual in actual_names.items() if actual == item.name), item.name),
                 "tia_actual_name": item.name,
                 "requested_address": next(
                     (mapping["requested_address"] for mapping in requested_mappings if mapping["requested_name"] == item.name),
