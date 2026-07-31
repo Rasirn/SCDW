@@ -1,0 +1,200 @@
+{
+  "run_directory": "data\\logs\\20260731_102429_627_261432",
+  "requests": [
+    {
+      "tool_name": "get_tia_context",
+      "valid_json": true,
+      "schema_valid": null,
+      "missing_fields": [],
+      "extra_fields": [],
+      "invalid_enum": [],
+      "backend_failure_due_to_parameters": false,
+      "could_schema_prevent": false,
+      "retry_count": 0
+    },
+    {
+      "tool_name": "get_lad_capability_catalog",
+      "valid_json": true,
+      "schema_valid": null,
+      "missing_fields": [],
+      "extra_fields": [],
+      "invalid_enum": [],
+      "backend_failure_due_to_parameters": false,
+      "could_schema_prevent": false,
+      "retry_count": 0
+    },
+    {
+      "tool_name": "init_tia_project",
+      "valid_json": true,
+      "schema_valid": null,
+      "missing_fields": [],
+      "extra_fields": [],
+      "invalid_enum": [],
+      "backend_failure_due_to_parameters": false,
+      "could_schema_prevent": false,
+      "retry_count": 0
+    },
+    {
+      "tool_name": "add_plc_to_project",
+      "valid_json": true,
+      "schema_valid": null,
+      "missing_fields": [],
+      "extra_fields": [],
+      "invalid_enum": [],
+      "backend_failure_due_to_parameters": false,
+      "could_schema_prevent": false,
+      "retry_count": 0
+    },
+    {
+      "tool_name": "create_plc_tag_table",
+      "valid_json": true,
+      "schema_valid": null,
+      "missing_fields": [],
+      "extra_fields": [],
+      "invalid_enum": [],
+      "backend_failure_due_to_parameters": false,
+      "could_schema_prevent": false,
+      "retry_count": 0
+    },
+    {
+      "tool_name": "create_global_db",
+      "valid_json": true,
+      "schema_valid": null,
+      "missing_fields": [],
+      "extra_fields": [],
+      "invalid_enum": [],
+      "backend_failure_due_to_parameters": false,
+      "could_schema_prevent": false,
+      "retry_count": 0
+    },
+    {
+      "tool_name": "delete_plc_block",
+      "valid_json": true,
+      "schema_valid": null,
+      "missing_fields": [],
+      "extra_fields": [],
+      "invalid_enum": [],
+      "backend_failure_due_to_parameters": false,
+      "could_schema_prevent": false,
+      "retry_count": 0
+    },
+    {
+      "tool_name": "import_scl_block",
+      "valid_json": true,
+      "schema_valid": null,
+      "missing_fields": [],
+      "extra_fields": [],
+      "invalid_enum": [],
+      "backend_failure_due_to_parameters": false,
+      "could_schema_prevent": false,
+      "retry_count": 0
+    },
+    {
+      "tool_name": "refresh_tia_context",
+      "valid_json": true,
+      "schema_valid": null,
+      "missing_fields": [],
+      "extra_fields": [],
+      "invalid_enum": [],
+      "backend_failure_due_to_parameters": false,
+      "could_schema_prevent": false,
+      "retry_count": 0
+    },
+    {
+      "tool_name": "create_global_db",
+      "valid_json": true,
+      "schema_valid": null,
+      "missing_fields": [],
+      "extra_fields": [],
+      "invalid_enum": [],
+      "backend_failure_due_to_parameters": false,
+      "could_schema_prevent": false,
+      "retry_count": 1
+    },
+    {
+      "tool_name": "draft_lad_generation_plan",
+      "valid_json": true,
+      "schema_valid": null,
+      "missing_fields": [],
+      "extra_fields": [],
+      "invalid_enum": [],
+      "backend_failure_due_to_parameters": false,
+      "could_schema_prevent": false,
+      "retry_count": 0
+    },
+    {
+      "tool_name": "save_lad_generation_plan",
+      "valid_json": true,
+      "schema_valid": false,
+      "missing_fields": [
+        "networks"
+      ],
+      "extra_fields": [],
+      "invalid_enum": [],
+      "backend_failure_due_to_parameters": true,
+      "could_schema_prevent": true,
+      "retry_count": 0
+    },
+    {
+      "tool_name": "save_lad_generation_plan",
+      "valid_json": true,
+      "schema_valid": true,
+      "missing_fields": [],
+      "extra_fields": [],
+      "invalid_enum": [],
+      "backend_failure_due_to_parameters": false,
+      "could_schema_prevent": false,
+      "retry_count": 1
+    },
+    {
+      "tool_name": "save_lad_generation_plan",
+      "valid_json": true,
+      "schema_valid": true,
+      "missing_fields": [],
+      "extra_fields": [],
+      "invalid_enum": [],
+      "backend_failure_due_to_parameters": false,
+      "could_schema_prevent": false,
+      "retry_count": 2
+    },
+    {
+      "tool_name": "save_lad_generation_plan",
+      "valid_json": true,
+      "schema_valid": true,
+      "missing_fields": [],
+      "extra_fields": [],
+      "invalid_enum": [],
+      "backend_failure_due_to_parameters": false,
+      "could_schema_prevent": false,
+      "retry_count": 3
+    },
+    {
+      "tool_name": "get_tia_context",
+      "valid_json": true,
+      "schema_valid": null,
+      "missing_fields": [],
+      "extra_fields": [],
+      "invalid_enum": [],
+      "backend_failure_due_to_parameters": false,
+      "could_schema_prevent": false,
+      "retry_count": 1
+    }
+  ],
+  "summary": {
+    "request_count": 16,
+    "invalid_json_count": 0,
+    "tool_call_counts": {
+      "get_tia_context": 2,
+      "get_lad_capability_catalog": 1,
+      "init_tia_project": 1,
+      "add_plc_to_project": 1,
+      "create_plc_tag_table": 1,
+      "create_global_db": 2,
+      "delete_plc_block": 1,
+      "import_scl_block": 1,
+      "refresh_tia_context": 1,
+      "draft_lad_generation_plan": 1,
+      "save_lad_generation_plan": 4
+    }
+  }
+}

@@ -197,16 +197,30 @@ class LadCapabilityCatalog:
                 if previous.capability_id not in self._items or current.capability_id not in self._items:
                     continue
                 left, right = self._items[previous.capability_id], self._items[current.capability_id]
-                if left.can_precede and current.kind not in left.can_precede:
+                # Metadata names a semantic node family.  For example
+                # math.numeric supports both `math` and `calc`; do not reject
+                # a valid calc merely because the catalog records its family
+                # as math.  Parallel containers never reach this serial walk.
+                right_kinds = set(right.node_kinds) | {str(current.kind)}
+                left_kinds = set(left.node_kinds) | {str(previous.kind)}
+                common = {
+                    "source_node": previous.node_id, "target_node": current.node_id,
+                    "source_capability": left.capability_id, "target_capability": right.capability_id,
+                    "tree_path": [getattr(node, "node_id", ""), previous.node_id, current.node_id],
+                    "suggestion": "place independent operations in different parallel branches when they are not serially dependent",
+                }
+                if left.can_precede and not (right_kinds & set(left.can_precede)):
                     issues.append({
                         "code": "CAPABILITY_CONNECTION_UNSUPPORTED",
                         "message": f"{previous.node_id} ({previous.kind}) cannot precede {current.node_id} ({current.kind})",
                         "uncovered_capabilities": [f"connection:{previous.kind}->{current.kind}"],
+                        **common,
                     })
-                if right.can_follow and previous.kind not in right.can_follow:
+                if right.can_follow and not (left_kinds & set(right.can_follow)):
                     issues.append({
                         "code": "CAPABILITY_CONNECTION_UNSUPPORTED",
                         "message": f"{current.node_id} ({current.kind}) cannot follow {previous.node_id} ({previous.kind})",
                         "uncovered_capabilities": [f"connection:{previous.kind}->{current.kind}"],
+                        **common,
                     })
         return issues

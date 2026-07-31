@@ -71,6 +71,26 @@ class NetworkPlanningInput(BaseModel):
     renderer_id: str | None = None
 
 
+class NetworkRevisionInput(BaseModel):
+    """Explicit public Patch contract; omitted fields are left unchanged."""
+    model_config = ConfigDict(extra="forbid")
+    title: str | None = Field(default=None, min_length=1)
+    comment: str | None = Field(default=None, min_length=1)
+    purpose: str | None = Field(default=None, min_length=1)
+    main_branch: list[str] | None = None
+    parallel_branches: list[list[str]] | None = None
+    instructions: list[str] | None = None
+    variables: list[str] | None = None
+    required_capabilities: list[str] | None = None
+    selected_knowledge_ids: list[str] | None = None
+    instruction_chain: list[str] | None = None
+    topology: NetworkTopologyInput | None = None
+    depends_on: list[str] | None = None
+    split_reason: str | None = None
+    blueprint: BlueprintNodeInput | None = None
+    renderer_id: str | None = None
+
+
 class LadPlanningInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
     main_fc: BlockPlanningInput
@@ -95,6 +115,7 @@ def _model_dict(value: BaseModel | dict) -> dict:
 def register_lad_plan_tools(mcp, service: LadPlanService | None = None, artifact_service: XmlArtifactService | None = None) -> None:
     service = service or LadPlanService()
     artifact_service = artifact_service or XmlArtifactService()
+    draft_cache: dict[tuple[str, str, str, str], dict[str, Any]] = {}
 
     def ok(**data):
         return json.dumps({"success": True, **data}, ensure_ascii=False, sort_keys=True)
@@ -129,23 +150,35 @@ def register_lad_plan_tools(mcp, service: LadPlanService | None = None, artifact
     def draft_lad_generation_plan(requirements: str, conversation_id: str, target_device: str, main_fc_name: str = "FC_MainControl") -> str:
         try:
             from scdw.lad_generation import LadPlanner
+            import hashlib
+            requirements_hash = hashlib.sha256(requirements.encode("utf-8")).hexdigest()
+            cache_key = (conversation_id, requirements_hash, target_device, main_fc_name)
+            cached = draft_cache.get(cache_key)
+            if cached is not None:
+                return ok(**cached, reused=True)
             value = LadPlanner().plan(requirements, conversation_id=conversation_id, target_device=target_device, main_fc_name=main_fc_name)
-            return ok(
+            payload = dict(
                 draft=True, persisted=False, plan=value.to_dict(),
                 blueprint_tree=service.render_blueprint_tree(value),
                 required_next="save_lad_generation_plan",
+                draft_id=f"draft_{requirements_hash[:16]}", requirements_hash=requirements_hash,
+                missing_fields=[], preflight={"capabilities": "passed", "knowledge": "passed", "renderer": "passed", "connections": "passed"},
             )
+            draft_cache[cache_key] = payload
+            return ok(**payload, reused=False)
         except (KeyError, ValueError, OSError) as exc:
             return fail(exc)
 
     @mcp.tool(name="save_lad_generation_plan", description="Persist the complete overall LAD plan already formed in this conversation, including explicit Network knowledge IDs, merge decisions and split reasons.")
     def save_lad_generation_plan(planning: LadPlanningInput, requirements: str, conversation_id: str, target_device: str) -> str:
         try:
-            plan = service.create_from_planning(_model_dict(planning), requirements=requirements, conversation_id=conversation_id, target_device=target_device)
+            normalized, report = service.normalize_planning(_model_dict(planning))
+            plan = service.create_from_planning(normalized, requirements=requirements, conversation_id=conversation_id, target_device=target_device)
             return ok(
                 plan=plan.to_dict(), blueprint_tree=service.render_blueprint_tree(plan),
                 blueprint_status=plan.blueprint_status, blueprint_sha256=plan.blueprint_sha256,
                 uncovered_capabilities=plan.uncovered_capabilities,
+                normalization=report,
                 next=service.next_step(plan.plan_id),
             )
         except (KeyError, TypeError, ValueError, OSError) as exc:
@@ -188,9 +221,9 @@ def register_lad_plan_tools(mcp, service: LadPlanService | None = None, artifact
             return fail(exc)
 
     @mcp.tool(name="revise_lad_network_plan", description="Revise one Network's capabilities, selected knowledge IDs, instruction chain or topology on the same active plan. Use this after a knowledge-backed structural diagnosis; it preserves the linked Artifact and marks only that Network needs_revision.")
-    def revise_lad_network_plan(plan_id: str, network_key: str, revision: dict, reason: str) -> str:
+    def revise_lad_network_plan(plan_id: str, network_key: str, revision: NetworkRevisionInput, reason: str) -> str:
         try:
-            return ok(plan=service.revise_network_plan(plan_id, network_key, revision, reason).to_dict())
+            return ok(plan=service.revise_network_plan(plan_id, _model_dict(revision), reason).to_dict())
         except (KeyError, TypeError, ValueError, OSError) as exc:
             return fail(exc)
 

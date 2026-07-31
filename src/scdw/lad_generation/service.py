@@ -14,7 +14,7 @@ from typing import Any
 from scdw.common.paths import LAD_GENERATION_PLANS_DIR
 from scdw.rag import KnowledgeLibrary
 
-from .capabilities import LadCapabilityCatalog
+from .capabilities import CapabilityCatalogError, LadCapabilityCatalog
 from .models import GENERATION_STATES, KnowledgeGapError, LadGenerationPlan, PlanValidationError
 from .planner import LadPlanner
 from .semantics import blueprint_tree_lines, network_semantic_sha256, plan_semantic_sha256
@@ -133,6 +133,7 @@ class LadPlanService:
         issues: list[dict[str, Any]] = []
         from scdw.xml_workspace.knowledge_networks import RENDERABLE_KINDS
         for network in plan.networks:
+            catalog = LadCapabilityCatalog.instance()
             selected = list(dict.fromkeys(network.selected_knowledge_ids))
             network.selected_knowledge_ids = selected
             network.knowledge_ids = list(selected)
@@ -164,7 +165,15 @@ class LadPlanService:
                 if topology_capability not in required:
                     required.append(topology_capability)
             network.required_capabilities = required
-            network.uncovered_capabilities = [item for item in required if item not in provided]
+            # Catalog mappings cover a capability even where legacy knowledge
+            # metadata predates its `provides` alias.  `provides` remains part
+            # of coverage for non-catalog capabilities.
+            mapped = {
+                capability_id for capability_id in required
+                if capability_id in catalog._items
+                and set(catalog.get(capability_id).knowledge_ids).issubset(set(selected))
+            }
+            network.uncovered_capabilities = [item for item in required if item not in provided and item not in mapped]
             if network.uncovered_capabilities:
                 issues.append({"network_key": network.network_key, "code": "UNCOVERED_CAPABILITIES", "message": f"uncovered capabilities: {', '.join(network.uncovered_capabilities)}", "uncovered_capabilities": list(network.uncovered_capabilities)})
             topology_kind = str(network.topology.get("kind", "")).strip().lower()
@@ -314,8 +323,76 @@ class LadPlanService:
     def create_from_requirements(self, requirements: str, *, conversation_id: str, target_device: str, main_fc_name: str = "FC_MainControl") -> LadGenerationPlan:
         return self._save_new_active(LadPlanner().plan(requirements, conversation_id=conversation_id, target_device=target_device, main_fc_name=main_fc_name))
 
+    def normalize_planning(self, planning: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+        """Synchronise redundant planning fields without changing their format.
+
+        Only missing/empty derived values are filled.  A supplied value that
+        disagrees with the frozen blueprint is a planning error, never a
+        silent semantic rewrite.
+        """
+        value = json.loads(json.dumps(planning))
+        changed: list[str] = []
+        warnings: list[str] = []
+        catalog = LadCapabilityCatalog.instance()
+        for network in value.get("networks", []):
+            root = network.get("blueprint") or {}
+            capabilities: list[str] = []
+            knowledge: list[str] = []
+            leaves: list[dict[str, Any]] = []
+            parallel_branches: list[list[str]] = []
+
+            def walk(node: dict[str, Any]) -> None:
+                capability = node.get("capability_id")
+                if capability:
+                    capabilities.append(str(capability))
+                    try:
+                        knowledge.extend(catalog.get(str(capability)).knowledge_ids)
+                    except CapabilityCatalogError:
+                        # Preflight reports the precise unknown-capability error.
+                        pass
+                knowledge.extend(str(item) for item in node.get("knowledge_ids", []))
+                children = node.get("children") or []
+                if not children and node.get("label"):
+                    leaves.append(node)
+                for child in children:
+                    walk(child)
+            walk(root)
+            derived_caps = list(dict.fromkeys(capabilities))
+            derived_knowledge = list(dict.fromkeys(knowledge))
+            for field, derived in (("required_capabilities", derived_caps), ("selected_knowledge_ids", derived_knowledge)):
+                supplied = list(network.get(field) or [])
+                missing = [item for item in derived if item not in supplied]
+                if missing:
+                    network[field] = supplied + missing
+                    changed.append(f"networks.{network.get('network_key', '?')}.{field}")
+            kind = str((network.get("topology") or {}).get("kind", "")).lower()
+            root_kind = str(root.get("kind", "")).lower()
+            if kind and root_kind in {"parallel", "fan_out", "merge", "parallel_merge"} and kind != root_kind:
+                raise PlanValidationError([{"network_key": network.get("network_key"), "code": "TOPOLOGY_BLUEPRINT_CONFLICT", "message": f"topology kind {kind} conflicts with blueprint root {root_kind}", "uncovered_capabilities": []}])
+            if root_kind == "parallel":
+                parallel_branches = [[str(child.get("node_id", child.get("label", "branch")))] for child in root.get("children", [])]
+                supplied = network.get("parallel_branches") or []
+                if not supplied:
+                    network["parallel_branches"] = parallel_branches
+                    changed.append(f"networks.{network.get('network_key', '?')}.parallel_branches")
+            if leaves:
+                labels = [str(node["label"]) for node in leaves]
+                if not network.get("instructions"):
+                    network["instructions"] = labels
+                    changed.append(f"networks.{network.get('network_key', '?')}.instructions")
+                if not network.get("variables"):
+                    operands = [str(item) for node in leaves for item in (node.get("operands") or {}).values() if isinstance(item, (str, int, float))]
+                    network["variables"] = list(dict.fromkeys(operands or labels))
+                    changed.append(f"networks.{network.get('network_key', '?')}.variables")
+        actual_count = len(value.get("networks", []))
+        if value.get("planned_network_count") != actual_count:
+            value["planned_network_count"] = actual_count
+            changed.append("planned_network_count")
+        return value, {"normalized_fields": changed, "warnings": warnings}
+
     def create_from_planning(self, planning: dict[str, Any], *, requirements: str, conversation_id: str, target_device: str) -> LadGenerationPlan:
         """Persist the complete plan already formed by the current LLM conversation."""
+        planning, _ = self.normalize_planning(planning)
         stamp = _stamp()
         value = {
             **planning,
@@ -346,7 +423,7 @@ class LadPlanService:
         detected_count = _explicit_network_count(requirements)
         if detected_count is not None:
             plan.requested_network_count = detected_count
-        plan.planned_network_count = sum(1 for item in plan.networks if item.block_name == plan.main_fc.block_name)
+        plan.planned_network_count = len(plan.networks)
         if not plan.instruction_pipeline:
             plan.instruction_pipeline = [item.network_key for item in plan.networks]
         if plan.current_block is None and plan.block_dependency_order:
