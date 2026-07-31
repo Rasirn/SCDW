@@ -8,6 +8,7 @@ import pytest
 from mcp.server.fastmcp import FastMCP
 
 from scdw.frontend.chat_bridge import StreamingChat
+from scdw.frontend.chat_bridge import _must_continue_workflow
 from scdw.lad_generation import LadPlanService, LadPlanner, PlanValidationError
 from scdw.llm.providers.deepseek import LlmStreamResult, LlmUsage
 from scdw.mcp.lad_runtime_tools import register_lad_runtime_tools
@@ -140,6 +141,37 @@ def test_soft_and_hard_tool_budgets_pause_with_recovery(monkeypatch):
     assert any(event["type"] == "tool_budget_warning" for event in events)
     assert events[-1]["type"] == "turn_end" and events[-1]["paused"] is True
     assert events[-1]["recovery"]["hard_limit"] == 2
+
+
+@pytest.mark.unit
+def test_code_level_completion_gate_continues_without_user_confirmation():
+    query = "请创建项目、生成梯形图、导入编译并保存"
+    assert _must_continue_workflow(query, {}, [], set()) is True
+    assert _must_continue_workflow(query, {"next_action": "generate_network"}, [{"success": True}], {("init_tia_project", "{}")}) is True
+    assert _must_continue_workflow(query, {"needs_user_action": True}, [{"success": False}], set()) is False
+    assert _must_continue_workflow(query, {"project_saved": True}, [{"success": True}], {("save_verified_project", "{}")}) is False
+
+
+@pytest.mark.unit
+def test_same_tia_diagnostic_twice_returns_network_to_planning(tmp_path):
+    plans = LadPlanService(tmp_path / "plans")
+    plan = plans.create_from_requirements("条件有效时输出", conversation_id="diagnostic", target_device="PLC")
+    network = plan.networks[0]
+    failure = {
+        "success": False, "stage": "tia_import", "code": "TIA_XML_IMPORT_FAILED",
+        "network_key": network.network_key, "messages": [{"description": "same invalid wire"}],
+    }
+    plans.record_import_result(plan.plan_id, plan.main_fc.block_name, "xml_111111111111", 2, failure, network.network_key)
+    assert plans.stop_repeated_diagnostic(plan.plan_id, network.network_key, failure) is False
+    plans.record_import_result(plan.plan_id, plan.main_fc.block_name, "xml_111111111111", 3, failure, network.network_key)
+    assert plans.stop_repeated_diagnostic(plan.plan_id, network.network_key, failure) is True
+    restored = plans.get(plan.plan_id)
+    assert restored.networks[0].status == "import_failed"
+    assert restored.blueprint_status == "approved_for_generation"
+    assert restored.blueprint_sha256 == plan.blueprint_sha256
+    breaker = restored.verification_history[-1]
+    assert breaker["operation"] == "repeated_diagnostic_breaker"
+    assert breaker["operation_id"].startswith("op_")
 
 
 async def _collect(chat):

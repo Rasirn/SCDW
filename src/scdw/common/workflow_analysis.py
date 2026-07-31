@@ -67,6 +67,13 @@ def analyze_run(run_dir: Path) -> dict[str, Any]:
     run_dir = Path(run_dir).resolve()
     mcp = _load_jsonl(run_dir / "mcp" / "mcp.jsonl")
     session = _load_jsonl(run_dir / "session.jsonl")
+    # The MCP subprocess can rotate or detach from the parent run directory.
+    # Prefer the parent session copy when it contains a more complete timeline.
+    session_mcp = [row for row in session if str(row.get("event", "")).startswith("mcp_tool_call_")]
+    if sum(row.get("event") == "mcp_tool_call_started" for row in session_mcp) > sum(
+        row.get("event") == "mcp_tool_call_started" for row in mcp
+    ):
+        mcp = session_mcp
     starts = [row for row in mcp if row.get("event") == "mcp_tool_call_started"]
     finishes = [row for row in mcp if row.get("event") == "mcp_tool_call_finished"]
     chat_results = [row for row in session if row.get("event") == "tool_result_received"]
@@ -133,6 +140,7 @@ def analyze_run(run_dir: Path) -> dict[str, Any]:
         except (KeyError, ValueError):
             pass
     hard_failure = next((row for row in reversed(session) if row.get("event") == "chat_bridge_failed"), None)
+    last_terminal = terminals[-1] if terminals else None
     longest = sorted(calls, key=lambda item: item["duration_ms"] or -1, reverse=True)[:10]
     summary = {
         "total_tool_calls": len(calls),
@@ -159,10 +167,22 @@ def analyze_run(run_dir: Path) -> dict[str, Any]:
         "duplicate_calls": duplicate_calls,
         "failures": failures,
         "longest_calls": longest,
+        "turns": [
+            {
+                "started_at": row.get("time_local"),
+                "query": _brief(_payload(run_dir, row.get("query", {}))),
+            }
+            for row in turn_starts
+        ],
+        "user_continuations": [
+            _payload(run_dir, row.get("query", {}))
+            for row in turn_starts
+            if str(_payload(run_dir, row.get("query", {}))).strip().lower() in {"可以", "都可以", "继续", "ok", "okay"}
+        ],
         "termination": {
-            "success": hard_failure is None,
-            "event": hard_failure.get("event") if hard_failure else (terminals[-1].get("event") if terminals else None),
-            "exception": hard_failure.get("exception") if hard_failure else None,
+            "success": hard_failure is None and (last_terminal or {}).get("event") != "turn_failed",
+            "event": hard_failure.get("event") if hard_failure else ((last_terminal or {}).get("event")),
+            "exception": (hard_failure or last_terminal or {}).get("exception"),
             "recovery_available": any(row.get("event") == "tool_budget_exhausted" for row in session),
         },
     }

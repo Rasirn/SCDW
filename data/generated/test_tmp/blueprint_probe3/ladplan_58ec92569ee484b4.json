@@ -1,0 +1,830 @@
+{
+  "artifacts": {},
+  "auxiliary_fbs": [],
+  "block_dependency_order": [
+    "FC_FanGasControl"
+  ],
+  "blueprint_schema_version": 1,
+  "blueprint_sha256": "fc96512199d9504e4df0b0507d1088c5238fef8398db224c2d545d7e516d0a55",
+  "blueprint_status": "approved_for_generation",
+  "capability_catalog_sha256": "d971b6b82709a5b313720e666cca138b49623101150747c90509a60685ddab98",
+  "closed_at": null,
+  "conversation_id": "x2",
+  "created_at": "2026-07-31T00:44:14.739348Z",
+  "current_block": "FC_FanGasControl",
+  "current_network": "requested_network_1",
+  "frozen_at": "2026-07-31T00:44:14.819351Z",
+  "instance_dbs": [],
+  "instruction_pipeline": [
+    "requested_network_1",
+    "requested_network_2",
+    "requested_network_3"
+  ],
+  "interface_change_log": [],
+  "interface_plan": {
+    "FC_FanGasControl": {
+      "Constant": [],
+      "InOut": [],
+      "Input": [],
+      "Output": [],
+      "Return": [
+        "Ret_Val:Void"
+      ],
+      "Temp": []
+    }
+  },
+  "knowledge_snapshot": {
+    "captured_at": "2026-07-31T00:44:14.819670Z",
+    "catalog_sha256": "5f0b94402c10ae20593aa00b92958c67480495f259edf1681e437d760567ac29",
+    "items": {
+      "access.multilevel_db_member.v17": "7bb93dcc3cddda2a4538e37aa476594caa3177dcee936110e9dce48b7b8f4f0d",
+      "instruction.compare_ge_real_coil.v17": "059c34d8b1d7f73adc6576e3ed39787ca8c32d1a7c1b36c4d2ae91e3f5bac66e",
+      "instruction.convert_divide.v17": "f67a8f814ecc974a511e7c1b4fab58ce9c71adbb372f686d7c62661a5fee84b8",
+      "instruction.math_cascade.v17": "e77fef6ebf4a9f52c942809ffa6c4b89a6be31c4baf1892a0ad258904cf476f3",
+      "instruction.move.v17": "e7dc1d2f11964fb1b0fa7320182f11bf90b8f75b048fad4da07d6d5ce659bd5b",
+      "network_text.title_comment.v17": "aa2106859f411bb6e60c81171cb769cc8aeb1c7099c91441755cfb4bfb6f9771",
+      "shell.fc_block.v17": "c03cd711290a0388b55ec9e4e0222095eae6e95d116317f1d5a5de36e977ecb9",
+      "topology.fan_out.v17": "92213107e911ba95cb78923a5288fc476cb5b08d412de1f2e22194fe53f803ee",
+      "topology.series_contact_coil.v17": "27c1fcfc7ca1dc8422820c953fd43c94366d923cd46ad2c450a4b583409ee124"
+    }
+  },
+  "main_fc": {
+    "artifact_id": null,
+    "artifact_version": null,
+    "block_name": "FC_FanGasControl",
+    "block_type": "FC",
+    "compile_result": null,
+    "compiled_at": null,
+    "import_result": null,
+    "imported_at": null,
+    "interface": {
+      "Constant": [],
+      "InOut": [],
+      "Input": [],
+      "Output": [],
+      "Return": [
+        "Ret_Val:Void"
+      ],
+      "Temp": []
+    },
+    "logic_scope": [
+      "风机输出。将 %DB3.DBX129.4“信号数据”.“风机运行按”作为常开触点，与 %DB3.DBX129.4“信号数据”.“风机故障反馈”作为常闭触点串联，当风机运行按接通且风机故障反馈未动作时，驱动 %Q4.4“风机运行”线圈。随后建立风机自动/手动输出逻辑，以 %DB3.DBX129.3“信号数据”.“风机手动”作为模式选择信号。当“风机手动”为 FALSE 时，执行 MOVE 指令，将 %DB3.DBD130“信号数据”.“风机自动输出”的值直接赋给 %DB3.DBD138“信号数据”.“风机控制输出”；当“风机手动”为 TRUE 时，执行 MUL（REAL）指令，以 %DB3.DBD134“信号数据”.“风机手动频率”为 IN1、常数 2.0 为 IN2，相乘后的结果输出至 %DB3.DBD138“信号数据”.“风机控制输出”，即风机控制输出等于风机手动频率乘以 2.0",
+      "风机输出计算。首先将 %DB3.DBX129.4“信号数据”.“风机运行按”作为常闭触点，当风机运行按断开时执行 MOVE 指令，将常数 0.0 写入 %DB3.DBD138“信号数据”.“风机控制输出”，实现风机停止时控制输出清零。然后使用 CALCULATE（REAL）计算模块，计算公式为 OUT=(IN1/IN2)*IN3，其中 IN1 为 %DB3.DBD138“信号数据”.“风机控制输出”，IN2 为常数 100.0，IN3 为常数 27648.0，计算结果输出至内部变量“内部数据”.“风机控制输出值”。随后使用 CONV（Real To Int）指令，将“内部数据”.“风机控制输出值”转换为 INT 类型，输出至“内部数据”.“风压过渡”。最后使用 MOVE 指令，将“内部数据”.“风压过渡”的值写入模拟量输出 %QW44“风机控制”，实现风机频率百分比向模拟量输出值（0～27648）的比例转换",
+      "燃气开启、烧嘴电源。使用 REAL 大于等于（>=）比较指令，将 %DB3.DBD80“信号数据”.“风压测量值”与常数 1.2 进行比较，当风压测量值大于或等于 1.2 时，驱动 %Q4.6“烧嘴电源”线圈，使烧嘴电源接通；当风压测量值低于 1.2 时，烧嘴电源断开"
+    ],
+    "responsibility": "组织无状态组合逻辑并直接调用需要跨扫描状态的辅助FB",
+    "status": "planned",
+    "verified_version": null
+  },
+  "main_fc_reason": "主块选择FC，因为组合逻辑和调度本身不需要跨扫描Static状态；仅将确有状态的职责提取到辅助FB。",
+  "networks": [
+    {
+      "artifact_id": null,
+      "artifact_version": null,
+      "block_name": "FC_FanGasControl",
+      "blueprint": {
+        "attributes": {},
+        "capability_id": "topology.parallel",
+        "children": [
+          {
+            "attributes": {},
+            "capability_id": "topology.series",
+            "children": [
+              {
+                "attributes": {},
+                "capability_id": "logic.contact_no",
+                "children": [],
+                "kind": "contact",
+                "knowledge_ids": [
+                  "topology.series_contact_coil.v17"
+                ],
+                "label": "运行请求（常开）",
+                "node_id": "requested_network_1_run_no",
+                "operands": {
+                  "operand": {
+                    "data_type": "Bool",
+                    "kind": "variable",
+                    "path": [
+                      "信号数据",
+                      "风机运行按"
+                    ],
+                    "scope": "GlobalVariable"
+                  }
+                },
+                "renderer_id": "blueprint_network_v17"
+              },
+              {
+                "attributes": {
+                  "negated": true
+                },
+                "capability_id": "logic.contact_nc",
+                "children": [],
+                "kind": "contact",
+                "knowledge_ids": [
+                  "topology.series_contact_coil.v17"
+                ],
+                "label": "故障反馈（常闭）",
+                "node_id": "requested_network_1_fault_nc",
+                "operands": {
+                  "operand": {
+                    "data_type": "Bool",
+                    "kind": "variable",
+                    "path": [
+                      "信号数据",
+                      "风机故障反馈"
+                    ],
+                    "scope": "GlobalVariable"
+                  }
+                },
+                "renderer_id": "blueprint_network_v17"
+              },
+              {
+                "attributes": {},
+                "capability_id": "output.coil",
+                "children": [],
+                "kind": "coil",
+                "knowledge_ids": [
+                  "topology.series_contact_coil.v17"
+                ],
+                "label": "风机运行",
+                "node_id": "requested_network_1_run_coil",
+                "operands": {
+                  "operand": {
+                    "data_type": "Bool",
+                    "kind": "variable",
+                    "path": [
+                      "风机运行"
+                    ],
+                    "scope": "GlobalVariable"
+                  }
+                },
+                "renderer_id": "blueprint_network_v17"
+              }
+            ],
+            "kind": "branch",
+            "knowledge_ids": [
+              "topology.series_contact_coil.v17"
+            ],
+            "label": "运行许可",
+            "node_id": "requested_network_1_run",
+            "operands": {},
+            "renderer_id": "blueprint_network_v17"
+          },
+          {
+            "attributes": {},
+            "capability_id": "topology.series",
+            "children": [
+              {
+                "attributes": {
+                  "negated": true
+                },
+                "capability_id": "logic.contact_nc",
+                "children": [],
+                "kind": "contact",
+                "knowledge_ids": [
+                  "topology.series_contact_coil.v17"
+                ],
+                "label": "手动模式（常闭）",
+                "node_id": "requested_network_1_manual_nc",
+                "operands": {
+                  "operand": {
+                    "data_type": "Bool",
+                    "kind": "variable",
+                    "path": [
+                      "信号数据",
+                      "风机手动"
+                    ],
+                    "scope": "GlobalVariable"
+                  }
+                },
+                "renderer_id": "blueprint_network_v17"
+              },
+              {
+                "attributes": {
+                  "data_type": "Real"
+                },
+                "capability_id": "data.move",
+                "children": [],
+                "kind": "move",
+                "knowledge_ids": [
+                  "instruction.move.v17"
+                ],
+                "label": "自动值传送",
+                "node_id": "requested_network_1_auto_move",
+                "operands": {
+                  "in": {
+                    "data_type": "Real",
+                    "kind": "variable",
+                    "path": [
+                      "信号数据",
+                      "风机自动输出"
+                    ],
+                    "scope": "GlobalVariable"
+                  },
+                  "out": {
+                    "data_type": "Real",
+                    "kind": "variable",
+                    "path": [
+                      "信号数据",
+                      "风机控制输出"
+                    ],
+                    "scope": "GlobalVariable"
+                  }
+                },
+                "renderer_id": "blueprint_network_v17"
+              }
+            ],
+            "kind": "branch",
+            "knowledge_ids": [
+              "topology.series_contact_coil.v17"
+            ],
+            "label": "自动模式输出",
+            "node_id": "requested_network_1_auto",
+            "operands": {},
+            "renderer_id": "blueprint_network_v17"
+          },
+          {
+            "attributes": {},
+            "capability_id": "topology.series",
+            "children": [
+              {
+                "attributes": {},
+                "capability_id": "logic.contact_no",
+                "children": [],
+                "kind": "contact",
+                "knowledge_ids": [
+                  "topology.series_contact_coil.v17"
+                ],
+                "label": "手动模式（常开）",
+                "node_id": "requested_network_1_manual_no",
+                "operands": {
+                  "operand": {
+                    "data_type": "Bool",
+                    "kind": "variable",
+                    "path": [
+                      "信号数据",
+                      "风机手动"
+                    ],
+                    "scope": "GlobalVariable"
+                  }
+                },
+                "renderer_id": "blueprint_network_v17"
+              },
+              {
+                "attributes": {
+                  "data_type": "Real",
+                  "operation": "Mul"
+                },
+                "capability_id": "math.numeric",
+                "children": [],
+                "kind": "math",
+                "knowledge_ids": [
+                  "instruction.math_cascade.v17"
+                ],
+                "label": "手动频率乘2.0",
+                "node_id": "requested_network_1_manual_mul",
+                "operands": {
+                  "in1": {
+                    "data_type": "Real",
+                    "kind": "variable",
+                    "path": [
+                      "信号数据",
+                      "风机手动频率"
+                    ],
+                    "scope": "GlobalVariable"
+                  },
+                  "in2": {
+                    "data_type": "Real",
+                    "kind": "constant",
+                    "value": "2.0"
+                  },
+                  "out": {
+                    "data_type": "Real",
+                    "kind": "variable",
+                    "path": [
+                      "信号数据",
+                      "风机控制输出"
+                    ],
+                    "scope": "GlobalVariable"
+                  }
+                },
+                "renderer_id": "blueprint_network_v17"
+              }
+            ],
+            "kind": "branch",
+            "knowledge_ids": [
+              "topology.series_contact_coil.v17"
+            ],
+            "label": "手动模式输出",
+            "node_id": "requested_network_1_manual",
+            "operands": {},
+            "renderer_id": "blueprint_network_v17"
+          }
+        ],
+        "kind": "parallel",
+        "knowledge_ids": [
+          "topology.fan_out.v17"
+        ],
+        "label": "运行、自动和手动输出分支",
+        "node_id": "requested_network_1_root",
+        "operands": {},
+        "renderer_id": "blueprint_network_v17"
+      },
+      "comment": "风机输出。将 %DB3.DBX129.4“信号数据”.“风机运行按”作为常开触点，与 %DB3.DBX129.4“信号数据”.“风机故障反馈”作为常闭触点串联，当风机运行按接通且风机故障反馈未动作时，驱动 %Q4.4“风机运行”线圈。随后建立风机自动/手动输出逻辑，以 %DB3.DBX129.3“信号数据”.“风机手动”作为模式选择信号。当“风机手动”为 FALSE 时，执行 MOVE 指令，将 %DB3.DBD130“信号数据”.“风机自动输出”的值直接赋给 %DB3.DBD138“信号数据”.“风机控制输出”；当“风机手动”为 TRUE 时，执行 MUL（REAL）指令，以 %DB3.DBD134“信号数据”.“风机手动频率”为 IN1、常数 2.0 为 IN2，相乘后的结果输出至 %DB3.DBD138“信号数据”.“风机控制输出”，即风机控制输出等于风机手动频率乘以 2.0",
+      "compile_result": null,
+      "compiled_at": null,
+      "depends_on": [],
+      "frozen_semantic_sha256": "04af9efa42e1ec68622afac8853f7ba054a61528af56c1ed4ccae3b7de31fc47",
+      "import_result": null,
+      "imported_at": null,
+      "instruction_chain": [
+        "evaluate input conditions",
+        "evaluate series path",
+        "drive result coil"
+      ],
+      "instructions": [
+        "Contact",
+        "Coil"
+      ],
+      "knowledge_ids": [
+        "shell.fc_block.v17",
+        "topology.fan_out.v17",
+        "topology.series_contact_coil.v17",
+        "network_text.title_comment.v17",
+        "instruction.move.v17",
+        "instruction.math_cascade.v17",
+        "access.multilevel_db_member.v17"
+      ],
+      "main_branch": [
+        "风机输出。将 %DB3.DBX129.4“信号数据”.“风机运行按”作为常开触点，与 %DB3.DBX129.4“信号数据”.“风机故障反馈”作为常闭触点串联，当风机运行按接通且风机故障反馈未动作时，驱动 %Q4.4“风机运行”线圈。随后建立风机自动/手动输出逻辑，以 %DB3.DBX129.3“信号数据”.“风机手动”作为模式选择信号。当“风机手动”为 FALSE 时，执行 MOVE 指令，将 %DB3.DBD130“信号数据”.“风机自动输出”的值直接赋给 %DB3.DBD138“信号数据”.“风机控制输出”；当“风机手动”为 TRUE 时，执行 MUL（REAL）指令，以 %DB3.DBD134“信号数据”.“风机手动频率”为 IN1、常数 2.0 为 IN2，相乘后的结果输出至 %DB3.DBD138“信号数据”.“风机控制输出”，即风机控制输出等于风机手动频率乘以 2.0"
+      ],
+      "network_key": "requested_network_1",
+      "parallel_branches": [],
+      "purpose": "风机输出。将 %DB3.DBX129.4“信号数据”.“风机运行按”作为常开触点，与 %DB3.DBX129.4“信号数据”.“风机故障反馈”作为常闭触点串联，当风机运行按接通且风机故障反馈未动作时，驱动 %Q4.4“风机运行”线圈。随后建立风机自动/手动输出逻辑，以 %DB3.DBX129.3“信号数据”.“风机手动”作为模式选择信号。当“风机手动”为 FALSE 时，执行 MOVE 指令，将 %DB3.DBD130“信号数据”.“风机自动输出”的值直接赋给 %DB3.DBD138“信号数据”.“风机控制输出”；当“风机手动”为 TRUE 时，执行 MUL（REAL）指令，以 %DB3.DBD134“信号数据”.“风机手动频率”为 IN1、常数 2.0 为 IN2，相乘后的结果输出至 %DB3.DBD138“信号数据”.“风机控制输出”，即风机控制输出等于风机手动频率乘以 2.0",
+      "renderer_id": "blueprint_network_v17",
+      "required_capabilities": [
+        "fc_shell",
+        "coil",
+        "network_title",
+        "network_comment",
+        "topology.fan_out",
+        "move",
+        "mul",
+        "calc"
+      ],
+      "selected_knowledge_ids": [
+        "shell.fc_block.v17",
+        "topology.fan_out.v17",
+        "topology.series_contact_coil.v17",
+        "network_text.title_comment.v17",
+        "instruction.move.v17",
+        "instruction.math_cascade.v17",
+        "access.multilevel_db_member.v17"
+      ],
+      "split_reason": "用户明确指定程序段边界（硬约束）",
+      "status": "planned",
+      "title": "程序段 1",
+      "topology": {
+        "description": "The powerrail feeds multiple explicitly planned action branches.",
+        "kind": "fan_out"
+      },
+      "uncovered_capabilities": [],
+      "variables": [
+        "network_1_input",
+        "network_1_output"
+      ],
+      "verified_version": null
+    },
+    {
+      "artifact_id": null,
+      "artifact_version": null,
+      "block_name": "FC_FanGasControl",
+      "blueprint": {
+        "attributes": {},
+        "capability_id": "topology.parallel",
+        "children": [
+          {
+            "attributes": {},
+            "capability_id": "topology.series",
+            "children": [
+              {
+                "attributes": {
+                  "negated": true
+                },
+                "capability_id": "logic.contact_nc",
+                "children": [],
+                "kind": "contact",
+                "knowledge_ids": [
+                  "topology.series_contact_coil.v17"
+                ],
+                "label": "停止条件（常闭）",
+                "node_id": "requested_network_2_clear_contact",
+                "operands": {
+                  "operand": {
+                    "data_type": "Bool",
+                    "kind": "variable",
+                    "path": [
+                      "信号数据",
+                      "风机运行按"
+                    ],
+                    "scope": "GlobalVariable"
+                  }
+                },
+                "renderer_id": "blueprint_network_v17"
+              },
+              {
+                "attributes": {
+                  "data_type": "Real"
+                },
+                "capability_id": "data.move",
+                "children": [],
+                "kind": "move",
+                "knowledge_ids": [
+                  "instruction.move.v17"
+                ],
+                "label": "写入0.0",
+                "node_id": "requested_network_2_clear_move",
+                "operands": {
+                  "in": {
+                    "data_type": "Real",
+                    "kind": "constant",
+                    "value": "0.0"
+                  },
+                  "out": {
+                    "data_type": "Real",
+                    "kind": "variable",
+                    "path": [
+                      "信号数据",
+                      "风机控制输出"
+                    ],
+                    "scope": "GlobalVariable"
+                  }
+                },
+                "renderer_id": "blueprint_network_v17"
+              }
+            ],
+            "kind": "branch",
+            "knowledge_ids": [
+              "topology.series_contact_coil.v17"
+            ],
+            "label": "停止时清零",
+            "node_id": "requested_network_2_clear",
+            "operands": {},
+            "renderer_id": "blueprint_network_v17"
+          },
+          {
+            "attributes": {},
+            "capability_id": "topology.series",
+            "children": [
+              {
+                "attributes": {
+                  "data_type": "Real",
+                  "equation": "(IN1/IN2)*IN3",
+                  "operation": "Calc"
+                },
+                "capability_id": "math.numeric",
+                "children": [],
+                "kind": "calc",
+                "knowledge_ids": [
+                  "instruction.math_cascade.v17"
+                ],
+                "label": "OUT=(IN1/IN2)*IN3",
+                "node_id": "requested_network_2_calc",
+                "operands": {
+                  "in1": {
+                    "data_type": "Real",
+                    "kind": "variable",
+                    "path": [
+                      "信号数据",
+                      "风机控制输出"
+                    ],
+                    "scope": "GlobalVariable"
+                  },
+                  "in2": {
+                    "data_type": "Real",
+                    "kind": "constant",
+                    "value": "100.0"
+                  },
+                  "in3": {
+                    "data_type": "Real",
+                    "kind": "constant",
+                    "value": "27648.0"
+                  },
+                  "out": {
+                    "data_type": "Real",
+                    "kind": "variable",
+                    "path": [
+                      "内部数据",
+                      "风机控制输出值"
+                    ],
+                    "scope": "GlobalVariable"
+                  }
+                },
+                "renderer_id": "blueprint_network_v17"
+              },
+              {
+                "attributes": {
+                  "source_type": "Real",
+                  "target_type": "Int"
+                },
+                "capability_id": "data.convert",
+                "children": [],
+                "kind": "convert",
+                "knowledge_ids": [
+                  "instruction.convert_divide.v17"
+                ],
+                "label": "REAL转INT",
+                "node_id": "requested_network_2_convert",
+                "operands": {
+                  "in": {
+                    "data_type": "Real",
+                    "kind": "variable",
+                    "path": [
+                      "内部数据",
+                      "风机控制输出值"
+                    ],
+                    "scope": "GlobalVariable"
+                  },
+                  "out": {
+                    "data_type": "Int",
+                    "kind": "variable",
+                    "path": [
+                      "内部数据",
+                      "风压过渡"
+                    ],
+                    "scope": "GlobalVariable"
+                  }
+                },
+                "renderer_id": "blueprint_network_v17"
+              },
+              {
+                "attributes": {
+                  "data_type": "Int"
+                },
+                "capability_id": "data.move",
+                "children": [],
+                "kind": "move",
+                "knowledge_ids": [
+                  "instruction.move.v17"
+                ],
+                "label": "写入模拟量输出",
+                "node_id": "requested_network_2_output_move",
+                "operands": {
+                  "in": {
+                    "data_type": "Int",
+                    "kind": "variable",
+                    "path": [
+                      "内部数据",
+                      "风压过渡"
+                    ],
+                    "scope": "GlobalVariable"
+                  },
+                  "out": {
+                    "data_type": "Int",
+                    "kind": "variable",
+                    "path": [
+                      "风机控制"
+                    ],
+                    "scope": "GlobalVariable"
+                  }
+                },
+                "renderer_id": "blueprint_network_v17"
+              }
+            ],
+            "kind": "branch",
+            "knowledge_ids": [
+              "topology.series_contact_coil.v17"
+            ],
+            "label": "比例换算并输出",
+            "node_id": "requested_network_2_calculate",
+            "operands": {},
+            "renderer_id": "blueprint_network_v17"
+          }
+        ],
+        "kind": "parallel",
+        "knowledge_ids": [
+          "topology.fan_out.v17"
+        ],
+        "label": "停止清零与持续比例计算",
+        "node_id": "requested_network_2_root",
+        "operands": {},
+        "renderer_id": "blueprint_network_v17"
+      },
+      "comment": "风机输出计算。首先将 %DB3.DBX129.4“信号数据”.“风机运行按”作为常闭触点，当风机运行按断开时执行 MOVE 指令，将常数 0.0 写入 %DB3.DBD138“信号数据”.“风机控制输出”，实现风机停止时控制输出清零。然后使用 CALCULATE（REAL）计算模块，计算公式为 OUT=(IN1/IN2)*IN3，其中 IN1 为 %DB3.DBD138“信号数据”.“风机控制输出”，IN2 为常数 100.0，IN3 为常数 27648.0，计算结果输出至内部变量“内部数据”.“风机控制输出值”。随后使用 CONV（Real To Int）指令，将“内部数据”.“风机控制输出值”转换为 INT 类型，输出至“内部数据”.“风压过渡”。最后使用 MOVE 指令，将“内部数据”.“风压过渡”的值写入模拟量输出 %QW44“风机控制”，实现风机频率百分比向模拟量输出值（0～27648）的比例转换",
+      "compile_result": null,
+      "compiled_at": null,
+      "depends_on": [
+        "requested_network_1"
+      ],
+      "frozen_semantic_sha256": "f53196ed4db45afe7ce0d1db71f968e97396590c9dac57a99edef985e8df65a7",
+      "import_result": null,
+      "imported_at": null,
+      "instruction_chain": [
+        "evaluate input conditions",
+        "evaluate series path",
+        "drive result coil"
+      ],
+      "instructions": [
+        "Contact",
+        "Coil"
+      ],
+      "knowledge_ids": [
+        "shell.fc_block.v17",
+        "topology.fan_out.v17",
+        "topology.series_contact_coil.v17",
+        "network_text.title_comment.v17",
+        "instruction.move.v17",
+        "instruction.math_cascade.v17",
+        "instruction.convert_divide.v17",
+        "access.multilevel_db_member.v17"
+      ],
+      "main_branch": [
+        "风机输出计算。首先将 %DB3.DBX129.4“信号数据”.“风机运行按”作为常闭触点，当风机运行按断开时执行 MOVE 指令，将常数 0.0 写入 %DB3.DBD138“信号数据”.“风机控制输出”，实现风机停止时控制输出清零。然后使用 CALCULATE（REAL）计算模块，计算公式为 OUT=(IN1/IN2)*IN3，其中 IN1 为 %DB3.DBD138“信号数据”.“风机控制输出”，IN2 为常数 100.0，IN3 为常数 27648.0，计算结果输出至内部变量“内部数据”.“风机控制输出值”。随后使用 CONV（Real To Int）指令，将“内部数据”.“风机控制输出值”转换为 INT 类型，输出至“内部数据”.“风压过渡”。最后使用 MOVE 指令，将“内部数据”.“风压过渡”的值写入模拟量输出 %QW44“风机控制”，实现风机频率百分比向模拟量输出值（0～27648）的比例转换"
+      ],
+      "network_key": "requested_network_2",
+      "parallel_branches": [],
+      "purpose": "风机输出计算。首先将 %DB3.DBX129.4“信号数据”.“风机运行按”作为常闭触点，当风机运行按断开时执行 MOVE 指令，将常数 0.0 写入 %DB3.DBD138“信号数据”.“风机控制输出”，实现风机停止时控制输出清零。然后使用 CALCULATE（REAL）计算模块，计算公式为 OUT=(IN1/IN2)*IN3，其中 IN1 为 %DB3.DBD138“信号数据”.“风机控制输出”，IN2 为常数 100.0，IN3 为常数 27648.0，计算结果输出至内部变量“内部数据”.“风机控制输出值”。随后使用 CONV（Real To Int）指令，将“内部数据”.“风机控制输出值”转换为 INT 类型，输出至“内部数据”.“风压过渡”。最后使用 MOVE 指令，将“内部数据”.“风压过渡”的值写入模拟量输出 %QW44“风机控制”，实现风机频率百分比向模拟量输出值（0～27648）的比例转换",
+      "renderer_id": "blueprint_network_v17",
+      "required_capabilities": [
+        "fc_shell",
+        "coil",
+        "network_title",
+        "network_comment",
+        "topology.fan_out",
+        "move",
+        "mul",
+        "calc",
+        "convert"
+      ],
+      "selected_knowledge_ids": [
+        "shell.fc_block.v17",
+        "topology.fan_out.v17",
+        "topology.series_contact_coil.v17",
+        "network_text.title_comment.v17",
+        "instruction.move.v17",
+        "instruction.math_cascade.v17",
+        "instruction.convert_divide.v17",
+        "access.multilevel_db_member.v17"
+      ],
+      "split_reason": "用户明确指定程序段边界（硬约束）",
+      "status": "planned",
+      "title": "程序段 2",
+      "topology": {
+        "description": "The powerrail feeds multiple explicitly planned action branches.",
+        "kind": "fan_out"
+      },
+      "uncovered_capabilities": [],
+      "variables": [
+        "network_2_input",
+        "network_2_output"
+      ],
+      "verified_version": null
+    },
+    {
+      "artifact_id": null,
+      "artifact_version": null,
+      "block_name": "FC_FanGasControl",
+      "blueprint": {
+        "attributes": {},
+        "capability_id": "topology.series",
+        "children": [
+          {
+            "attributes": {
+              "data_type": "Real",
+              "operation": "Ge"
+            },
+            "capability_id": "compare.numeric",
+            "children": [],
+            "kind": "compare",
+            "knowledge_ids": [
+              "instruction.compare_ge_real_coil.v17"
+            ],
+            "label": "REAL大于等于",
+            "node_id": "requested_network_3_compare",
+            "operands": {
+              "in1": {
+                "data_type": "Real",
+                "kind": "variable",
+                "path": [
+                  "信号数据",
+                  "风压测量值"
+                ],
+                "scope": "GlobalVariable"
+              },
+              "in2": {
+                "data_type": "Real",
+                "kind": "constant",
+                "value": "0.0"
+              }
+            },
+            "renderer_id": "blueprint_network_v17"
+          },
+          {
+            "attributes": {},
+            "capability_id": "output.coil",
+            "children": [],
+            "kind": "coil",
+            "knowledge_ids": [
+              "topology.series_contact_coil.v17"
+            ],
+            "label": "比较结果线圈",
+            "node_id": "requested_network_3_coil",
+            "operands": {
+              "operand": {
+                "data_type": "Bool",
+                "kind": "variable",
+                "path": [
+                  "烧嘴电源"
+                ],
+                "scope": "GlobalVariable"
+              }
+            },
+            "renderer_id": "blueprint_network_v17"
+          }
+        ],
+        "kind": "series",
+        "knowledge_ids": [
+          "topology.series_contact_coil.v17"
+        ],
+        "label": "比较并驱动输出",
+        "node_id": "requested_network_3_root",
+        "operands": {},
+        "renderer_id": "blueprint_network_v17"
+      },
+      "comment": "燃气开启、烧嘴电源。使用 REAL 大于等于（>=）比较指令，将 %DB3.DBD80“信号数据”.“风压测量值”与常数 1.2 进行比较，当风压测量值大于或等于 1.2 时，驱动 %Q4.6“烧嘴电源”线圈，使烧嘴电源接通；当风压测量值低于 1.2 时，烧嘴电源断开",
+      "compile_result": null,
+      "compiled_at": null,
+      "depends_on": [
+        "requested_network_2"
+      ],
+      "frozen_semantic_sha256": "dc856e00a7efc24325c994f07831224dd9577f0ca748fce637551d6009eb7ac4",
+      "import_result": null,
+      "imported_at": null,
+      "instruction_chain": [
+        "compare Real input against Real threshold",
+        "drive Coil"
+      ],
+      "instructions": [
+        "Ge(Real)",
+        "Coil"
+      ],
+      "knowledge_ids": [
+        "shell.fc_block.v17",
+        "instruction.compare_ge_real_coil.v17",
+        "topology.series_contact_coil.v17",
+        "network_text.title_comment.v17",
+        "access.multilevel_db_member.v17"
+      ],
+      "main_branch": [
+        "燃气开启、烧嘴电源。使用 REAL 大于等于（>=）比较指令，将 %DB3.DBD80“信号数据”.“风压测量值”与常数 1.2 进行比较，当风压测量值大于或等于 1.2 时，驱动 %Q4.6“烧嘴电源”线圈，使烧嘴电源接通；当风压测量值低于 1.2 时，烧嘴电源断开"
+      ],
+      "network_key": "requested_network_3",
+      "parallel_branches": [],
+      "purpose": "燃气开启、烧嘴电源。使用 REAL 大于等于（>=）比较指令，将 %DB3.DBD80“信号数据”.“风压测量值”与常数 1.2 进行比较，当风压测量值大于或等于 1.2 时，驱动 %Q4.6“烧嘴电源”线圈，使烧嘴电源接通；当风压测量值低于 1.2 时，烧嘴电源断开",
+      "renderer_id": "blueprint_network_v17",
+      "required_capabilities": [
+        "fc_shell",
+        "compare.ge",
+        "coil",
+        "network_title",
+        "network_comment",
+        "topology.series"
+      ],
+      "selected_knowledge_ids": [
+        "shell.fc_block.v17",
+        "instruction.compare_ge_real_coil.v17",
+        "topology.series_contact_coil.v17",
+        "network_text.title_comment.v17",
+        "access.multilevel_db_member.v17"
+      ],
+      "split_reason": "用户明确指定程序段边界（硬约束）",
+      "status": "planned",
+      "title": "程序段 3",
+      "topology": {
+        "description": "Conditions form one series path to the action.",
+        "kind": "series"
+      },
+      "uncovered_capabilities": [],
+      "variables": [
+        "network_3_input",
+        "network_3_output"
+      ],
+      "verified_version": null
+    }
+  ],
+  "plan_id": "ladplan_58ec92569ee484b4",
+  "planned_network_count": 3,
+  "replaced_by": null,
+  "requested_network_count": 3,
+  "requirements": "请创建一个项目，添加一个 PLC 设备和程序中需要用到的变量，最后编写“风机燃气”梯形图程序。程序共包含三个程序段。程序段1：风机输出。将 %DB3.DBX129.4“信号数据”.“风机运行按”作为常开触点，与 %DB3.DBX129.4“信号数据”.“风机故障反馈”作为常闭触点串联，当风机运行按接通且风机故障反馈未动作时，驱动 %Q4.4“风机运行”线圈。随后建立风机自动/手动输出逻辑，以 %DB3.DBX129.3“信号数据”.“风机手动”作为模式选择信号。当“风机手动”为 FALSE 时，执行 MOVE 指令，将 %DB3.DBD130“信号数据”.“风机自动输出”的值直接赋给 %DB3.DBD138“信号数据”.“风机控制输出”；当“风机手动”为 TRUE 时，执行 MUL（REAL）指令，以 %DB3.DBD134“信号数据”.“风机手动频率”为 IN1、常数 2.0 为 IN2，相乘后的结果输出至 %DB3.DBD138“信号数据”.“风机控制输出”，即风机控制输出等于风机手动频率乘以 2.0。\n\n程序段2：风机输出计算。首先将 %DB3.DBX129.4“信号数据”.“风机运行按”作为常闭触点，当风机运行按断开时执行 MOVE 指令，将常数 0.0 写入 %DB3.DBD138“信号数据”.“风机控制输出”，实现风机停止时控制输出清零。然后使用 CALCULATE（REAL）计算模块，计算公式为 OUT=(IN1/IN2)*IN3，其中 IN1 为 %DB3.DBD138“信号数据”.“风机控制输出”，IN2 为常数 100.0，IN3 为常数 27648.0，计算结果输出至内部变量“内部数据”.“风机控制输出值”。随后使用 CONV（Real To Int）指令，将“内部数据”.“风机控制输出值”转换为 INT 类型，输出至“内部数据”.“风压过渡”。最后使用 MOVE 指令，将“内部数据”.“风压过渡”的值写入模拟量输出 %QW44“风机控制”，实现风机频率百分比向模拟量输出值（0～27648）的比例转换。\n\n程序段3：燃气开启、烧嘴电源。使用 REAL 大于等于（>=）比较指令，将 %DB3.DBD80“信号数据”.“风压测量值”与常数 1.2 进行比较，当风压测量值大于或等于 1.2 时，驱动 %Q4.6“烧嘴电源”线圈，使烧嘴电源接通；当风压测量值低于 1.2 时，烧嘴电源断开",
+  "status": "active",
+  "step_status": {
+    "artifact_creation": "planned",
+    "network_generation": "planned",
+    "planning": "planned"
+  },
+  "target_device": "PLC",
+  "uncovered_capabilities": [],
+  "updated_at": "2026-07-31T00:44:14.875252Z",
+  "verification_history": []
+}

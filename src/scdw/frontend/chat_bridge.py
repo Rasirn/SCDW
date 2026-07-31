@@ -23,20 +23,24 @@ TOOL_DISPLAY_NAMES = {"refresh_tia_context": "刷新 TIA 上下文", "get_tia_co
                       "create_instance_db": "创建背景 DB", "save_verified_project": "保存已验证项目",
                       "create_global_db": "创建全局 DB", "create_plc_tag_table": "创建 PLC 变量表",
                       "get_plc_knowledge_catalog": "读取 PLC 知识目录",
-                      "get_plc_knowledge_items": "读取 PLC 知识项"}
+                      "get_plc_knowledge_items": "读取 PLC 知识项",
+                      "get_lad_capability_catalog": "读取 LAD 能力目录",
+                      "check_and_freeze_lad_blueprint": "检查并冻结 LAD 蓝图",
+                      "write_lad_network_from_blueprint": "按蓝图生成 Network",
+                      "repair_lad_xml_expression": "修复 XML 表达"}
 TOOL_ACTIVITY_MESSAGES = {
     "import_and_compile_artifact": "正在导入 Artifact 并执行块级编译",
     "create_instance_db": "正在创建并绑定背景 DB",
 }
 
 _READ_CACHE_TOOLS = {
-    "get_plc_knowledge_catalog", "get_plc_knowledge_items",
+    "get_lad_capability_catalog", "get_plc_knowledge_catalog", "get_plc_knowledge_items",
     "get_lad_generation_plan", "list_lad_generation_plans",
     "get_xml_artifact_status", "get_lad_block_info", "list_xml_networks",
     "get_xml_network", "read_xml_fragment", "list_xml_artifacts",
     "get_tia_context", "list_tia_processes", "list_workspace_files",
 }
-_SINGLE_READ_TOOLS = {"get_plc_knowledge_catalog", "get_plc_knowledge_items"}
+_SINGLE_READ_TOOLS = {"get_lad_capability_catalog", "get_plc_knowledge_catalog", "get_plc_knowledge_items"}
 _MUTATING_TOOLS = {
     "init_tia_project", "close_tia_session", "detach_tia_session",
     "add_plc_to_project", "add_hardware_module", "create_plc_tag_table",
@@ -46,6 +50,7 @@ _MUTATING_TOOLS = {
     "append_network_and_prepare_import", "write_lad_network_from_knowledge",
     "replace_network_and_prepare_import", "delete_xml_network", "update_xml_network_text",
     "import_and_compile_artifact", "create_instance_db", "save_verified_project",
+    "check_and_freeze_lad_blueprint", "write_lad_network_from_blueprint", "repair_lad_xml_expression",
     "reconcile_lad_workflow",
 }
 
@@ -53,6 +58,12 @@ _MUTATING_TOOLS = {
 def _merge_workflow_context(target: dict[str, Any], value: Any) -> None:
     """Collect stable recovery identifiers from compact or legacy tool results."""
     if isinstance(value, dict):
+        if value.get("needs_user_action") is True:
+            target["needs_user_action"] = True
+        if value.get("success") is True and value.get("stage") == "tia_save":
+            target["project_saved"] = True
+        if value.get("action"):
+            target["next_action"] = value["action"]
         for key in ("plan_id", "artifact_id", "version", "network_key", "device_name", "block_name"):
             item = value.get(key)
             if item not in (None, ""):
@@ -62,6 +73,42 @@ def _merge_workflow_context(target: dict[str, Any], value: Any) -> None:
     elif isinstance(value, list):
         for child in value:
             _merge_workflow_context(target, child)
+
+
+def _execution_requested(query: str) -> bool:
+    lowered = query.lower()
+    if any(token in lowered for token in ("只回答", "不做修改", "不要修改", "仅解释", "why", "为什么")):
+        return False
+    return any(token in lowered for token in (
+        "创建", "新建", "添加", "生成", "编写", "导入", "编译", "保存",
+        "构建", "实现", "完成", "配置", "implement", "fix", "修改",
+    ))
+
+
+def _requires_verified_save(query: str) -> bool:
+    lowered = query.lower()
+    return any(token in lowered for token in ("梯形图", "lad", "程序", "导入", "编译", "保存项目"))
+
+
+def _must_continue_workflow(
+    query: str,
+    workflow_context: dict[str, Any],
+    tool_trace: list[dict[str, Any]],
+    successful_mutations: set[tuple[str, str]],
+) -> bool:
+    """Code-level completion gate for autonomous, recoverable workflows."""
+    if not _execution_requested(query) or workflow_context.get("needs_user_action") is True:
+        return False
+    if workflow_context.get("project_saved") is True:
+        return False
+    next_action = workflow_context.get("next_action")
+    if next_action and next_action not in {"complete", "done", "none"}:
+        return True
+    if not successful_mutations:
+        return True
+    if tool_trace and tool_trace[-1].get("success") is False:
+        return True
+    return _requires_verified_save(query)
 
 
 class StreamingChat(CliChat):
@@ -89,6 +136,7 @@ class StreamingChat(CliChat):
         tool_trace: list[dict[str, Any]] = []
         tool_call_count = 0
         soft_warning_sent = False
+        completion_nudges = 0
         try:
             for round_index in range(hard_limit + 2):
                 yield {"type": "turn_status", "stage": "generating", "message": "正在生成回复", "round": round_index}
@@ -117,6 +165,25 @@ class StreamingChat(CliChat):
                     assistant["tool_calls"] = result.tool_calls
                 self.messages.append(assistant)
                 if result.finish_reason != "tool_calls":
+                    if _must_continue_workflow(query, workflow_context, tool_trace, successful_mutations):
+                        completion_nudges += 1
+                        self.messages.append({
+                            "role": "system",
+                            "content": (
+                                "代码级完成检查：任务尚未完成，且最近工具未要求用户操作。"
+                                "不得结束或询问用户；请立即按当前Plan/Artifact和next动作继续调用工具。"
+                                "恢复上下文：" + json.dumps(workflow_context, ensure_ascii=False)
+                            ),
+                        })
+                        run_logger.log_event(
+                            "workflow_completion_blocked", component="chat", round=round_index,
+                            nudge=completion_nudges, workflow_context=workflow_context,
+                        )
+                        yield {
+                            "type": "turn_status", "stage": "continuing_workflow",
+                            "message": "任务尚未验证完成，正在自动继续", "round": round_index,
+                        }
+                        continue
                     yield {"type": "turn_status", "stage": "completed", "message": "已完成"}
                     yield {"type": "turn_end", "usage": asdict(result.usage), "tool_calls": tool_call_count}
                     return
@@ -176,6 +243,11 @@ class StreamingChat(CliChat):
                         item = None
 
                     if item is not None:
+                        try:
+                            cached_decoded = json.loads(item.get("content", ""))
+                        except (TypeError, json.JSONDecodeError):
+                            cached_decoded = None
+                        _merge_workflow_context(workflow_context, cached_decoded)
                         self.messages.append({key: value for key, value in item.items() if key != "success"})
                         yield {"type": "tool_result", "id": call["id"], "content": item["content"], "round": round_index, "success": bool(item.get("success")), "elapsed_ms": 0}
                         tool_trace.append({"name": function.name, "success": bool(item.get("success")), "elapsed_ms": 0, "code": "cached_or_blocked"})
@@ -266,6 +338,11 @@ class StreamingChat(CliChat):
                     run_logger.log_event("tool_budget_soft_warning", component="chat", summary=budget_summary)
                     yield {"type": "tool_budget_warning", **budget_summary}
                 yield {"type": "turn_status", "stage": "summarizing", "message": "正在整理执行结果", "round": round_index}
+            yield {"type": "turn_status", "stage": "paused", "message": "已保存恢复位置"}
+            yield {
+                "type": "turn_end", "tool_calls": tool_call_count, "paused": True,
+                "recovery": {"reason": "completion_round_limit", **workflow_context},
+            }
         except Exception as exc:
             run_logger.log_exception("chat_bridge_failed", exc, component="chat")
             yield {"type": "turn_status", "stage": "failed", "message": "执行失败"}

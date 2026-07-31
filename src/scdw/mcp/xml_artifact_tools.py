@@ -6,8 +6,9 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from scdw.common.run_logging import get_run_logger
 from scdw.lad_generation import LadPlanService
+from scdw.lad_generation.semantics import validate_compile_unit_semantics
 from scdw.rag import KnowledgeLibrary
-from scdw.xml_workspace import ArtifactError, PatchOperation, XmlArtifactService, render_contact_or_network
+from scdw.xml_workspace import ArtifactError, PatchOperation, XmlArtifactService, render_knowledge_network
 
 
 class PatchOperationInput(BaseModel):
@@ -32,9 +33,18 @@ class PatchOperationInput(BaseModel):
 
 class KnowledgeNetworkBindings(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    contacts: list[list[str]] = Field(min_length=1)
+    contacts: list[list[str]] = Field(default_factory=list)
     output: list[str] = Field(min_length=1)
     edge_memory: list[str] | None = None
+    compare_input: list[str] | None = None
+    compare_constant: str | int | float | None = None
+    failure_input: list[str] | None = None
+    failure_memory: list[str] | None = None
+    recovery_input: list[str] | None = None
+    recovery_memory: list[str] | None = None
+    fault_flag: list[str] | None = None
+    timer_instance: list[str] | None = None
+    preset_time: str | None = None
 
 
 def register_xml_artifact_tools(mcp, session, service: XmlArtifactService | None = None, plan_service: LadPlanService | None = None) -> None:
@@ -48,8 +58,17 @@ def register_xml_artifact_tools(mcp, session, service: XmlArtifactService | None
         metadata = service.get_artifact(artifact_id)
         if metadata.plan_id and metadata.block_name:
             try:
+                plan = plan_service.get(metadata.plan_id)
                 for key in network_keys:
+                    network = next((item for item in plan.networks if item.network_key == key), None)
+                    if network is not None and network.status == "verified":
+                        raise ArtifactError(
+                            "VERIFIED_NETWORK_IMMUTABLE",
+                            f"verified Network cannot be regenerated or patched: {key}",
+                        )
                     plan_service.validate_network_generation_order(metadata.plan_id, metadata.block_name, key)
+            except ArtifactError:
+                raise
             except (KeyError, ValueError, OSError) as exc:
                 raise ArtifactError(getattr(exc, "code", "PLAN_PRECONDITION_FAILED"), str(exc)) from exc
 
@@ -84,6 +103,22 @@ def register_xml_artifact_tools(mcp, session, service: XmlArtifactService | None
             raise ArtifactError("PLAN_PRECONDITION_FAILED", "Network is not present in the linked plan")
         return metadata, network
 
+    def validate_frozen_xml(artifact_id: str, network_key: str, compile_unit_xml: str) -> None:
+        metadata, network = planned_network(artifact_id, network_key)
+        if network is None:
+            return
+        try:
+            plan = plan_service.get(metadata.plan_id)
+            plan_service._require_frozen_blueprint(plan)
+        except (KeyError, ValueError, OSError) as exc:
+            raise ArtifactError(getattr(exc, "code", "PLAN_PRECONDITION_FAILED"), str(exc)) from exc
+        issues = validate_compile_unit_semantics(network, compile_unit_xml)
+        if issues:
+            raise ArtifactError(
+                "BLUEPRINT_SEMANTIC_MISMATCH",
+                "; ".join(str(item.get("message", item)) for item in issues),
+            )
+
     def require_knowledge_renderer_when_published(artifact_id: str, network_key: str) -> None:
         _, network = planned_network(artifact_id, network_key)
         if network is None:
@@ -117,6 +152,11 @@ def register_xml_artifact_tools(mcp, session, service: XmlArtifactService | None
     @mcp.tool(name="create_xml_artifact", description="Save parseable XML as immutable version 1. Returns artifact metadata. TIA Portal, not this tool, validates LAD semantics.")
     def create_xml_artifact(xml_content: str, block_name: str | None = None, device_name: str | None = None, conversation_id: str | None = None, plan_id: str | None = None, block_type: str | None = None, network_keys: list[str] | None = None) -> str:
         try:
+            if plan_id:
+                raise ArtifactError(
+                    "FROZEN_BLUEPRINT_REQUIRES_INCREMENTAL",
+                    "A linked frozen plan must use create_lad_block_artifact and add exactly one planned Network at a time",
+                )
             if plan_id and not block_name:
                 raise ArtifactError("PLAN_PRECONDITION_FAILED", "block_name is required when linking an Artifact to a plan")
             if plan_id and block_name:
@@ -206,6 +246,7 @@ def register_xml_artifact_tools(mcp, session, service: XmlArtifactService | None
                 except (KeyError, ValueError, OSError) as exc:
                     raise ArtifactError(getattr(exc, "code", "PLAN_PRECONDITION_FAILED"), str(exc)) from exc
             ensure_network_editable(artifact_id, [network_key])
+            validate_frozen_xml(artifact_id, network_key, compile_unit_xml)
             require_knowledge_renderer_when_published(artifact_id, network_key)
             version = service.append_network(artifact_id, expected_version, network_key, compile_unit_xml, before_key=before_key, position=position)
             if version == expected_version:
@@ -234,10 +275,10 @@ def register_xml_artifact_tools(mcp, session, service: XmlArtifactService | None
             value = bindings if isinstance(bindings, KnowledgeNetworkBindings) else KnowledgeNetworkBindings(**bindings)
             plan_service.set_cursor(metadata.plan_id, metadata.block_name, network_key)
             ensure_network_editable(artifact_id, [network_key])
-            compile_unit = render_contact_or_network(
-                str(renderer["kind"]), contacts=value.contacts, output=value.output,
-                edge_memory=value.edge_memory, title=title, comment=comment,
+            compile_unit = render_knowledge_network(
+                str(renderer["kind"]), **value.model_dump(), title=title, comment=comment,
             )
+            validate_frozen_xml(artifact_id, network_key, compile_unit)
             keys = [item["network_key"] for item in service.list_networks(artifact_id)]
             if replace_existing:
                 if network_key not in keys:
@@ -256,6 +297,80 @@ def register_xml_artifact_tools(mcp, session, service: XmlArtifactService | None
         except (KeyError, TypeError, ValueError, OSError) as exc:
             return json.dumps({"success": False, "stage": "artifact", "code": getattr(exc, "code", type(exc).__name__), "message": str(exc), "retryable": False}, ensure_ascii=False)
 
+    @mcp.tool(
+        name="write_lad_network_from_blueprint",
+        description="Deterministically translate the current frozen Network blueprint to one CompileUnit. Operands, topology and instruction semantics come only from the approved blueprint; selected knowledge bodies are batch-loaded from the task cache.",
+    )
+    def write_lad_network_from_blueprint(
+        artifact_id: str,
+        expected_version: int,
+        network_key: str,
+        replace_existing: bool = False,
+    ) -> str:
+        try:
+            metadata, network = planned_network(artifact_id, network_key)
+            if not metadata.plan_id or metadata.block_name is None or network is None:
+                raise ArtifactError("PLAN_PRECONDITION_FAILED", "blueprint rendering requires a linked Plan Network")
+            ensure_network_editable(artifact_id, [network_key])
+            if network.renderer_id not in {"blueprint_network_v17", "block_call_v17", "pbox_set_reset_ton_coil"} or network.blueprint is None:
+                raise ArtifactError(
+                    "KNOWLEDGE_RENDERER_MISSING",
+                    f"frozen Network has no deterministic blueprint renderer: {network.renderer_id}",
+                )
+            knowledge = KnowledgeLibrary.instance().get_many(network.selected_knowledge_ids)
+            if network.renderer_id in {"blueprint_network_v17", "block_call_v17"}:
+                render_bindings = {"blueprint": network.blueprint.to_dict()}
+            else:
+                values = network.blueprint.operands
+
+                def path(name: str) -> list[str]:
+                    value = values[name]
+                    return list(value.get("path", [])) if isinstance(value, dict) else list(value)
+
+                render_bindings = {
+                    "failure_input": path("failure_input"), "failure_memory": path("failure_memory"),
+                    "recovery_input": path("recovery_input"), "recovery_memory": path("recovery_memory"),
+                    "fault_flag": path("fault_flag"), "timer_instance": path("timer_instance"),
+                    "preset_time": values["preset_time"], "output": path("output"),
+                }
+            compile_unit = render_knowledge_network(
+                network.renderer_id, **render_bindings, title=network.title, comment=network.comment,
+            )
+            validate_frozen_xml(artifact_id, network_key, compile_unit)
+            plan_service.set_cursor(metadata.plan_id, metadata.block_name, network_key)
+            keys = [item["network_key"] for item in service.list_networks(artifact_id)]
+            if replace_existing:
+                if network_key not in keys:
+                    raise ArtifactError("NETWORK_NOT_FOUND", "replace_existing requires an existing planned Network")
+                version = service.replace_network(
+                    artifact_id, expected_version, network_key, compile_unit, source="frozen_blueprint_renderer"
+                )
+            else:
+                if network_key in keys:
+                    raise ArtifactError("NETWORK_KEY_CONFLICT", "Network exists; set replace_existing=true")
+                version = service.append_network(
+                    artifact_id, expected_version, network_key, compile_unit, source="frozen_blueprint_renderer"
+                )
+            if version == expected_version:
+                return json.dumps({
+                    "success": True, "stage": "artifact", "code": "NO_CHANGES",
+                    "message": "Frozen blueprint rendered identically; no Artifact version was created",
+                    **workflow_data(artifact_id, network_key),
+                }, ensure_ascii=False)
+            plan_service.record_artifact_version(metadata.plan_id, metadata.block_name, version, network_key)
+            return ok(
+                **workflow_data(artifact_id, network_key), renderer=network.renderer_id,
+                blueprint_sha256=plan_service.get(metadata.plan_id).blueprint_sha256,
+                knowledge_cache={item["id"]: item["content_sha256"] for item in knowledge},
+            )
+        except ArtifactError as exc:
+            return fail(exc)
+        except (KeyError, TypeError, ValueError, OSError) as exc:
+            return json.dumps({
+                "success": False, "stage": "artifact", "code": getattr(exc, "code", type(exc).__name__),
+                "message": str(exc), "retryable": False,
+            }, ensure_ascii=False)
+
     @mcp.tool(name="replace_network_and_prepare_import", description="Replace one complete knowledge-backed CompileUnit, invalidate prior verification, create one immutable version, update the Plan, and return the import/compile resume state.")
     def replace_xml_network(artifact_id: str, expected_version: int, network_key: str, compile_unit_xml: str, repair_kind: str = "structural_subgraph", knowledge_ids: list[str] | None = None) -> str:
         try:
@@ -265,7 +380,7 @@ def register_xml_artifact_tools(mcp, session, service: XmlArtifactService | None
                 raise ArtifactError("PATCH_PRECONDITION_FAILED", "replace_xml_network repair_kind must be structural_subgraph or semantic")
             validate_structural_knowledge(artifact_id, network_key, knowledge_ids)
             ensure_network_editable(artifact_id, [network_key])
-            require_knowledge_renderer_when_published(artifact_id, network_key)
+            validate_frozen_xml(artifact_id, network_key, compile_unit_xml)
             version = service.replace_network(artifact_id, expected_version, network_key, compile_unit_xml)
             if version == expected_version:
                 return json.dumps({"success": True, "stage": "artifact", "code": "NO_CHANGES", "message": "Network content is unchanged; no version was created", **workflow_data(artifact_id, network_key)}, ensure_ascii=False)
@@ -275,9 +390,49 @@ def register_xml_artifact_tools(mcp, session, service: XmlArtifactService | None
             return ok(**workflow_data(artifact_id, network_key))
         except ArtifactError as exc: return fail(exc)
 
+    @mcp.tool(
+        name="repair_lad_xml_expression",
+        description="Replace only the current failed CompileUnit after a TIA diagnostic. The tool permits XML-expression changes but rejects any instruction, contact polarity, coil kind, topology or frozen business-semantic change.",
+    )
+    def repair_lad_xml_expression(
+        artifact_id: str,
+        expected_version: int,
+        network_key: str,
+        compile_unit_xml: str,
+        diagnostic_code: str,
+    ) -> str:
+        try:
+            ensure_network_editable(artifact_id, [network_key])
+            validate_frozen_xml(artifact_id, network_key, compile_unit_xml)
+            version = service.replace_network(
+                artifact_id, expected_version, network_key, compile_unit_xml,
+                source=f"tia_expression_repair:{diagnostic_code}",
+            )
+            if version == expected_version:
+                return json.dumps({
+                    "success": False, "stage": "artifact", "code": "NO_XML_CHANGES",
+                    "message": "The proposed repair made no XML change; import and compile were not scheduled",
+                    "retryable": False, **workflow_data(artifact_id, network_key),
+                }, ensure_ascii=False)
+            metadata = service.get_artifact(artifact_id)
+            if metadata.plan_id and metadata.block_name:
+                plan_service.record_artifact_version(metadata.plan_id, metadata.block_name, version, network_key)
+            return ok(
+                **workflow_data(artifact_id, network_key), repair_kind="xml_expression",
+                preserved_blueprint_sha256=plan_service.get(metadata.plan_id).blueprint_sha256 if metadata.plan_id else None,
+            )
+        except ArtifactError as exc:
+            return fail(exc)
+
     @mcp.tool(name="delete_xml_network", description="Delete only the CompileUnit selected by network_key and create a new artifact version.")
     def delete_xml_network(artifact_id: str, expected_version: int, network_key: str) -> str:
         try:
+            metadata = service.get_artifact(artifact_id)
+            if metadata.plan_id:
+                raise ArtifactError(
+                    "FROZEN_NETWORK_COUNT",
+                    "Networks in a frozen blueprint cannot be deleted; repair or replace the same network_key",
+                )
             ensure_network_editable(artifact_id, [network_key])
             version = service.delete_network(artifact_id, expected_version, network_key)
             metadata = service.get_artifact(artifact_id)

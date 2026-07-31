@@ -1,0 +1,13 @@
+{
+  "networks": [
+    {
+      "network_key": "requested_network_1",
+      "sha256": "746b021e063b4095c13f3b6f692e30eb5317d4150d3b2f56f49c8ef22540f3a4"
+    },
+    {
+      "network_key": "requested_network_2",
+      "sha256": "f34ff3493c61169d31126ad1227eef9c6b4897e7253e7c08f1b3d4d53361ab3a"
+    }
+  ],
+  "version": 3
+}

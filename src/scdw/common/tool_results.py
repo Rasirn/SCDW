@@ -14,6 +14,8 @@ def tool_result(
     data: dict[str, Any] | None = None,
     retryable: bool = False,
     needs_user_action: bool = False,
+    recommended_action: str = "",
+    fallback_arguments: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     return {
         "success": bool(success),
@@ -23,6 +25,8 @@ def tool_result(
         "data": data or {},
         "retryable": bool(retryable),
         "needs_user_action": bool(needs_user_action),
+        "recommended_action": recommended_action,
+        "fallback_arguments": fallback_arguments or {},
     }
 
 
@@ -35,6 +39,8 @@ def tool_json(
     data: dict[str, Any] | None = None,
     retryable: bool = False,
     needs_user_action: bool = False,
+    recommended_action: str = "",
+    fallback_arguments: dict[str, Any] | None = None,
 ) -> str:
     return json.dumps(
         tool_result(
@@ -45,6 +51,8 @@ def tool_json(
             data=data,
             retryable=retryable,
             needs_user_action=needs_user_action,
+            recommended_action=recommended_action,
+            fallback_arguments=fallback_arguments,
         ),
         ensure_ascii=False,
         sort_keys=True,

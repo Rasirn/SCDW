@@ -1,0 +1,46 @@
+{
+  "artifact_id": "xml_8d1140f38142f654d479bf92",
+  "block_name": "FC_MainControl",
+  "block_type": "FC",
+  "code": "OK",
+  "device_name": "PLC_1",
+  "error_count": 0,
+  "messages": [
+    {
+      "description": "",
+      "messages": [
+        {
+          "description": "",
+          "messages": [
+            {
+              "description": "Block was successfully compiled.",
+              "messages": [],
+              "path": "FC_MainControl (FC1)",
+              "severity": "success"
+            }
+          ],
+          "path": "Program blocks",
+          "severity": "success"
+        }
+      ],
+      "path": "PLC_1",
+      "severity": "success"
+    },
+    {
+      "description": "Compiling finished (errors: 0; warnings: 0)",
+      "messages": [],
+      "path": "",
+      "severity": "success"
+    }
+  ],
+  "network_key": "nw_pbox_fail_set",
+  "plan_id": "ladplan_ec5905a8eaa1c683",
+  "recorded_at": "2026-07-30T23:07:58.874827Z",
+  "scope": "block",
+  "stage": "tia_compile",
+  "state": "Success",
+  "success": true,
+  "target_name": "FC_MainControl",
+  "version": 2,
+  "warning_count": 0
+}

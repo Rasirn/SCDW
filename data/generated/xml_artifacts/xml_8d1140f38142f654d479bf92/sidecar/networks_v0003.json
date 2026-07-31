@@ -1,0 +1,13 @@
+{
+  "networks": [
+    {
+      "network_key": "nw_pbox_fail_set",
+      "sha256": "5a827634b2a3dc7bda6fc1c00cf96525bfbd23ce2d159b68f09a6150c722197b"
+    },
+    {
+      "network_key": "nw_pbox_success_reset",
+      "sha256": "8f9656c675d9ed8e2b3de74793447c1babc94429c256185114e48cfe69bbdaaf"
+    }
+  ],
+  "version": 3
+}

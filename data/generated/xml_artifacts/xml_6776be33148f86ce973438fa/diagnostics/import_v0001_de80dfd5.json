@@ -1,0 +1,19 @@
+{
+  "artifact_id": "xml_6776be33148f86ce973438fa",
+  "block_name": "FC_FanGasControl",
+  "block_type": "FC",
+  "code": "OK",
+  "device_name": "PLC_1",
+  "message": "TIA import completed",
+  "messages": [],
+  "network_key": null,
+  "plan_id": "ladplan_12c6cc8eaeb26a0b",
+  "recorded_at": "2026-07-31T00:20:28.977449Z",
+  "stage": "tia_import",
+  "success": true,
+  "target": {
+    "device_name": "PLC_1",
+    "project": "FanGas_Combustion"
+  },
+  "version": 1
+}

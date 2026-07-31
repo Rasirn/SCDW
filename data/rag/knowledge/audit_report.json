@@ -1,7 +1,7 @@
 {
-  "catalog_sha256": "0dab8fcf8cd74efd2d71939d1085f1ead8fc07beb59857f57fa8b501d7a292bd",
+  "catalog_sha256": "5183122059a3b2273b914e06f544bdd857524f9773bc8efaa5791e19449f20d4",
   "counts": {
-    "catalog_items": 36,
+    "catalog_items": 37,
     "raw_application_files": 9
   },
   "distillation_missing_raw": [],
@@ -135,6 +135,12 @@
       "source_exported",
       "import_verified",
       "compile_verified"
+    ],
+    "instruction.pbox_set_reset_ton_coil.v17": [
+      "source_exported",
+      "import_verified",
+      "compile_verified",
+      "generated_case_verified"
     ],
     "instruction.ton_global_instance.v17": [
       "source_exported",

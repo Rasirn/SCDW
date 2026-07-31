@@ -1,0 +1,13 @@
+{
+  "networks": [
+    {
+      "network_key": "nw1_fan_output",
+      "sha256": "f5dab151dff0dc3fffaafa6b5a98dc4bec70d03e3e3e7476da2c81f144cf0992"
+    },
+    {
+      "network_key": "nw2_fan_output_calc",
+      "sha256": "1dc25b7efa5cc1465f89d427ee79913ebed603f644ae5ca5464b9d025724dfc3"
+    }
+  ],
+  "version": 8
+}

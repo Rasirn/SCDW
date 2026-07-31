@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Exact relevant subgraph distilled from TIA V17 报警.xml Network 1. -->
+<FlgNet xmlns="http://www.siemens.com/automation/Openness/SW/NetworkSource/FlgNet/v4">
+  <Parts>
+    <Access Scope="GlobalVariable" UId="1"><Symbol><Component Name="内部数据" /><Component Name="读取失败" /></Symbol></Access>
+    <Access Scope="GlobalVariable" UId="2"><Symbol><Component Name="内部数据" /><Component Name="故障脉冲1" /></Symbol></Access>
+    <Access Scope="GlobalVariable" UId="3"><Symbol><Component Name="内部数据" /><Component Name="通讯故障标志" /></Symbol></Access>
+    <Access Scope="GlobalVariable" UId="4"><Symbol><Component Name="内部数据" /><Component Name="读取成功" /></Symbol></Access>
+    <Access Scope="GlobalVariable" UId="5"><Symbol><Component Name="内部数据" /><Component Name="故障脉冲2" /></Symbol></Access>
+    <Access Scope="GlobalVariable" UId="6"><Symbol><Component Name="内部数据" /><Component Name="通讯故障标志" /></Symbol></Access>
+    <Access Scope="GlobalVariable" UId="7"><Symbol><Component Name="内部数据" /><Component Name="通讯故障标志" /></Symbol></Access>
+    <Access Scope="GlobalVariable" UId="8"><Symbol><Component Name="内部数据" /><Component Name="通讯延时定时器" /><Component Name="Q" /></Symbol></Access>
+    <Access Scope="GlobalVariable" UId="9"><Symbol><Component Name="曲线数据" /><Component Name="通讯故障" /></Symbol></Access>
+    <Access Scope="TypedConstant" UId="10"><Constant><ConstantValue>T#3m</ConstantValue></Constant></Access>
+    <Part Name="Contact" UId="20" /><Part Name="PBox" UId="21" /><Part Name="SCoil" UId="22" />
+    <Part Name="Contact" UId="23" /><Part Name="PBox" UId="24" /><Part Name="RCoil" UId="25" />
+    <Part Name="Contact" UId="26" />
+    <Part Name="TON" Version="1.0" UId="27"><Instance Scope="GlobalVariable" UId="28"><Component Name="内部数据" /><Component Name="通讯延时定时器" /></Instance><TemplateValue Name="time_type" Type="Type">Time</TemplateValue></Part>
+    <Part Name="Contact" UId="29" /><Part Name="Coil" UId="30" />
+  </Parts>
+  <Wires>
+    <Wire UId="40"><Powerrail /><NameCon UId="20" Name="in" /><NameCon UId="23" Name="in" /><NameCon UId="26" Name="in" /><NameCon UId="29" Name="in" /></Wire>
+    <Wire UId="41"><IdentCon UId="1" /><NameCon UId="20" Name="operand" /></Wire>
+    <Wire UId="42"><NameCon UId="20" Name="out" /><NameCon UId="21" Name="in" /></Wire>
+    <Wire UId="43"><IdentCon UId="2" /><NameCon UId="21" Name="bit" /></Wire>
+    <Wire UId="44"><NameCon UId="21" Name="out" /><NameCon UId="22" Name="in" /></Wire>
+    <Wire UId="45"><IdentCon UId="3" /><NameCon UId="22" Name="operand" /></Wire>
+    <Wire UId="46"><IdentCon UId="4" /><NameCon UId="23" Name="operand" /></Wire>
+    <Wire UId="47"><NameCon UId="23" Name="out" /><NameCon UId="24" Name="in" /></Wire>
+    <Wire UId="48"><IdentCon UId="5" /><NameCon UId="24" Name="bit" /></Wire>
+    <Wire UId="49"><NameCon UId="24" Name="out" /><NameCon UId="25" Name="in" /></Wire>
+    <Wire UId="50"><IdentCon UId="6" /><NameCon UId="25" Name="operand" /></Wire>
+    <Wire UId="51"><IdentCon UId="7" /><NameCon UId="26" Name="operand" /></Wire>
+    <Wire UId="52"><NameCon UId="26" Name="out" /><NameCon UId="27" Name="IN" /></Wire>
+    <Wire UId="53"><IdentCon UId="10" /><NameCon UId="27" Name="PT" /></Wire>
+    <Wire UId="54"><IdentCon UId="8" /><NameCon UId="29" Name="operand" /></Wire>
+    <Wire UId="55"><NameCon UId="29" Name="out" /><NameCon UId="30" Name="in" /></Wire>
+    <Wire UId="56"><IdentCon UId="9" /><NameCon UId="30" Name="operand" /></Wire>
+  </Wires>
+</FlgNet>

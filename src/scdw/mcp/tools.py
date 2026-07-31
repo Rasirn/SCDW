@@ -69,7 +69,10 @@ def _normalise_public_result(tool_name: str, value) -> str:
             decoded = json.loads(value)
         except json.JSONDecodeError:
             decoded = None
-    required = {"success", "stage", "code", "message", "data", "retryable", "needs_user_action"}
+    required = {
+        "success", "stage", "code", "message", "data", "retryable", "needs_user_action",
+        "recommended_action", "fallback_arguments",
+    }
     if isinstance(decoded, dict) and required <= set(decoded):
         return json.dumps(decoded, ensure_ascii=False, sort_keys=True)
     if isinstance(decoded, dict):
@@ -78,12 +81,15 @@ def _normalise_public_result(tool_name: str, value) -> str:
         code = str(decoded.get("code") or ("OK" if success else "TOOL_FAILED"))
         message = str(decoded.get("message") or ("completed" if success else "tool failed"))
         data = {key: item for key, item in decoded.items() if key not in {
-            "success", "stage", "code", "message", "retryable", "needs_user_action"
+            "success", "stage", "code", "message", "retryable", "needs_user_action",
+            "recommended_action", "fallback_arguments",
         }}
         payload = {
             "success": success, "stage": stage, "code": code, "message": message,
             "data": data, "retryable": bool(decoded.get("retryable", False)),
             "needs_user_action": bool(decoded.get("needs_user_action", False)),
+            "recommended_action": str(decoded.get("recommended_action") or ("continue" if success else "inspect_failure")),
+            "fallback_arguments": decoded.get("fallback_arguments") or {},
         }
         if tool_name in {"create_global_db", "create_plc_tag_table", "add_plc_to_project", "add_hardware_module"}:
             payload.update(data)
@@ -94,6 +100,7 @@ def _normalise_public_result(tool_name: str, value) -> str:
             "success": success, "stage": tool_name, "code": "OK" if success else "TOOL_FAILED",
             "message": text.splitlines()[0] if text else ("completed" if success else "tool failed"),
             "data": {"text": text}, "retryable": False, "needs_user_action": False,
+            "recommended_action": "continue" if success else "inspect_failure", "fallback_arguments": {},
         }
     return json.dumps(payload, ensure_ascii=False, sort_keys=True)
 
@@ -158,8 +165,12 @@ def register_mcp_tools(mcp) -> None:
         delete_block,
     )
     from scdw.xlsx.reader import read_plc_project_xlsx
+    from scdw.lad_generation import LadPlanService
     from scdw.mcp.lad_plan_tools import register_lad_plan_tools
-    register_lad_plan_tools(mcp)
+    from scdw.xml_workspace import XmlArtifactService
+    _lad_plans = LadPlanService()
+    _xml_artifacts = XmlArtifactService()
+    register_lad_plan_tools(mcp, _lad_plans, _xml_artifacts)
 
     @mcp.tool(name="list_tia_processes", description="列出运行中的 TIA Portal，不会附着或修改任何工程。")
     def list_tia_processes() -> str:
@@ -445,18 +456,7 @@ def register_mcp_tools(mcp) -> None:
                     "message": "absolute mode requires address or offset for every variable; omitted addresses are not allowed.",
                     "variable_mappings": requested_mappings,
                 }, ensure_ascii=False, sort_keys=True)
-            if address_mode == "absolute":
-                return json.dumps({
-                    "success": False,
-                    "stage": "create_global_db",
-                    "code": "ABSOLUTE_DB_ADDRESS_UNSUPPORTED",
-                    "message": "Fixed %DBx.DBXy.z/offset layout cannot be verified by the current Openness implementation; no DB was created.",
-                    "device_name": device_name,
-                    "db_name": db_name,
-                    "db_number": db_number,
-                    "optimized_access": None,
-                    "variable_mappings": requested_mappings,
-                }, ensure_ascii=False, sort_keys=True)
+            symbolic_fallback = address_mode == "absolute"
 
             _check_session()
 
@@ -479,13 +479,27 @@ def register_mcp_tools(mcp) -> None:
             mappings = [{
                 "requested_name": item.name,
                 "tia_actual_name": item.name,
-                "requested_address": None,
+                "requested_address": next(
+                    (mapping["requested_address"] for mapping in requested_mappings if mapping["requested_name"] == item.name),
+                    None,
+                ),
                 "tia_actual_address": None,
             } for item in db_vars]
             return json.dumps({
-                "success": True, "stage": "create_global_db", "code": "GLOBAL_DB_CREATED",
+                "success": True, "stage": "create_global_db",
+                "code": "SYMBOLIC_DB_FALLBACK" if symbolic_fallback else "GLOBAL_DB_CREATED",
+                "message": (
+                    "Absolute DB layout is not supported; a symbolic optimized DB was created automatically without changing control semantics."
+                    if symbolic_fallback else "Global DB created"
+                ),
                 "device_name": device_name, "db_name": db_name, "db_number": db_number,
                 "optimized_access": True, "variable_mappings": mappings,
+                "original_address_mode": address_mode,
+                "effective_address_mode": "symbolic",
+                "address_layout_preserved": not symbolic_fallback,
+                "fallback_applied": symbolic_fallback,
+                "recommended_action": "continue_generation",
+                "fallback_arguments": {},
             }, ensure_ascii=False, sort_keys=True)
         except Exception as exc:
             return json.dumps({
@@ -631,7 +645,7 @@ def register_mcp_tools(mcp) -> None:
     @mcp.tool(
         name="get_plc_knowledge_catalog",
         description=(
-            "每个任务只调用一次。无参数返回完整紧凑TIA V17知识目录（ID、标题、role、provides、状态和限制）；不评分、不返回正文。确定性过滤由工作流在本地完成。"
+            "兼容性知识metadata目录；LAD规划应先调用get_lad_capability_catalog。该工具不返回XML正文。"
         ),
     )
     def get_plc_knowledge_catalog() -> str:
@@ -640,17 +654,29 @@ def register_mcp_tools(mcp) -> None:
     @mcp.tool(
         name="get_plc_knowledge_items",
         description=(
-            "每个任务只调用一次：按显式知识项ID批量返回全部所需XML片段或规则正文。调用前须用catalog的provides覆盖所有Network能力；raw/application不通过此接口读取。"
+            "仅在蓝图approved_for_generation后，按当前Plan已选择的ID批量返回XML片段或规则正文；任务级正文由知识库缓存，raw/application不暴露。"
         ),
     )
-    def get_plc_knowledge_items(item_ids: List[str]) -> str:
+    def get_plc_knowledge_items(plan_id: str, item_ids: List[str]) -> str:
         try:
-            return json.dumps({"items": get_knowledge_items(item_ids)}, ensure_ascii=False)
+            plan = _lad_plans.get(plan_id)
+            _lad_plans._require_frozen_blueprint(plan)
+            selected = {item for network in plan.networks for item in network.selected_knowledge_ids}
+            unexpected = sorted(set(item_ids) - selected)
+            if unexpected:
+                raise ValueError("knowledge IDs are not selected by the frozen blueprint: " + ", ".join(unexpected))
+            return json.dumps({
+                "success": True, "plan_id": plan_id, "blueprint_sha256": plan.blueprint_sha256,
+                "items": get_knowledge_items(item_ids), "cache_scope": "task_process",
+            }, ensure_ascii=False)
         except (KeyError, ValueError) as exc:
-            return json.dumps({"success": False, "error": str(exc)}, ensure_ascii=False)
+            return json.dumps({
+                "success": False, "code": getattr(exc, "code", "KNOWLEDGE_GAP"),
+                "message": str(exc), "needs_user_action": False,
+            }, ensure_ascii=False)
     # Artifact editing and the TIA closed loop are registered exactly once.
     from scdw.mcp.xml_artifact_tools import register_xml_artifact_tools
     from scdw.mcp.lad_runtime_tools import register_lad_runtime_tools
-    register_xml_artifact_tools(mcp, _session)
-    register_lad_runtime_tools(mcp, _session)
+    register_xml_artifact_tools(mcp, _session, _xml_artifacts, _lad_plans)
+    register_lad_runtime_tools(mcp, _session, _xml_artifacts, _lad_plans)
     _wrap_public_tool_results(mcp)

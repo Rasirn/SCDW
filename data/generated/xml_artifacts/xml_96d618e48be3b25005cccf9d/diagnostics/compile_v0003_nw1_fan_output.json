@@ -1,0 +1,59 @@
+{
+  "artifact_id": "xml_96d618e48be3b25005cccf9d",
+  "block_name": "FC_FanGasControl",
+  "block_type": "FC",
+  "code": "OK",
+  "device_name": "PLC_1",
+  "error_count": 0,
+  "messages": [
+    {
+      "description": "",
+      "messages": [
+        {
+          "description": "",
+          "messages": [
+            {
+              "description": "Block was successfully compiled.",
+              "messages": [],
+              "path": "FC_FanGasControl (FC1)",
+              "severity": "success"
+            }
+          ],
+          "path": "Program blocks",
+          "severity": "success"
+        },
+        {
+          "description": "",
+          "messages": [
+            {
+              "description": "Inputs or outputs are used that do not exist in the configured hardware.",
+              "messages": [],
+              "path": "",
+              "severity": "warning"
+            }
+          ],
+          "path": "General warnings",
+          "severity": "warning"
+        }
+      ],
+      "path": "PLC_1",
+      "severity": "warning"
+    },
+    {
+      "description": "Compiling finished (errors: 0; warnings: 1)",
+      "messages": [],
+      "path": "",
+      "severity": "warning"
+    }
+  ],
+  "network_key": "nw1_fan_output",
+  "plan_id": "ladplan_12c6cc8eaeb26a0b",
+  "recorded_at": "2026-07-31T00:13:40.048667Z",
+  "scope": "block",
+  "stage": "tia_compile",
+  "state": "Warning",
+  "success": true,
+  "target_name": "FC_FanGasControl",
+  "version": 3,
+  "warning_count": 1
+}

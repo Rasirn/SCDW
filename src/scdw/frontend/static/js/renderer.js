@@ -82,6 +82,36 @@ window.Renderer = (() => {
     if (!normalized) return '工具未返回文本结果。';
     return normalized.length > limit ? `${normalized.slice(0, limit)}\n…（其余内容已省略）` : normalized;
   }
+  function blueprintFromResult(content) {
+    try {
+      const decoded = JSON.parse(String(content || ''));
+      const payload = decoded?.data && typeof decoded.data === 'object' ? decoded.data : decoded;
+      const lines = payload?.blueprint_tree;
+      const plan = payload?.plan;
+      if (!Array.isArray(lines) || !lines.length) return null;
+      return {
+        lines,
+        status: payload.blueprint_status || plan?.blueprint_status || 'draft',
+        hash: payload.blueprint_sha256 || plan?.blueprint_sha256 || ''
+      };
+    } catch (_) { return null; }
+  }
+  function appendBlueprint(tool, content) {
+    const blueprint = blueprintFromResult(content);
+    if (!blueprint) return;
+    const section = document.createElement('section'); section.className = 'lad-blueprint';
+    const head = document.createElement('div'); head.className = 'lad-blueprint-head';
+    const title = document.createElement('strong'); title.textContent = 'LAD Blueprint';
+    const badge = document.createElement('span'); badge.textContent = blueprint.status;
+    head.append(title, badge);
+    const tree = document.createElement('pre'); tree.textContent = blueprint.lines.join('\n');
+    section.append(head, tree);
+    if (blueprint.hash) {
+      const hash = document.createElement('small'); hash.textContent = `冻结指纹 ${blueprint.hash.slice(0, 16)}`;
+      section.append(hash);
+    }
+    tool.node.append(section);
+  }
   function setToolTerminal(tool, status, data = {}) {
     if (!tool || tool.status !== 'running') return;
     tool.status = status;
@@ -182,7 +212,9 @@ window.Renderer = (() => {
         const pre = document.createElement('pre'); pre.textContent = compactResult(data.content, 4000);
         details.append(summary, pre); result.append(details);
       }
-      tool.node.append(result); contentChanged();
+      tool.node.append(result);
+      if (data.success) appendBlueprint(tool, data.content);
+      contentChanged();
     },
     tick(now = Date.now()) {
       turns.forEach(state => state.toolNodes.forEach(tool => {

@@ -120,21 +120,35 @@ def test_appended_networks_receive_unique_document_ids_but_keep_local_uids(tmp_p
 
 
 @pytest.mark.unit
-def test_absolute_db_offset_is_rejected_before_optimized_db_creation():
+def test_absolute_db_offset_falls_back_to_symbolic_without_changing_names(monkeypatch):
     with pytest.raises(AbsoluteDbAddressUnsupportedError):
         build_global_db_scl("AlarmDB", 4, [DBVariable("Alarm", "Bool", offset="0.0")])
 
     from mcp.server.fastmcp import FastMCP
+    import scdw.openness as openness
+    import scdw.mcp.tools as tools
     from scdw.mcp.tools import register_mcp_tools
+
+    class Session:
+        def run_plc_operation(self, _name, _device, operation):
+            return operation(object(), object())
+
+    monkeypatch.setattr(tools, "_session", Session())
+    monkeypatch.setattr(tools, "_check_session", lambda: None)
+    monkeypatch.setattr(tools, "_ensure_temp_dir", lambda: ".")
+    monkeypatch.setattr(openness, "create_global_db", lambda *_: None)
 
     mcp = FastMCP("absolute-db")
     register_mcp_tools(mcp)
     call = mcp._tool_manager._tools["create_global_db"].fn
     result = json.loads(call("PLC_1", "AlarmDB", 4, [{"name": "Alarm", "data_type": "Bool", "address": "%DB4.DBX0.0"}], "absolute"))
-    assert result["success"] is False
-    assert result["code"] == "ABSOLUTE_DB_ADDRESS_UNSUPPORTED"
-    assert result["optimized_access"] is None
+    assert result["success"] is True
+    assert result["code"] == "SYMBOLIC_DB_FALLBACK"
+    assert result["optimized_access"] is True
+    assert result["address_layout_preserved"] is False
+    assert result["fallback_applied"] is True
     assert result["variable_mappings"][0]["requested_address"] == "%DB4.DBX0.0"
+    assert result["variable_mappings"][0]["requested_name"] == result["variable_mappings"][0]["tia_actual_name"] == "Alarm"
     assert result["variable_mappings"][0]["tia_actual_address"] is None
 
 
@@ -149,6 +163,34 @@ def test_latest_burner_alarm_golden_topologies_are_published_from_raw_v17():
     assert edge["generation_mode"] == "knowledge_renderer_required"
     assert {"or.cardinality", "topology.parallel", "topology.merge", "edge.ports.in_bit_out"} <= set(edge["provides"])
     assert "多个Contact.out共用一条Wire" in edge["not_for"]
+    assert entries["instruction.compare_ge_real_coil.v17"]["renderer"]["kind"] == "compare_ge_real_coil"
+    vfd = entries["instruction.pbox_set_reset_ton_coil.v17"]
+    assert vfd["renderer"]["kind"] == "pbox_set_reset_ton_coil"
+    assert vfd["source_refs"] == ["data/rag/raw/application/报警.xml"]
+
+
+@pytest.mark.unit
+def test_latest_case_renderers_emit_reviewed_v17_parts_and_ports():
+    from scdw.xml_workspace import render_knowledge_network
+
+    ge = ET.fromstring(render_knowledge_network(
+        "compare_ge_real_coil", compare_input=["信号数据", "风压测量值"], compare_constant=1.2,
+        output=["烧嘴电源"], title="燃气开启", comment="风压达到阈值时开启烧嘴电源。",
+    ))
+    assert {item.attrib.get("Name") for item in ge.iter() if item.tag.rsplit("}", 1)[-1] == "Part"} == {"Ge", "Coil"}
+    assert {item.attrib.get("Name") for item in ge.iter() if item.tag.rsplit("}", 1)[-1] == "NameCon"} >= {"pre", "in1", "in2", "out", "in", "operand"}
+
+    vfd = ET.fromstring(render_knowledge_network(
+        "pbox_set_reset_ton_coil",
+        failure_input=["内部数据", "变频器读取失败1"], failure_memory=["内部数据", "变频器通讯故障脉冲1"],
+        recovery_input=["内部数据", "变频器读取成功1"], recovery_memory=["内部数据", "变频器通讯故障脉冲2"],
+        fault_flag=["内部数据", "变频器通讯故障标志"], timer_instance=["内部数据", "变频器通讯延时定时器"],
+        preset_time="T#3m", output=["曲线数据", "变频器通讯故障"], title="通讯故障", comment="通讯故障延时报警。",
+    ))
+    parts = [item for item in vfd.iter() if item.tag.rsplit("}", 1)[-1] == "Part"]
+    assert {item.attrib.get("Name") for item in parts} >= {"Contact", "PBox", "SCoil", "RCoil", "TON", "Coil"}
+    ton = next(item for item in parts if item.attrib.get("Name") == "TON")
+    assert ton.attrib["Version"] == "1.0"
 
 
 @pytest.mark.unit
@@ -196,6 +238,19 @@ def test_knowledge_renderer_prevents_latest_invalid_multi_output_wire(tmp_path):
     plan = plans.create_from_requirements("故障A或故障B时输出", conversation_id="renderer", target_device="PLC", main_fc_name="FC_BurnerAlarm")
     network = plan.networks[0]
     selected = ["topology.contact_or_pbox_scoil.v17", "shell.fc_block.v17", "network_text.title_comment.v17"]
+    contacts = [[f"{index}#故障反馈"] for index in range(1, 8)]
+    branches = [
+        {
+            "node_id": f"fault_branch_{index}", "kind": "branch", "label": f"故障{index}",
+            "capability_id": "topology.series", "knowledge_ids": ["topology.contact_or_pbox_scoil.v17"],
+            "renderer_id": "contact_or_pbox_scoil", "children": [{
+                "node_id": f"fault_contact_{index}", "kind": "contact", "label": f"故障{index}常开",
+                "capability_id": "logic.contact_no", "operands": {"operand": path},
+                "knowledge_ids": ["topology.contact_or_pbox_scoil.v17"], "renderer_id": "contact_or_pbox_scoil",
+            }],
+        }
+        for index, path in enumerate(contacts, 1)
+    ]
     plan = plans.revise_network_plan(plan.plan_id, network.network_key, {
         "purpose": "故障OR上升沿置位",
         "main_branch": ["Contacts -> O -> PBox -> SCoil"],
@@ -206,6 +261,24 @@ def test_knowledge_renderer_prevents_latest_invalid_multi_output_wire(tmp_path):
         "selected_knowledge_ids": selected,
         "instruction_chain": ["Contact branches", "O merge", "PBox rising edge", "SCoil"],
         "topology": {"kind": "parallel_merge", "description": "Each Contact.out has an independent Wire to O.inN."},
+        "renderer_id": "contact_or_pbox_scoil",
+        "blueprint": {
+            "node_id": "alarm_root", "kind": "series", "label": "故障汇合后上升沿置位",
+            "capability_id": "topology.series", "knowledge_ids": ["topology.contact_or_pbox_scoil.v17"],
+            "renderer_id": "contact_or_pbox_scoil", "children": [{
+                "node_id": "fault_merge", "kind": "parallel_merge", "label": "7路故障OR",
+                "capability_id": "topology.parallel", "knowledge_ids": ["topology.contact_or_pbox_scoil.v17"],
+                "renderer_id": "contact_or_pbox_scoil", "children": branches,
+            }, {
+                "node_id": "alarm_edge", "kind": "rising_edge", "label": "报警上升沿",
+                "capability_id": "logic.rising_edge_external_bit", "operands": {"memory": ["内部数据", "报警脉冲"]},
+                "knowledge_ids": ["topology.contact_or_pbox_scoil.v17"], "renderer_id": "contact_or_pbox_scoil",
+            }, {
+                "node_id": "alarm_set", "kind": "set_coil", "label": "置位蜂鸣器",
+                "capability_id": "output.set_coil", "operands": {"operand": ["蜂鸣器"]},
+                "knowledge_ids": ["topology.contact_or_pbox_scoil.v17"], "renderer_id": "contact_or_pbox_scoil",
+            }],
+        },
     }, "use exact burner alarm golden topology")
     artifacts = XmlArtifactService(tmp_path / "artifacts")
     artifact = artifacts.create_block_artifact("FC_BurnerAlarm", "FC", plan_id=plan.plan_id)
@@ -215,10 +288,9 @@ def test_knowledge_renderer_prevents_latest_invalid_multi_output_wire(tmp_path):
 
     manual = mcp._tool_manager._tools["append_network_and_prepare_import"].fn
     rejected = json.loads(manual(artifact.artifact_id, 1, network.network_key, compile_unit(1, "guessed"), None, None))
-    assert rejected["code"] == "KNOWLEDGE_RENDERER_REQUIRED"
+    assert rejected["code"] == "BLUEPRINT_SEMANTIC_MISMATCH"
 
     write = mcp._tool_manager._tools["write_lad_network_from_knowledge"].fn
-    contacts = [[f"{index}#故障反馈"] for index in range(1, 8)]
     result = json.loads(write(
         artifact.artifact_id, 1, network.network_key, "topology.contact_or_pbox_scoil.v17",
         {"contacts": contacts, "edge_memory": ["内部数据", "报警脉冲"], "output": ["蜂鸣器"]},

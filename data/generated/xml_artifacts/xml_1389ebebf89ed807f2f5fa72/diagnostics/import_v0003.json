@@ -1,0 +1,26 @@
+{
+  "artifact_id": "xml_1389ebebf89ed807f2f5fa72",
+  "block_name": "FC_VFD_CommFault",
+  "block_type": null,
+  "code": "TIA_XML_IMPORT_FAILED",
+  "device_name": "PLC_1",
+  "message": "Error when calling method 'Import' of type 'Siemens.Engineering.SW.Blocks.PlcBlockComposition'.\r\n\r\nCannot create the 'SW.Blocks.CompileUnit' object with Simatic ML ID '1' at line number 24 at line position 8.\r\n\r\nError when calling method 'Create' of type 'Siemens.Engineering.SW.Blocks.CompileUnitComposition'.\r\n\r\nThe connection with the name 'in' is not connected to the object with the UID '20'.\r\n   在 Siemens.Engineering.Private.Session.Siemens.Engineering.Private.IInstanceSession.InvokeFunc[T,TC](LifetimeContractHandle`1 lifetimeContractHandle, String name, IEnumerable`1 parameters, String fullName)\r\n   在 Siemens.Engineering.Private.InternalInstanceAccess`2.InvokeFunc[T](String name, IEnumerable`1 parameters)\r\n   在 Siemens.Engineering.SW.Blocks.PlcBlockComposition.Import(FileInfo path, ImportOptions importOptions)",
+  "messages": [
+    {
+      "description": "Error when calling method 'Import' of type 'Siemens.Engineering.SW.Blocks.PlcBlockComposition'.\r\n\r\nCannot create the 'SW.Blocks.CompileUnit' object with Simatic ML ID '1' at line number 24 at line position 8.\r\n\r\nError when calling method 'Create' of type 'Siemens.Engineering.SW.Blocks.CompileUnitComposition'.\r\n\r\nThe connection with the name 'in' is not connected to the object with the UID '20'.\r\n   在 Siemens.Engineering.Private.Session.Siemens.Engineering.Private.IInstanceSession.InvokeFunc[T,TC](LifetimeContractHandle`1 lifetimeContractHandle, String name, IEnumerable`1 parameters, String fullName)\r\n   在 Siemens.Engineering.Private.InternalInstanceAccess`2.InvokeFunc[T](String name, IEnumerable`1 parameters)\r\n   在 Siemens.Engineering.SW.Blocks.PlcBlockComposition.Import(FileInfo path, ImportOptions importOptions)",
+      "path": "",
+      "severity": "error",
+      "type": "EngineeringTargetInvocationException"
+    }
+  ],
+  "network_key": "vfd_comm_fault_main",
+  "plan_id": "ladplan_5784b4a133530fbc",
+  "recorded_at": "2026-07-30T23:12:42.823448Z",
+  "stage": "tia_import",
+  "success": false,
+  "target": {
+    "device_name": "PLC_1",
+    "project": "VFD_CommFault"
+  },
+  "version": 3
+}

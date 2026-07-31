@@ -1,0 +1,49 @@
+{
+  "affected_networks": [],
+  "artifact_id": "xml_6776be33148f86ce973438fa",
+  "block_name": "FC_FanGasControl",
+  "block_type": "FC",
+  "change_source": "workflow_state",
+  "conversation_id": "FanGas_Combustion",
+  "created_at": "2026-07-31T00:20:24.394926Z",
+  "current_version": 1,
+  "device_name": "PLC_1",
+  "expires_at": "2026-08-02T00:20:24.394926Z",
+  "last_compile": null,
+  "last_import": {
+    "artifact_id": "xml_6776be33148f86ce973438fa",
+    "block_name": "FC_FanGasControl",
+    "block_type": "FC",
+    "code": "OK",
+    "device_name": "PLC_1",
+    "message": "TIA import completed",
+    "messages": [],
+    "network_key": null,
+    "plan_id": "ladplan_12c6cc8eaeb26a0b",
+    "recorded_at": "2026-07-31T00:20:28.977449Z",
+    "stage": "tia_import",
+    "success": true,
+    "target": {
+      "device_name": "PLC_1",
+      "project": "FanGas_Combustion"
+    },
+    "version": 1
+  },
+  "last_validation": {
+    "errors": [],
+    "summary": {
+      "bytes": 7303,
+      "root": "Document"
+    },
+    "valid": true,
+    "warnings": []
+  },
+  "network_states": {
+    "nw1_fan_output": "import_pending",
+    "nw3_gas_ignition": "import_pending"
+  },
+  "plan_id": "ladplan_12c6cc8eaeb26a0b",
+  "status": "imported",
+  "updated_at": "2026-07-31T00:20:29.045024Z",
+  "verified_versions": {}
+}

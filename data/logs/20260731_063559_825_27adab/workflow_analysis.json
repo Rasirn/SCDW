@@ -1812,5 +1812,23 @@
     "exception": null,
     "recovery_available": false,
     "success": true
-  }
+  },
+  "turns": [
+    {
+      "query": {
+        "chars": 1018,
+        "sha256": "46d6f9ff27d92c19039f5857f4b00c256ce1b986932b8a0ee41a4a216942c076"
+      },
+      "started_at": "2026-07-31T06:36:19.794292+08:00"
+    },
+    {
+      "query": "按照你的方式修改",
+      "started_at": "2026-07-31T06:40:29.268748+08:00"
+    },
+    {
+      "query": "可是我明明只让你生成3个程序段，为什么最后是6个？只回答，不做修改",
+      "started_at": "2026-07-31T06:51:56.114632+08:00"
+    }
+  ],
+  "user_continuations": []
 }

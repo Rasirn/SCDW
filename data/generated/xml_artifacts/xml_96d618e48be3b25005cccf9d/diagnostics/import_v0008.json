@@ -1,0 +1,26 @@
+{
+  "artifact_id": "xml_96d618e48be3b25005cccf9d",
+  "block_name": "FC_FanGasControl",
+  "block_type": "FC",
+  "code": "TIA_XML_IMPORT_FAILED",
+  "device_name": "PLC_1",
+  "message": "Error when calling method 'Import' of type 'Siemens.Engineering.SW.Blocks.PlcBlockComposition'.\r\n\r\nCannot create the 'SW.Blocks.CompileUnit' object with Simatic ML ID '6' at line number 65 at line position 2.\r\n\r\nError when calling method 'Create' of type 'Siemens.Engineering.SW.Blocks.CompileUnitComposition'.\r\n\r\n '{0}': Import failed at the object with UID '{1}'.\r\n   在 Siemens.Engineering.Private.Session.Siemens.Engineering.Private.IInstanceSession.InvokeFunc[T,TC](LifetimeContractHandle`1 lifetimeContractHandle, String name, IEnumerable`1 parameters, String fullName)\r\n   在 Siemens.Engineering.Private.InternalInstanceAccess`2.InvokeFunc[T](String name, IEnumerable`1 parameters)\r\n   在 Siemens.Engineering.SW.Blocks.PlcBlockComposition.Import(FileInfo path, ImportOptions importOptions)",
+  "messages": [
+    {
+      "description": "Error when calling method 'Import' of type 'Siemens.Engineering.SW.Blocks.PlcBlockComposition'.\r\n\r\nCannot create the 'SW.Blocks.CompileUnit' object with Simatic ML ID '6' at line number 65 at line position 2.\r\n\r\nError when calling method 'Create' of type 'Siemens.Engineering.SW.Blocks.CompileUnitComposition'.\r\n\r\n '{0}': Import failed at the object with UID '{1}'.\r\n   在 Siemens.Engineering.Private.Session.Siemens.Engineering.Private.IInstanceSession.InvokeFunc[T,TC](LifetimeContractHandle`1 lifetimeContractHandle, String name, IEnumerable`1 parameters, String fullName)\r\n   在 Siemens.Engineering.Private.InternalInstanceAccess`2.InvokeFunc[T](String name, IEnumerable`1 parameters)\r\n   在 Siemens.Engineering.SW.Blocks.PlcBlockComposition.Import(FileInfo path, ImportOptions importOptions)",
+      "path": "",
+      "severity": "error",
+      "type": "EngineeringTargetInvocationException"
+    }
+  ],
+  "network_key": "nw2_fan_output_calc",
+  "plan_id": "ladplan_12c6cc8eaeb26a0b",
+  "recorded_at": "2026-07-31T00:15:29.572014Z",
+  "stage": "tia_import",
+  "success": false,
+  "target": {
+    "device_name": "PLC_1",
+    "project": "FanGas_Combustion"
+  },
+  "version": 8
+}

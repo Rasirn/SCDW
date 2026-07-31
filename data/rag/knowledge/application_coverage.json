@@ -39529,9 +39529,11 @@
         "catalog_items": [
           "access.multilevel_db_member.v17",
           "instruction.coilton_pulse.v17",
+          "instruction.compare_ge_real_coil.v17",
           "instruction.comparison_or_chain.v17",
           "instruction.gather_scatter.v17",
           "instruction.pbox_edge_memory.v17",
+          "instruction.pbox_set_reset_ton_coil.v17",
           "instruction.ton_global_instance.v17",
           "instruction.tonr_trend_state.v17",
           "topology.contact_or_coil.v17",
@@ -39780,6 +39782,7 @@
           "instruction.increment_counter.v17",
           "instruction.move.v17",
           "instruction.pbox_edge_memory.v17",
+          "instruction.pbox_set_reset_ton_coil.v17",
           "instruction.ton_global_instance.v17",
           "instruction.ton_static_instance.v17",
           "instruction.tonr_trend_state.v17",
@@ -41748,6 +41751,7 @@
       },
       {
         "catalog_items": [
+          "instruction.compare_ge_real_coil.v17",
           "instruction.tonr_trend_state.v17"
         ],
         "child_structures": [
@@ -45989,6 +45993,7 @@
         "catalog_items": [
           "instruction.increment_counter.v17",
           "instruction.pbox_edge_memory.v17",
+          "instruction.pbox_set_reset_ton_coil.v17",
           "instruction.tonr_trend_state.v17",
           "topology.contact_or_pbox_scoil.v17"
         ],
@@ -46154,6 +46159,7 @@
       {
         "catalog_items": [
           "instruction.pbox_edge_memory.v17",
+          "instruction.pbox_set_reset_ton_coil.v17",
           "instruction.tonr_trend_state.v17",
           "topology.fan_out.v17",
           "topology.parallel_set_reset.v17"
@@ -46318,6 +46324,7 @@
       {
         "catalog_items": [
           "instruction.pbox_edge_memory.v17",
+          "instruction.pbox_set_reset_ton_coil.v17",
           "instruction.tonr_trend_state.v17",
           "topology.contact_or_pbox_scoil.v17",
           "topology.fan_out.v17",
@@ -46741,6 +46748,7 @@
         "catalog_items": [
           "access.typed_time_constant.v17",
           "instruction.pbox_edge_memory.v17",
+          "instruction.pbox_set_reset_ton_coil.v17",
           "instruction.ton_global_instance.v17",
           "instruction.ton_static_instance.v17"
         ],
@@ -65806,6 +65814,7 @@
           "access.array_element.v17",
           "access.multilevel_db_member.v17",
           "call.fb_global_instance.v17",
+          "instruction.compare_ge_real_coil.v17",
           "instruction.comparison_or_chain.v17",
           "instruction.convert_divide.v17",
           "instruction.gather_scatter.v17",
@@ -65813,6 +65822,7 @@
           "instruction.math_cascade.v17",
           "instruction.move.v17",
           "instruction.pbox_edge_memory.v17",
+          "instruction.pbox_set_reset_ton_coil.v17",
           "instruction.ton_global_instance.v17",
           "instruction.tonr_trend_state.v17",
           "topology.contact_or_coil.v17",
@@ -65828,6 +65838,7 @@
         "catalog_items": [
           "access.array_element.v17",
           "instruction.arithmetic_guard.v17",
+          "instruction.compare_ge_real_coil.v17",
           "instruction.comparison_or_chain.v17",
           "instruction.convert_divide.v17",
           "instruction.gather_scatter.v17",
@@ -65856,6 +65867,7 @@
           "access.typed_time_constant.v17",
           "instruction.coilton_pulse.v17",
           "instruction.pbox_edge_memory.v17",
+          "instruction.pbox_set_reset_ton_coil.v17",
           "instruction.ton_global_instance.v17",
           "instruction.ton_static_instance.v17",
           "instruction.tonr_trend_state.v17"
@@ -65892,9 +65904,11 @@
       "Coil": [
         "access.multilevel_db_member.v17",
         "instruction.coilton_pulse.v17",
+        "instruction.compare_ge_real_coil.v17",
         "instruction.comparison_or_chain.v17",
         "instruction.gather_scatter.v17",
         "instruction.pbox_edge_memory.v17",
+        "instruction.pbox_set_reset_ton_coil.v17",
         "instruction.ton_global_instance.v17",
         "instruction.tonr_trend_state.v17",
         "topology.contact_or_coil.v17",
@@ -65913,6 +65927,7 @@
         "instruction.increment_counter.v17",
         "instruction.move.v17",
         "instruction.pbox_edge_memory.v17",
+        "instruction.pbox_set_reset_ton_coil.v17",
         "instruction.ton_global_instance.v17",
         "instruction.ton_static_instance.v17",
         "instruction.tonr_trend_state.v17",
@@ -65938,6 +65953,7 @@
         "instruction.gather_scatter.v17"
       ],
       "Ge": [
+        "instruction.compare_ge_real_coil.v17",
         "instruction.tonr_trend_state.v17"
       ],
       "Gt": [
@@ -65982,11 +65998,13 @@
       "PBox": [
         "instruction.increment_counter.v17",
         "instruction.pbox_edge_memory.v17",
+        "instruction.pbox_set_reset_ton_coil.v17",
         "instruction.tonr_trend_state.v17",
         "topology.contact_or_pbox_scoil.v17"
       ],
       "RCoil": [
         "instruction.pbox_edge_memory.v17",
+        "instruction.pbox_set_reset_ton_coil.v17",
         "instruction.tonr_trend_state.v17",
         "topology.fan_out.v17",
         "topology.parallel_set_reset.v17"
@@ -65996,6 +66014,7 @@
       ],
       "SCoil": [
         "instruction.pbox_edge_memory.v17",
+        "instruction.pbox_set_reset_ton_coil.v17",
         "instruction.tonr_trend_state.v17",
         "topology.contact_or_pbox_scoil.v17",
         "topology.fan_out.v17",
@@ -66008,6 +66027,7 @@
       "TON": [
         "access.typed_time_constant.v17",
         "instruction.pbox_edge_memory.v17",
+        "instruction.pbox_set_reset_ton_coil.v17",
         "instruction.ton_global_instance.v17",
         "instruction.ton_static_instance.v17"
       ],
@@ -66066,6 +66086,7 @@
           "access.typed_time_constant.v17",
           "instruction.arithmetic_guard.v17",
           "instruction.coilton_pulse.v17",
+          "instruction.compare_ge_real_coil.v17",
           "instruction.comparison_or_chain.v17",
           "instruction.convert_divide.v17",
           "instruction.gather_scatter.v17",
@@ -66073,6 +66094,7 @@
           "instruction.math_cascade.v17",
           "instruction.move.v17",
           "instruction.pbox_edge_memory.v17",
+          "instruction.pbox_set_reset_ton_coil.v17",
           "instruction.ton_global_instance.v17",
           "instruction.ton_static_instance.v17",
           "instruction.tonr_trend_state.v17",
@@ -66119,6 +66141,7 @@
           "access.typed_time_constant.v17",
           "call.fb_global_instance.v17",
           "instruction.pbox_edge_memory.v17",
+          "instruction.pbox_set_reset_ton_coil.v17",
           "instruction.ton_global_instance.v17",
           "instruction.ton_static_instance.v17",
           "instruction.tonr_trend_state.v17"
@@ -66143,6 +66166,7 @@
           "call.fb_global_instance.v17",
           "instruction.arithmetic_guard.v17",
           "instruction.coilton_pulse.v17",
+          "instruction.compare_ge_real_coil.v17",
           "instruction.comparison_or_chain.v17",
           "instruction.convert_divide.v17",
           "instruction.gather_scatter.v17",
@@ -66150,6 +66174,7 @@
           "instruction.math_cascade.v17",
           "instruction.move.v17",
           "instruction.pbox_edge_memory.v17",
+          "instruction.pbox_set_reset_ton_coil.v17",
           "instruction.ton_global_instance.v17",
           "instruction.ton_static_instance.v17",
           "instruction.tonr_trend_state.v17",
@@ -66173,6 +66198,7 @@
           "call.fc.v17",
           "instruction.arithmetic_guard.v17",
           "instruction.coilton_pulse.v17",
+          "instruction.compare_ge_real_coil.v17",
           "instruction.comparison_or_chain.v17",
           "instruction.convert_divide.v17",
           "instruction.gather_scatter.v17",
@@ -66180,6 +66206,7 @@
           "instruction.math_cascade.v17",
           "instruction.move.v17",
           "instruction.pbox_edge_memory.v17",
+          "instruction.pbox_set_reset_ton_coil.v17",
           "instruction.ton_global_instance.v17",
           "instruction.ton_static_instance.v17",
           "instruction.tonr_trend_state.v17",
@@ -66217,6 +66244,7 @@
         ],
         "catalog_items": [
           "instruction.comparison_or_chain.v17",
+          "instruction.pbox_set_reset_ton_coil.v17",
           "topology.contact_or_coil.v17",
           "topology.contact_or_pbox_scoil.v17",
           "topology.parallel_set_reset.v17"
@@ -66232,6 +66260,7 @@
         "catalog_items": [
           "instruction.arithmetic_guard.v17",
           "instruction.coilton_pulse.v17",
+          "instruction.compare_ge_real_coil.v17",
           "instruction.convert_divide.v17",
           "instruction.gather_scatter.v17",
           "instruction.increment_counter.v17",
@@ -66251,6 +66280,7 @@
         "catalog_items": [
           "instruction.arithmetic_guard.v17",
           "instruction.coilton_pulse.v17",
+          "instruction.compare_ge_real_coil.v17",
           "instruction.convert_divide.v17",
           "instruction.gather_scatter.v17",
           "instruction.increment_counter.v17",
@@ -66266,7 +66296,7 @@
     ],
     "uncovered_part_types": []
   },
-  "generated_at": "2026-07-30T15:07:40.383240Z",
+  "generated_at": "2026-07-31T01:10:28.465588Z",
   "raw_directory": "E:\\PlcProject\\Code\\PLC\\SCDW\\data\\rag\\raw\\application",
   "schema_version": 1,
   "sources": [

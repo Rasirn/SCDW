@@ -1,0 +1,4213 @@
+{
+  "by_network": {
+    "nw_pbox_fail_set": {
+      "compile": 1,
+      "failures": 1,
+      "generate": 2
+    },
+    "nw_pbox_success_reset": {
+      "compile": 1,
+      "generate": 1
+    }
+  },
+  "by_tool": {
+    "add_plc_to_project": 1,
+    "append_network_and_prepare_import": 3,
+    "create_global_db": 2,
+    "create_lad_block_artifact": 1,
+    "draft_lad_generation_plan": 1,
+    "get_plc_knowledge_catalog": 1,
+    "get_plc_knowledge_items": 1,
+    "import_and_compile_artifact": 2,
+    "init_tia_project": 1,
+    "list_tia_processes": 1,
+    "list_workspace_files": 1,
+    "refresh_tia_context": 2,
+    "save_lad_generation_plan": 1
+  },
+  "calls": [
+    {
+      "arguments": {},
+      "arguments_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "code": null,
+      "duplicate_of": null,
+      "duration_ms": 6.511,
+      "index": 1,
+      "result": {},
+      "result_chars": 2,
+      "stage": null,
+      "started_at": "2026-07-31T07:03:19.267753+08:00",
+      "success": false,
+      "tool": "refresh_tia_context"
+    },
+    {
+      "arguments": {},
+      "arguments_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 341.414,
+      "index": 2,
+      "result": {
+        "code": "OK",
+        "data": {
+          "text": "[]"
+        },
+        "message": "[]",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "list_tia_processes",
+        "success": true
+      },
+      "result_chars": 285,
+      "stage": "list_tia_processes",
+      "started_at": "2026-07-31T07:03:32.429704+08:00",
+      "success": true,
+      "tool": "list_tia_processes"
+    },
+    {
+      "arguments": {
+        "directory": "data/generated"
+      },
+      "arguments_sha256": "eab4b6ca16f7692ef27284ed1e29814c8cf162778ec391ed35267b2fe5fd3073",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 5.008,
+      "index": 3,
+      "result": {
+        "code": "OK",
+        "data": {
+          "directory": "data/generated",
+          "entries": [
+            {
+              "path": "Demo_Project",
+              "size": null,
+              "type": "directory"
+            },
+            {
+              "path": "FanGasControl",
+              "size": null,
+              "type": "directory"
+            },
+            {
+              "path": "lad_plans",
+              "size": null,
+              "type": "directory"
+            },
+            {
+              "path": "rag",
+              "size": null,
+              "type": "directory"
+            },
+            {
+              "path": "test_projects",
+              "size": null,
+              "type": "directory"
+            },
+            {
+              "path": "test_tmp",
+              "size": null,
+              "type": "directory"
+            },
+            {
+              "path": "xml_artifacts",
+              "size": null,
+              "type": "directory"
+            },
+            {
+              "path": "tia_step3_2030.err",
+              "size": 0,
+              "type": "file"
+            },
+            {
+              "path": "tia_step3_2030.out",
+              "size": 5667,
+              "type": "file"
+            }
+          ],
+          "truncated": false
+        },
+        "message": "completed",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "list_workspace_files",
+        "success": true
+      },
+      "result_chars": 973,
+      "stage": "list_workspace_files",
+      "started_at": "2026-07-31T07:03:32.772120+08:00",
+      "success": true,
+      "tool": "list_workspace_files"
+    },
+    {
+      "arguments": {},
+      "arguments_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "code": null,
+      "duplicate_of": 1,
+      "duration_ms": 4.005,
+      "index": 4,
+      "result": {},
+      "result_chars": 2,
+      "stage": null,
+      "started_at": "2026-07-31T07:04:03.799294+08:00",
+      "success": false,
+      "tool": "refresh_tia_context"
+    },
+    {
+      "arguments": {
+        "overwrite": false,
+        "project_name": "VFD_CommFault"
+      },
+      "arguments_sha256": "5d23599add1200d778df390bcbf47241ef4c736792438d50e497e6598c36a7d7",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 23276.473,
+      "index": 5,
+      "result": {
+        "code": "OK",
+        "data": {
+          "text": "✅ TIA 项目已创建\n  项目名称：VFD_CommFault\n  项目路径：E:\\PlcProject\\Code\\PLC\\SCDW\\data\\generated\\VFD_CommFault\n  TIA UI：有界面\n会话已就绪，可继续添加设备和软件配置。"
+        },
+        "message": "✅ TIA 项目已创建",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "init_tia_project",
+        "success": true
+      },
+      "result_chars": 448,
+      "stage": "init_tia_project",
+      "started_at": "2026-07-31T07:04:12.644999+08:00",
+      "success": true,
+      "tool": "init_tia_project"
+    },
+    {
+      "arguments": {
+        "device_name": "PLC_1",
+        "order_number": "OrderNumber:6ES7 214-1BG40-0XB0/V4.5"
+      },
+      "arguments_sha256": "8389d314205807da5dcd0ff2fac4742af32fd4895520a3864caad0c4fc4355b1",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 10659.168,
+      "index": 6,
+      "result": {
+        "code": "OK",
+        "data": {
+          "text": "✅ 已添加 PLC 设备\n  名称：PLC_1\n  订货号：OrderNumber:6ES7 214-1BG40-0XB0/V4.5"
+        },
+        "message": "✅ 已添加 PLC 设备",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "add_plc_to_project",
+        "success": true
+      },
+      "result_chars": 363,
+      "stage": "add_plc_to_project",
+      "started_at": "2026-07-31T07:04:39.695779+08:00",
+      "success": true,
+      "tool": "add_plc_to_project"
+    },
+    {
+      "arguments": {
+        "address_mode": "symbolic",
+        "db_name": "内部数据",
+        "db_number": 2,
+        "device_name": "PLC_1",
+        "variables_json": [
+          {
+            "comment": "变频器1读取失败指示",
+            "data_type": "Bool",
+            "name": "变频器读取失败1"
+          },
+          {
+            "comment": "变频器1读取成功指示",
+            "data_type": "Bool",
+            "name": "变频器读取成功1"
+          },
+          {
+            "comment": "P_TRIG上升沿存储位1",
+            "data_type": "Bool",
+            "name": "变频器通讯故障脉冲1"
+          },
+          {
+            "comment": "P_TRIG上升沿存储位2",
+            "data_type": "Bool",
+            "name": "变频器通讯故障脉冲2"
+          },
+          {
+            "comment": "变频器通讯故障状态标志",
+            "data_type": "Bool",
+            "name": "变频器通讯故障标志"
+          },
+          {
+            "comment": "TON接通延时定时器变量",
+            "data_type": "IEC_TIMER",
+            "name": "变频器通讯延时定时器"
+          }
+        ]
+      },
+      "arguments_sha256": "cd021c06a693ee94f24edb5383001f2779f2723186aa0162e4157dcf3606484c",
+      "code": "GLOBAL_DB_CREATED",
+      "duplicate_of": null,
+      "duration_ms": 3052.404,
+      "index": 7,
+      "result": {
+        "code": "GLOBAL_DB_CREATED",
+        "data": {
+          "db_name": "内部数据",
+          "db_number": 2,
+          "device_name": "PLC_1",
+          "optimized_access": true,
+          "variable_mappings": [
+            {
+              "requested_address": null,
+              "requested_name": "变频器读取失败1",
+              "tia_actual_address": null,
+              "tia_actual_name": "变频器读取失败1"
+            },
+            {
+              "requested_address": null,
+              "requested_name": "变频器读取成功1",
+              "tia_actual_address": null,
+              "tia_actual_name": "变频器读取成功1"
+            },
+            {
+              "requested_address": null,
+              "requested_name": "变频器通讯故障脉冲1",
+              "tia_actual_address": null,
+              "tia_actual_name": "变频器通讯故障脉冲1"
+            },
+            {
+              "requested_address": null,
+              "requested_name": "变频器通讯故障脉冲2",
+              "tia_actual_address": null,
+              "tia_actual_name": "变频器通讯故障脉冲2"
+            },
+            {
+              "requested_address": null,
+              "requested_name": "变频器通讯故障标志",
+              "tia_actual_address": null,
+              "tia_actual_name": "变频器通讯故障标志"
+            },
+            {
+              "requested_address": null,
+              "requested_name": "变频器通讯延时定时器",
+              "tia_actual_address": null,
+              "tia_actual_name": "变频器通讯延时定时器"
+            }
+          ]
+        },
+        "db_name": "内部数据",
+        "db_number": 2,
+        "device_name": "PLC_1",
+        "message": "completed",
+        "needs_user_action": false,
+        "optimized_access": true,
+        "retryable": false,
+        "stage": "create_global_db",
+        "success": true,
+        "variable_mappings": [
+          {
+            "requested_address": null,
+            "requested_name": "变频器读取失败1",
+            "tia_actual_address": null,
+            "tia_actual_name": "变频器读取失败1"
+          },
+          {
+            "requested_address": null,
+            "requested_name": "变频器读取成功1",
+            "tia_actual_address": null,
+            "tia_actual_name": "变频器读取成功1"
+          },
+          {
+            "requested_address": null,
+            "requested_name": "变频器通讯故障脉冲1",
+            "tia_actual_address": null,
+            "tia_actual_name": "变频器通讯故障脉冲1"
+          },
+          {
+            "requested_address": null,
+            "requested_name": "变频器通讯故障脉冲2",
+            "tia_actual_address": null,
+            "tia_actual_name": "变频器通讯故障脉冲2"
+          },
+          {
+            "requested_address": null,
+            "requested_name": "变频器通讯故障标志",
+            "tia_actual_address": null,
+            "tia_actual_name": "变频器通讯故障标志"
+          },
+          {
+            "requested_address": null,
+            "requested_name": "变频器通讯延时定时器",
+            "tia_actual_address": null,
+            "tia_actual_name": "变频器通讯延时定时器"
+          }
+        ]
+      },
+      "result_chars": 2119,
+      "stage": "create_global_db",
+      "started_at": "2026-07-31T07:05:00.080210+08:00",
+      "success": true,
+      "tool": "create_global_db"
+    },
+    {
+      "arguments": {
+        "address_mode": "symbolic",
+        "db_name": "曲线数据",
+        "db_number": 1,
+        "device_name": "PLC_1",
+        "variables_json": [
+          {
+            "comment": "持续3分钟以上变频器通讯异常报警",
+            "data_type": "Bool",
+            "name": "变频器通讯故障"
+          }
+        ]
+      },
+      "arguments_sha256": "041b653a2ab2d3bff74e8f2aa516fe3186e61024bf53bf31721f591c46e97211",
+      "code": "GLOBAL_DB_CREATED",
+      "duplicate_of": null,
+      "duration_ms": 597.597,
+      "index": 8,
+      "result": {
+        "code": "GLOBAL_DB_CREATED",
+        "data": {
+          "db_name": "曲线数据",
+          "db_number": 1,
+          "device_name": "PLC_1",
+          "optimized_access": true,
+          "variable_mappings": [
+            {
+              "requested_address": null,
+              "requested_name": "变频器通讯故障",
+              "tia_actual_address": null,
+              "tia_actual_name": "变频器通讯故障"
+            }
+          ]
+        },
+        "db_name": "曲线数据",
+        "db_number": 1,
+        "device_name": "PLC_1",
+        "message": "completed",
+        "needs_user_action": false,
+        "optimized_access": true,
+        "retryable": false,
+        "stage": "create_global_db",
+        "success": true,
+        "variable_mappings": [
+          {
+            "requested_address": null,
+            "requested_name": "变频器通讯故障",
+            "tia_actual_address": null,
+            "tia_actual_name": "变频器通讯故障"
+          }
+        ]
+      },
+      "result_chars": 787,
+      "stage": "create_global_db",
+      "started_at": "2026-07-31T07:05:03.135611+08:00",
+      "success": true,
+      "tool": "create_global_db"
+    },
+    {
+      "arguments": {},
+      "arguments_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 44.032,
+      "index": 9,
+      "result": {
+        "code": "OK",
+        "data": {
+          "catalog_sha256": "e99baeb717079e0bd5597886bb0164e5690ec8c748bdf6bd02fc9687a60009e6",
+          "filters": {
+            "capabilities": [],
+            "roles": []
+          },
+          "items": [
+            {
+              "generation_mode": null,
+              "id": "shell.fc_block.v17",
+              "limitations": [
+                "FB实例声明"
+              ],
+              "provides": [
+                "compile_unit",
+                "fc_shell",
+                "interface"
+              ],
+              "role": "block_shell",
+              "status": "golden",
+              "title": "FC块与CompileUnit外壳",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "topology.series_contact_coil.v17",
+              "limitations": [
+                "并联分支"
+              ],
+              "provides": [
+                "coil",
+                "contact",
+                "series_flow",
+                "topology.series"
+              ],
+              "role": "topology_pattern",
+              "status": "golden",
+              "title": "串联触点到线圈",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "topology.parallel_set_reset.v17",
+              "limitations": [
+                "普通瞬时线圈"
+              ],
+              "provides": [
+                "latched_state",
+                "parallel_branches",
+                "reset_coil",
+                "set_coil",
+                "topology.parallel"
+              ],
+              "role": "topology_pattern",
+              "status": "golden",
+              "title": "并联置位复位与状态保持",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "topology.fan_out.v17",
+              "limitations": [
+                "多路汇合"
+              ],
+              "provides": [
+                "fan_out",
+                "shared_condition",
+                "topology.fan_out"
+              ],
+              "role": "topology_pattern",
+              "status": "golden",
+              "title": "串联后分叉",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "instruction.move.v17",
+              "limitations": [
+                "类型转换"
+              ],
+              "provides": [
+                "move",
+                "parameter_binding"
+              ],
+              "role": "instruction_pattern",
+              "status": "golden",
+              "title": "MOVE指令",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "instruction.math_cascade.v17",
+              "limitations": [
+                "整数溢出策略"
+              ],
+              "provides": [
+                "automatic_typed",
+                "calc",
+                "cascade",
+                "equation",
+                "mul"
+              ],
+              "role": "instruction_pattern",
+              "status": "golden",
+              "title": "数学功能框级联",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "instruction.ton_global_instance.v17",
+              "limitations": [
+                "TOF",
+                "TP",
+                "计数器"
+              ],
+              "provides": [
+                "global_timer_instance",
+                "ton",
+                "typed_time_constant"
+              ],
+              "role": "instruction_pattern",
+              "status": "golden",
+              "title": "TON全局实例",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "instruction.ton_static_instance.v17",
+              "limitations": [
+                "用户FB多重实例"
+              ],
+              "provides": [
+                "interface_binding",
+                "static_timer_instance",
+                "ton"
+              ],
+              "role": "instruction_pattern",
+              "status": "golden",
+              "title": "TON的FB Static本地实例",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "access.array_element.v17",
+              "limitations": [
+                "动态下标样本"
+              ],
+              "provides": [
+                "array_access",
+                "literal_index"
+              ],
+              "role": "access_pattern",
+              "status": "golden",
+              "title": "数组元素访问",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "access.multilevel_db_member.v17",
+              "limitations": [
+                "数组下标"
+              ],
+              "provides": [
+                "identcon_binding",
+                "nested_db_member"
+              ],
+              "role": "access_pattern",
+              "status": "golden",
+              "title": "多层DB成员访问",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "access.typed_time_constant.v17",
+              "limitations": [
+                "LiteralConstant"
+              ],
+              "provides": [
+                "time_literal",
+                "typed_constant"
+              ],
+              "role": "access_pattern",
+              "status": "golden",
+              "title": "TypedConstant时间常量",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "call.fc.v17",
+              "limitations": [
+                "FB背景实例"
+              ],
+              "provides": [
+                "fc_call"
+              ],
+              "role": "call_pattern",
+              "status": "golden",
+              "title": "无参数FC调用",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "call.fb_global_instance.v17",
+              "limitations": [
+                "无状态FC调用",
+                "多重实例"
+              ],
+              "provides": [
+                "fb_call",
+                "global_instance_db",
+                "parameter_binding"
+              ],
+              "role": "call_pattern",
+              "status": "golden",
+              "title": "FB全局背景DB调用",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "interface.local_variable_access.v17",
+              "limitations": [
+                "纯全局变量网络"
+              ],
+              "provides": [
+                "interface_access_consistency",
+                "local_variable"
+              ],
+              "role": "interface_pattern",
+              "status": "golden",
+              "title": "局部变量声明与Access一致性",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "interface.complex_sections.v17",
+              "limitations": [
+                "FC Return段"
+              ],
+              "provides": [
+                "fb_interface",
+                "iec_timer_member",
+                "static_state"
+              ],
+              "role": "interface_pattern",
+              "status": "golden",
+              "title": "复杂FB Interface",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "network_text.title_comment.v17",
+              "limitations": [
+                "块级注释"
+              ],
+              "provides": [
+                "multilingual_text",
+                "network_comment",
+                "network_title"
+              ],
+              "role": "network_text_pattern",
+              "status": "golden",
+              "title": "Network标题和功能注释",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "guide.simaticml_block_structure.v17",
+              "limitations": [],
+              "provides": [
+                "block_structure_rules"
+              ],
+              "role": "rule_guide",
+              "status": "golden",
+              "title": "SimaticML块结构规则",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "guide.uid_reference_rules.v17",
+              "limitations": [],
+              "provides": [
+                "reference_rules",
+                "uid_rules"
+              ],
+              "role": "rule_guide",
+              "status": "golden",
+              "title": "UId与引用规则",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "guide.part_wire_coupling.v17",
+              "limitations": [],
+              "provides": [
+                "part_wire_rules"
+              ],
+              "role": "rule_guide",
+              "status": "golden",
+              "title": "Part与Wire成组规则",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "guide.interface_access_consistency.v17",
+              "limitations": [],
+              "provides": [
+                "interface_rules"
+              ],
+              "role": "rule_guide",
+              "status": "golden",
+              "title": "Interface与Access一致性规则",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "guide.user_block_call_rules.v17",
+              "limitations": [],
+              "provides": [
+                "user_call_rules"
+              ],
+              "role": "rule_guide",
+              "status": "golden",
+              "title": "用户块调用规则",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "guide.timer_counter_instance_rules.v17",
+              "limitations": [],
+              "provides": [
+                "coverage_limits",
+                "timer_instance_rules"
+              ],
+              "role": "rule_guide",
+              "status": "golden",
+              "title": "定时器计数器实例规则",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "guide.instruction_template_rules.v17",
+              "limitations": [],
+              "provides": [
+                "instruction_template_rules"
+              ],
+              "role": "rule_guide",
+              "status": "golden",
+              "title": "特殊指令模板规则",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "guide.import_failure_patterns.v17",
+              "limitations": [
+                "PLC逻辑验证"
+              ],
+              "provides": [
+                "import_diagnostics"
+              ],
+              "role": "diagnostic_guide",
+              "status": "verified",
+              "title": "导入失败模式",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "guide.compile_failure_patterns.v17",
+              "limitations": [
+                "XML语法解析"
+              ],
+              "provides": [
+                "compile_diagnostics"
+              ],
+              "role": "diagnostic_guide",
+              "status": "verified",
+              "title": "编译失败模式",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "instruction.pbox_edge_memory.v17",
+              "limitations": [
+                "RBox下降沿",
+                "把PBox改写成P_TRIG或R_TRIG",
+                "省略bit存储连接",
+                "多个Contact经OR汇合到一个PBox；应选topology.contact_or_pbox_scoil.v17"
+              ],
+              "provides": [
+                "edge.memory_bit",
+                "edge.ports.in_bit_out",
+                "edge.rising",
+                "pbox",
+                "reset_coil",
+                "set_coil",
+                "topology.series"
+              ],
+              "role": "instruction_pattern",
+              "status": "golden",
+              "title": "单支路PBox上升沿检测及bit存储连接",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "instruction.tonr_trend_state.v17",
+              "limitations": [
+                "TON",
+                "TOF",
+                "TP",
+                "未声明的计时器实例"
+              ],
+              "provides": [
+                "add",
+                "compare.ge",
+                "compare.gt",
+                "compare.lt",
+                "global_timer_instance",
+                "pbox",
+                "retentive_timer",
+                "sub",
+                "timer.reset_port",
+                "tonr",
+                "topology.series"
+              ],
+              "role": "instruction_pattern",
+              "status": "verified",
+              "title": "TONR保持计时与趋势状态链",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "instruction.comparison_or_chain.v17",
+              "limitations": [
+                "串联AND条件",
+                "置位复位保持"
+              ],
+              "provides": [
+                "coil",
+                "compare.gt",
+                "compare.le",
+                "or_box",
+                "topology.merge",
+                "topology.parallel"
+              ],
+              "role": "topology_pattern",
+              "status": "verified",
+              "title": "比较条件与O功能框汇合",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": "knowledge_renderer_required",
+              "id": "instruction.compare_ge_real_coil.v17",
+              "limitations": [
+                "并联OR条件",
+                "不同数据类型混用"
+              ],
+              "provides": [
+                "coil",
+                "compare.ge",
+                "topology.series"
+              ],
+              "role": "instruction_pattern",
+              "status": "verified",
+              "title": "REAL大于等于比较驱动线圈",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified",
+                "generated_case_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "instruction.arithmetic_guard.v17",
+              "limitations": [
+                "不检查除数的任意除法替换"
+              ],
+              "provides": [
+                "automatic_typed",
+                "cascade",
+                "compare.eq",
+                "compare.ne",
+                "div",
+                "move",
+                "mul",
+                "sub",
+                "topology.series"
+              ],
+              "role": "instruction_pattern",
+              "status": "verified",
+              "title": "Sub、Mul、Ne、Div、Eq算术保护链",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "instruction.convert_divide.v17",
+              "limitations": [
+                "源类型和目标类型未知"
+              ],
+              "provides": [
+                "automatic_typed",
+                "cascade",
+                "convert",
+                "div",
+                "topology.series"
+              ],
+              "role": "instruction_pattern",
+              "status": "verified",
+              "title": "Convert与Div级联",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "instruction.coilton_pulse.v17",
+              "limitations": [
+                "TON功能框",
+                "TOF",
+                "TP"
+              ],
+              "provides": [
+                "coilton",
+                "global_timer_instance",
+                "timed_coil",
+                "topology.series"
+              ],
+              "role": "instruction_pattern",
+              "status": "verified",
+              "title": "CoilTON脉冲线圈",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "instruction.gather_scatter.v17",
+              "limitations": [
+                "普通Convert替代",
+                "修改TemplateValue大小写"
+              ],
+              "provides": [
+                "bit_word_mapping",
+                "gather",
+                "scatter",
+                "topology.series",
+                "version.1.2"
+              ],
+              "role": "instruction_pattern",
+              "status": "verified",
+              "title": "GATHER与SCATTER 1.2位组装拆分",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": null,
+              "id": "instruction.increment_counter.v17",
+              "limitations": [
+                "CTU实例",
+                "无跨扫描存储的临时变量"
+              ],
+              "provides": [
+                "compare.gt",
+                "compare.lt",
+                "counter.accumulate",
+                "inc",
+                "move",
+                "or_box",
+                "pbox",
+                "topology.series"
+              ],
+              "role": "instruction_pattern",
+              "status": "verified",
+              "title": "PBox脉冲驱动Inc累计",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified"
+              ]
+            },
+            {
+              "generation_mode": "knowledge_renderer_required",
+              "id": "topology.contact_or_coil.v17",
+              "limitations": [
+                "把多个Contact.out直接放入同一Wire",
+                "SCoil置位",
+                "PBox上升沿"
+              ],
+              "provides": [
+                "coil",
+                "contact",
+                "multi_contact_or_coil",
+                "or.cardinality",
+                "or_box",
+                "parallel_branches",
+                "renderer.contact_or_coil",
+                "topology.merge",
+                "topology.parallel"
+              ],
+              "role": "topology_pattern",
+              "status": "golden",
+              "title": "多常开触点经O功能框汇合到普通线圈",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified",
+                "generated_case_verified"
+              ]
+            },
+            {
+              "generation_mode": "knowledge_renderer_required",
+              "id": "topology.contact_or_pbox_scoil.v17",
+              "limitations": [
+                "P_TRIG或R_TRIG猜测名称",
+                "多个Contact.out共用一条Wire",
+                "省略PBox.bit"
+              ],
+              "provides": [
+                "contact",
+                "edge.memory_bit",
+                "edge.ports.in_bit_out",
+                "edge.rising",
+                "multi_contact_or_pbox_scoil",
+                "or.cardinality",
+                "or_box",
+                "parallel_branches",
+                "pbox",
+                "renderer.contact_or_pbox_scoil",
+                "set_coil",
+                "topology.merge",
+                "topology.parallel"
+              ],
+              "role": "topology_pattern",
+              "status": "golden",
+              "title": "多常开触点经O汇合、PBox上升沿到SCoil",
+              "verification_states": [
+                "source_exported",
+                "import_verified",
+                "compile_verified",
+                "generated_case_verified"
+              ]
+            }
+          ],
+          "schema_version": 2,
+          "selection_mode": "explicit_ids",
+          "tia_version": "V17"
+        },
+        "message": "completed",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "get_plc_knowledge_catalog",
+        "success": true
+      },
+      "result_chars": 14141,
+      "stage": "get_plc_knowledge_catalog",
+      "started_at": "2026-07-31T07:05:11.247276+08:00",
+      "success": true,
+      "tool": "get_plc_knowledge_catalog"
+    },
+    {
+      "arguments": {
+        "item_ids": [
+          "shell.fc_block.v17",
+          "topology.series_contact_coil.v17",
+          "instruction.pbox_edge_memory.v17",
+          "instruction.ton_global_instance.v17",
+          "access.multilevel_db_member.v17",
+          "network_text.title_comment.v17",
+          "guide.simaticml_block_structure.v17",
+          "guide.uid_reference_rules.v17",
+          "guide.part_wire_coupling.v17",
+          "guide.interface_access_consistency.v17",
+          "guide.timer_counter_instance_rules.v17",
+          "guide.instruction_template_rules.v17"
+        ]
+      },
+      "arguments_sha256": "ecd3ba07f83e730af888628b2e3a2b7e5a6e473f6f68a03640b388e6da20a123",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 8.003,
+      "index": 10,
+      "result": {
+        "code": "OK",
+        "data": {
+          "items": [
+            {
+              "content": {
+                "chars": 1185,
+                "sha256": "c03cd711290a0388b55ec9e4e0222095eae6e95d116317f1d5a5de36e977ecb9"
+              },
+              "content_sha256": "c03cd711290a0388b55ec9e4e0222095eae6e95d116317f1d5a5de36e977ecb9",
+              "id": "shell.fc_block.v17",
+              "metadata": {
+                "contains": {
+                  "access_scopes": [],
+                  "calls": [],
+                  "parts": []
+                },
+                "content_path": "shells/fc_block_shell.xml",
+                "content_type": "xml_fragment",
+                "description": "最小FC块、Interface、ObjectList和单个LAD CompileUnit的层级。",
+                "id": "shell.fc_block.v17",
+                "intent": [
+                  "FC块",
+                  "块外壳",
+                  "CompileUnit"
+                ],
+                "not_for": [
+                  "FB实例声明"
+                ],
+                "preserve": [
+                  "Document层级",
+                  "Engineering V17",
+                  "ProgrammingLanguage LAD"
+                ],
+                "provides": [
+                  "fc_shell",
+                  "interface",
+                  "compile_unit"
+                ],
+                "replace": [
+                  "块名",
+                  "Interface成员",
+                  "CompileUnit"
+                ],
+                "requires": [],
+                "role": "block_shell",
+                "source_refs": [
+                  "data/rag/raw/basic/01_串联_触点线圈.xml"
+                ],
+                "status": "golden",
+                "tia_version": "V17",
+                "title": "FC块与CompileUnit外壳"
+              }
+            },
+            {
+              "content": {
+                "chars": 1247,
+                "sha256": "27c1fcfc7ca1dc8422820c953fd43c94366d923cd46ad2c450a4b583409ee124"
+              },
+              "content_sha256": "27c1fcfc7ca1dc8422820c953fd43c94366d923cd46ad2c450a4b583409ee124",
+              "id": "topology.series_contact_coil.v17",
+              "metadata": {
+                "contains": {
+                  "access_scopes": [
+                    "GlobalVariable"
+                  ],
+                  "calls": [],
+                  "parts": [
+                    "Contact",
+                    "Coil"
+                  ]
+                },
+                "content_path": "topology/series_contact_coil.xml",
+                "content_type": "xml_fragment",
+                "description": "常开、常闭触点串联驱动普通线圈，含完整Access和Wire。",
+                "id": "topology.series_contact_coil.v17",
+                "intent": [
+                  "串联",
+                  "常开触点",
+                  "常闭触点",
+                  "线圈"
+                ],
+                "not_for": [
+                  "并联分支"
+                ],
+                "preserve": [
+                  "Part与Wire耦合",
+                  "operand端口"
+                ],
+                "provides": [
+                  "series_flow",
+                  "contact",
+                  "coil",
+                  "topology.series"
+                ],
+                "replace": [
+                  "变量路径",
+                  "UId"
+                ],
+                "requires": [
+                  "变量已声明"
+                ],
+                "role": "topology_pattern",
+                "source_refs": [
+                  "data/rag/raw/basic/01_串联_触点线圈.xml"
+                ],
+                "status": "golden",
+                "tia_version": "V17",
+                "title": "串联触点到线圈",
+                "topology": [
+                  "series"
+                ]
+              }
+            },
+            {
+              "content": {
+                "chars": 8550,
+                "sha256": "29dd29af38ff3f1c0abccd1e9807fbae064a8c7756243d2020fb3913fb869d6f"
+              },
+              "content_sha256": "29dd29af38ff3f1c0abccd1e9807fbae064a8c7756243d2020fb3913fb869d6f",
+              "id": "instruction.pbox_edge_memory.v17",
+              "metadata": {
+                "contains": {
+                  "access_scopes": [
+                    "GlobalVariable",
+                    "TypedConstant"
+                  ],
+                  "calls": [],
+                  "parts": [
+                    "Coil",
+                    "Contact",
+                    "PBox",
+                    "RCoil",
+                    "SCoil",
+                    "TON"
+                  ]
+                },
+                "content_path": "instructions/pbox_edge_memory.xml",
+                "content_type": "xml_fragment",
+                "description": "从TIA V17报警Network原样提取；其中多个Contact→PBox链是共享Powerrail的独立支路，不演示多个Contact.out汇合到一个PBox。",
+                "id": "instruction.pbox_edge_memory.v17",
+                "intent": [
+                  "PBox",
+                  "上升沿",
+                  "脉冲存储",
+                  "报警置位复位"
+                ],
+                "not_for": [
+                  "RBox下降沿",
+                  "把PBox改写成P_TRIG或R_TRIG",
+                  "省略bit存储连接",
+                  "多个Contact经OR汇合到一个PBox；应选topology.contact_or_pbox_scoil.v17"
+                ],
+                "preserve": [
+                  "Part Name=PBox",
+                  "in/bit/out端口名",
+                  "Access-Part-Wire完整子图"
+                ],
+                "provides": [
+                  "pbox",
+                  "edge.rising",
+                  "edge.memory_bit",
+                  "edge.ports.in_bit_out",
+                  "topology.series",
+                  "set_coil",
+                  "reset_coil"
+                ],
+                "replace": [
+                  "变量Component路径",
+                  "UId"
+                ],
+                "requires": [
+                  "bit端变量为Bool",
+                  "in输入来自有效功率流"
+                ],
+                "role": "instruction_pattern",
+                "source_refs": [
+                  "data/rag/raw/application/报警.xml"
+                ],
+                "status": "golden",
+                "tia_version": "V17",
+                "title": "单支路PBox上升沿检测及bit存储连接",
+                "topology": [
+                  "series",
+                  "independent_powerrail_branches"
+                ]
+              }
+            },
+            {
+              "content": {
+                "chars": 1701,
+                "sha256": "dfabf2a025f96ec4305190e66851d6f7fe296e9801e5fc4ee5d2741d0d94f754"
+              },
+              "content_sha256": "dfabf2a025f96ec4305190e66851d6f7fe296e9801e5fc4ee5d2741d0d94f754",
+              "id": "instruction.ton_global_instance.v17",
+              "metadata": {
+                "contains": {
+                  "access_scopes": [
+                    "GlobalVariable",
+                    "TypedConstant"
+                  ],
+                  "calls": [],
+                  "parts": [
+                    "TON",
+                    "Contact",
+                    "Coil"
+                  ]
+                },
+                "content_path": "instructions/ton_global_instance.xml",
+                "content_type": "xml_fragment",
+                "description": "TON通过全局IEC_TIMER实例计时，并读取实例Q成员。",
+                "id": "instruction.ton_global_instance.v17",
+                "intent": [
+                  "TON",
+                  "全局实例",
+                  "延时接通"
+                ],
+                "not_for": [
+                  "TOF",
+                  "TP",
+                  "计数器"
+                ],
+                "preserve": [
+                  "TON Version",
+                  "Instance",
+                  "time_type",
+                  "IN/PT端口"
+                ],
+                "provides": [
+                  "ton",
+                  "global_timer_instance",
+                  "typed_time_constant"
+                ],
+                "replace": [
+                  "实例路径",
+                  "PT",
+                  "变量路径",
+                  "UId"
+                ],
+                "requires": [
+                  "全局IEC_TIMER实例已存在"
+                ],
+                "role": "instruction_pattern",
+                "source_refs": [
+                  "data/rag/raw/application/报警.xml"
+                ],
+                "status": "golden",
+                "tia_version": "V17",
+                "title": "TON全局实例"
+              }
+            },
+            {
+              "content": {
+                "chars": 909,
+                "sha256": "7bb93dcc3cddda2a4538e37aa476594caa3177dcee936110e9dce48b7b8f4f0d"
+              },
+              "content_sha256": "7bb93dcc3cddda2a4538e37aa476594caa3177dcee936110e9dce48b7b8f4f0d",
+              "id": "access.multilevel_db_member.v17",
+              "metadata": {
+                "contains": {
+                  "access_scopes": [
+                    "GlobalVariable"
+                  ],
+                  "calls": [],
+                  "parts": [
+                    "Contact",
+                    "Coil"
+                  ]
+                },
+                "content_path": "access/multilevel_db_member.xml",
+                "content_type": "xml_fragment",
+                "description": "按Component链访问DB内IEC实例的Q成员。",
+                "id": "access.multilevel_db_member.v17",
+                "intent": [
+                  "多层DB成员",
+                  "实例成员Q"
+                ],
+                "not_for": [
+                  "数组下标"
+                ],
+                "preserve": [
+                  "Component顺序",
+                  "最外层UId"
+                ],
+                "provides": [
+                  "nested_db_member",
+                  "identcon_binding"
+                ],
+                "replace": [
+                  "DB名",
+                  "成员路径",
+                  "UId"
+                ],
+                "requires": [
+                  "成员路径存在"
+                ],
+                "role": "access_pattern",
+                "source_refs": [
+                  "data/rag/raw/application/报警.xml"
+                ],
+                "status": "golden",
+                "tia_version": "V17",
+                "title": "多层DB成员访问"
+              }
+            },
+            {
+              "content": {
+                "chars": 1000,
+                "sha256": "aa2106859f411bb6e60c81171cb769cc8aeb1c7099c91441755cfb4bfb6f9771"
+              },
+              "content_sha256": "aa2106859f411bb6e60c81171cb769cc8aeb1c7099c91441755cfb4bfb6f9771",
+              "id": "network_text.title_comment.v17",
+              "metadata": {
+                "contains": {
+                  "access_scopes": [],
+                  "calls": [],
+                  "parts": []
+                },
+                "content_path": "network_text/title_and_comment.xml",
+                "content_type": "xml_fragment",
+                "description": "CompileUnit下Title与Comment的完整MultilingualText结构。",
+                "id": "network_text.title_comment.v17",
+                "intent": [
+                  "Network标题",
+                  "功能注释",
+                  "多语言文本"
+                ],
+                "not_for": [
+                  "块级注释"
+                ],
+                "preserve": [
+                  "CompositionName",
+                  "ObjectList层级"
+                ],
+                "provides": [
+                  "network_title",
+                  "network_comment",
+                  "multilingual_text"
+                ],
+                "replace": [
+                  "文本",
+                  "Culture",
+                  "对象ID"
+                ],
+                "requires": [
+                  "CompileUnit存在"
+                ],
+                "role": "network_text_pattern",
+                "source_refs": [
+                  "data/rag/raw/application/Main.xml"
+                ],
+                "status": "golden",
+                "tia_version": "V17",
+                "title": "Network标题和功能注释"
+              }
+            },
+            {
+              "content": {
+                "chars": 392,
+                "sha256": "87dfe9f683d57262cf7d2ea11d528f20b128dc64c8de3789ad297d2754f8c438"
+              },
+              "content_sha256": "87dfe9f683d57262cf7d2ea11d528f20b128dc64c8de3789ad297d2754f8c438",
+              "id": "guide.simaticml_block_structure.v17",
+              "metadata": {
+                "content_path": "guides/simaticml_block_structure.md",
+                "content_type": "rule_document",
+                "description": "Interface、CompileUnit、FlgNet以及导入与编译边界。",
+                "id": "guide.simaticml_block_structure.v17",
+                "intent": [
+                  "块结构",
+                  "CompileUnit"
+                ],
+                "not_for": [],
+                "preserve": [],
+                "provides": [
+                  "block_structure_rules"
+                ],
+                "replace": [],
+                "requires": [],
+                "role": "rule_guide",
+                "source_refs": [
+                  "data/rag/raw/application/Main.xml",
+                  "src/scdw/mcp/tools.py"
+                ],
+                "status": "golden",
+                "tia_version": "V17",
+                "title": "SimaticML块结构规则"
+              }
+            },
+            {
+              "content": {
+                "chars": 337,
+                "sha256": "fc56ed681f0f35733264951247a62f4183b97a5e3aeda30e06951cfbff58c3e3"
+              },
+              "content_sha256": "fc56ed681f0f35733264951247a62f4183b97a5e3aeda30e06951cfbff58c3e3",
+              "id": "guide.uid_reference_rules.v17",
+              "metadata": {
+                "content_path": "guides/uid_and_reference_rules.md",
+                "content_type": "rule_document",
+                "description": "CompileUnit内唯一性、嵌套Access和连接引用规则。",
+                "id": "guide.uid_reference_rules.v17",
+                "intent": [
+                  "UId",
+                  "IdentCon",
+                  "NameCon"
+                ],
+                "not_for": [],
+                "preserve": [],
+                "provides": [
+                  "uid_rules",
+                  "reference_rules"
+                ],
+                "replace": [],
+                "requires": [],
+                "role": "rule_guide",
+                "source_refs": [
+                  "data/rag/raw/application/Main.xml",
+                  "data/rag/raw/basic/07_数组访问与IO标签.xml"
+                ],
+                "status": "golden",
+                "tia_version": "V17",
+                "title": "UId与引用规则"
+              }
+            },
+            {
+              "content": "# Part、Call 与 Wire 成组规则\n\n- `verified_v17_sample`：Access、Part/Call 与 Wire 共同构成可理解的 LAD 网络；不得只复制 Part。\n- `verified_v17_sample`：分叉可在一条 Wire 中由一个上游端口连接多个下游端口；并联起始支路共享同一 Powerrail Wire。\n- `project_debug_experience`：LAD 元素存在代码生成顺序约束，但不要把导出 XML 中偶然的 Wire 文本顺序解释成动作优先级。\n",
+              "content_sha256": "5d3f077901c0f9e4a1fe2014beb4fe5d0ea21d6efac8c04d9bd7992a75122300",
+              "id": "guide.part_wire_coupling.v17",
+              "metadata": {
+                "content_path": "guides/part_wire_coupling.md",
+                "content_type": "rule_document",
+                "description": "Access、Part、Call、Wire不可拆分及拓扑注意事项。",
+                "id": "guide.part_wire_coupling.v17",
+                "intent": [
+                  "Parts",
+                  "Wires",
+                  "拓扑"
+                ],
+                "not_for": [],
+                "preserve": [],
+                "provides": [
+                  "part_wire_rules"
+                ],
+                "replace": [],
+                "requires": [],
+                "role": "rule_guide",
+                "source_refs": [
+                  "data/rag/raw/basic/02_并联_多支路.xml",
+                  "src/scdw/mcp/tools.py"
+                ],
+                "status": "golden",
+                "tia_version": "V17",
+                "title": "Part与Wire成组规则"
+              }
+            },
+            {
+              "content": {
+                "chars": 317,
+                "sha256": "8be355f648fe7d92bce10520076712290c1d10284a3c723f24b5dc5806633de7"
+              },
+              "content_sha256": "8be355f648fe7d92bce10520076712290c1d10284a3c723f24b5dc5806633de7",
+              "id": "guide.interface_access_consistency.v17",
+              "metadata": {
+                "content_path": "guides/interface_access_consistency.md",
+                "content_type": "rule_document",
+                "description": "LocalVariable与各接口Section的一致性约束。",
+                "id": "guide.interface_access_consistency.v17",
+                "intent": [
+                  "Interface",
+                  "LocalVariable"
+                ],
+                "not_for": [],
+                "preserve": [],
+                "provides": [
+                  "interface_rules"
+                ],
+                "replace": [],
+                "requires": [],
+                "role": "rule_guide",
+                "source_refs": [
+                  "data/rag/raw/application/烧嘴控制.xml"
+                ],
+                "status": "golden",
+                "tia_version": "V17",
+                "title": "Interface与Access一致性规则"
+              }
+            },
+            {
+              "content": "# 定时器与计数器实例规则\n\n- `verified_v17_sample`：TON 样本使用 `Version=\"1.0\"`、IEC_TIMER 实例和 `time_type` TemplateValue；全局实例与 FB Static 本地实例分别有独立知识项。\n- `verified_v17_sample`：本地定时器 Instance 的名称必须在调用方 Static Interface 中存在。\n- `verified_v17_sample`：当前 application 未发现 TOF、TP 或 IEC 计数器样本，因此知识库不臆造其端口、实例或 Version。\n",
+              "content_sha256": "05666cc02246d63cec08a770c5e1db1d539f3d5b7be9fe55b8f8df0cffea2c0b",
+              "id": "guide.timer_counter_instance_rules.v17",
+              "metadata": {
+                "content_path": "guides/timer_counter_instance_rules.md",
+                "content_type": "rule_document",
+                "description": "已验证TON实例规则与TOF、TP、计数器样本缺口。",
+                "id": "guide.timer_counter_instance_rules.v17",
+                "intent": [
+                  "定时器",
+                  "计数器",
+                  "实例"
+                ],
+                "not_for": [],
+                "preserve": [],
+                "provides": [
+                  "timer_instance_rules",
+                  "coverage_limits"
+                ],
+                "replace": [],
+                "requires": [],
+                "role": "rule_guide",
+                "source_refs": [
+                  "data/rag/raw/application/报警.xml",
+                  "data/rag/raw/application/程序发生器.xml"
+                ],
+                "status": "golden",
+                "tia_version": "V17",
+                "title": "定时器计数器实例规则"
+              }
+            },
+            {
+              "content": {
+                "chars": 369,
+                "sha256": "ba9ab204ee0fbc1911f82f6bf117777bae92b30c77b6b8ad60a216390de8b13b"
+              },
+              "content_sha256": "ba9ab204ee0fbc1911f82f6bf117777bae92b30c77b6b8ad60a216390de8b13b",
+              "id": "guide.instruction_template_rules.v17",
+              "metadata": {
+                "content_path": "guides/instruction_template_rules.md",
+                "content_type": "rule_document",
+                "description": "Version、TemplateValue、AutomaticTyped与Equation使用边界。",
+                "id": "guide.instruction_template_rules.v17",
+                "intent": [
+                  "TemplateValue",
+                  "AutomaticTyped",
+                  "Equation",
+                  "Version"
+                ],
+                "not_for": [],
+                "preserve": [],
+                "provides": [
+                  "instruction_template_rules"
+                ],
+                "replace": [],
+                "requires": [],
+                "role": "rule_guide",
+                "source_refs": [
+                  "data/rag/raw/application/程序发生器.xml",
+                  "data/rag/raw/application/输入信号转换块.xml"
+                ],
+                "status": "golden",
+                "tia_version": "V17",
+                "title": "特殊指令模板规则"
+              }
+            }
+          ]
+        },
+        "message": "completed",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "get_plc_knowledge_items",
+        "success": true
+      },
+      "result_chars": 30920,
+      "stage": "get_plc_knowledge_items",
+      "started_at": "2026-07-31T07:06:04.988984+08:00",
+      "success": true,
+      "tool": "get_plc_knowledge_items"
+    },
+    {
+      "arguments": {
+        "conversation_id": "vfd_comm_fault_session",
+        "main_fc_name": "FC_MainControl",
+        "requirements": {
+          "chars": 435,
+          "sha256": "5ff1ed93711a98171c64a07a3535713ba021c557994cb1f7abb21e568c05d6d7"
+        },
+        "target_device": "PLC_1"
+      },
+      "arguments_sha256": "b39b5af95d99acf02fd07e4ce3d574a3150c97a1d7887b157e126d7951a578fc",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 5.002,
+      "index": 11,
+      "result": {
+        "code": "OK",
+        "data": {
+          "draft": true,
+          "persisted": false,
+          "plan": {
+            "artifacts": {},
+            "auxiliary_fbs": [
+              {
+                "artifact_id": null,
+                "artifact_version": null,
+                "block_name": "FB_StateControl",
+                "block_type": "FB",
+                "compile_result": null,
+                "compiled_at": null,
+                "import_result": null,
+                "imported_at": null,
+                "interface": {
+                  "Constant": [],
+                  "InOut": [],
+                  "Input": [],
+                  "Output": [],
+                  "Static": [
+                    "timer"
+                  ],
+                  "Temp": []
+                },
+                "logic_scope": [
+                  "Network 3: \"内部数据\".\"变频器通讯故障标志\" 常开触点 → TON 接通延时定时器(实例:\"内部数据\".\"变频器通讯延时定时器\", PT=T#3m)",
+                  "Network 4: \"内部数据\".\"变频器通讯延时定时器\".Q 常开触点 → \"曲线数据\".\"变频器通讯故障\" 普通线圈"
+                ],
+                "responsibility": "集中处理同一需求中的定时、记忆、累计、计数和顺序状态",
+                "state_features": [
+                  "timer"
+                ],
+                "status": "planned",
+                "verified_version": null
+              }
+            ],
+            "block_dependency_order": [
+              "FB_StateControl",
+              "DB_StateControl",
+              "FC_MainControl"
+            ],
+            "closed_at": null,
+            "conversation_id": "vfd_comm_fault_session",
+            "created_at": "2026-07-30T23:06:43.170517Z",
+            "current_block": "FB_StateControl",
+            "current_network": "state_control",
+            "instance_dbs": [
+              {
+                "create_result": null,
+                "created_at": null,
+                "db_name": "DB_StateControl",
+                "fb_name": "FB_StateControl",
+                "instance_name": "StateControl",
+                "responsibility": "保存 FB_StateControl 的跨扫描周期状态",
+                "status": "planned"
+              }
+            ],
+            "interface_change_log": [],
+            "interface_plan": {
+              "FB_StateControl": {
+                "Constant": [],
+                "InOut": [],
+                "Input": [],
+                "Output": [],
+                "Static": [
+                  "timer"
+                ],
+                "Temp": []
+              },
+              "FC_MainControl": {
+                "Constant": [],
+                "InOut": [],
+                "Input": [],
+                "Output": [],
+                "Return": [
+                  "Ret_Val:Void"
+                ],
+                "Temp": []
+              }
+            },
+            "knowledge_snapshot": {},
+            "main_fc": {
+              "artifact_id": null,
+              "artifact_version": null,
+              "block_name": "FC_MainControl",
+              "block_type": "FC",
+              "compile_result": null,
+              "compiled_at": null,
+              "import_result": null,
+              "imported_at": null,
+              "interface": {
+                "Constant": [],
+                "InOut": [],
+                "Input": [],
+                "Output": [],
+                "Return": [
+                  "Ret_Val:Void"
+                ],
+                "Temp": []
+              },
+              "logic_scope": [
+                "变频器通讯故障梯形图程序：",
+                "Network 1: \"内部数据\".\"变频器读取失败1\" 常开触点 → P_TRIG(PBox) 上升沿检测(存储位\"内部数据\".\"变频器通讯故障脉冲1\") → 置位线圈(S) 置位 \"内部数据\".\"变频器通讯故障标志\"",
+                "Network 2: \"内部数据\".\"变频器读取成功1\" 常开触点 → P_TRIG(PBox) 上升沿检测(存储位\"内部数据\".\"变频器通讯故障脉冲2\") → 复位线圈(R) 复位 \"内部数据\".\"变频器通讯故障标志\"",
+                "所有变量均为Global DB访问(symbolic)",
+                "主块FC_MainControl(FC)，无辅助FB"
+              ],
+              "responsibility": "组织无状态组合逻辑并直接调用需要跨扫描状态的辅助FB",
+              "status": "planned",
+              "verified_version": null
+            },
+            "main_fc_reason": "主块选择FC，因为组合逻辑和调度本身不需要跨扫描Static状态；仅将确有状态的职责提取到辅助FB。",
+            "networks": [
+              {
+                "artifact_id": null,
+                "artifact_version": null,
+                "block_name": "FB_StateControl",
+                "comment": "在一个职责清晰的辅助FB中集中处理相关跨扫描状态，避免按定时器或状态位拆分FB。",
+                "compile_result": null,
+                "compiled_at": null,
+                "depends_on": [],
+                "import_result": null,
+                "imported_at": null,
+                "instruction_chain": [
+                  "evaluate timer",
+                  "update state outputs"
+                ],
+                "instructions": [
+                  "TIMER"
+                ],
+                "knowledge_ids": [
+                  "interface.complex_sections.v17",
+                  "network_text.title_comment.v17",
+                  "topology.series_contact_coil.v17",
+                  "instruction.ton_static_instance.v17"
+                ],
+                "main_branch": [
+                  "Network 3: \"内部数据\".\"变频器通讯故障标志\" 常开触点 → TON 接通延时定时器(实例:\"内部数据\".\"变频器通讯延时定时器\", PT=T#3m)",
+                  "Network 4: \"内部数据\".\"变频器通讯延时定时器\".Q 常开触点 → \"曲线数据\".\"变频器通讯故障\" 普通线圈"
+                ],
+                "network_key": "state_control",
+                "parallel_branches": [],
+                "purpose": "跨扫描周期状态处理",
+                "required_capabilities": [
+                  "fb_interface",
+                  "network_title",
+                  "network_comment",
+                  "topology.series",
+                  "ton",
+                  "static_timer_instance"
+                ],
+                "selected_knowledge_ids": [
+                  "interface.complex_sections.v17",
+                  "network_text.title_comment.v17",
+                  "topology.series_contact_coil.v17",
+                  "instruction.ton_static_instance.v17"
+                ],
+                "split_reason": null,
+                "status": "planned",
+                "title": "状态控制、定时与累计",
+                "topology": {
+                  "description": "State conditions flow through selected state instructions to outputs.",
+                  "kind": "series"
+                },
+                "uncovered_capabilities": [],
+                "variables": [
+                  "state_timer"
+                ],
+                "verified_version": null
+              },
+              {
+                "artifact_id": null,
+                "artifact_version": null,
+                "block_name": "FC_MainControl",
+                "comment": "将无明确扫描依赖且可合并的条件、判断和动作集中表达；OR条件使用同一Network的并联支路。",
+                "compile_result": null,
+                "compiled_at": null,
+                "depends_on": [],
+                "import_result": null,
+                "imported_at": null,
+                "instruction_chain": [
+                  "evaluate Contact branches",
+                  "merge each Contact.out through O.inN",
+                  "detect rising edge with PBox bit",
+                  "drive SCoil"
+                ],
+                "instructions": [
+                  "Contact",
+                  "O",
+                  "PBox",
+                  "SCoil"
+                ],
+                "knowledge_ids": [
+                  "shell.fc_block.v17",
+                  "topology.contact_or_pbox_scoil.v17",
+                  "network_text.title_comment.v17"
+                ],
+                "main_branch": [
+                  "变频器通讯故障梯形图程序：",
+                  "Network 1: \"内部数据\".\"变频器读取失败1\" 常开触点 → P_TRIG(PBox) 上升沿检测(存储位\"内部数据\".\"变频器通讯故障脉冲1\") → 置位线圈(S) 置位 \"内部数据\".\"变频器通讯故障标志\"",
+                  "Network 2: \"内部数据\".\"变频器读取成功1\" 常开触点 → P_TRIG(PBox) 上升沿检测(存储位\"内部数据\".\"变频器通讯故障脉冲2\") → 复位线圈(R) 复位 \"内部数据\".\"变频器通讯故障标志\"",
+                  "所有变量均为Global DB访问(symbolic)",
+                  "主块FC_MainControl(FC)，无辅助FB"
+                ],
+                "network_key": "main_combined_logic",
+                "parallel_branches": [
+                  [
+                    "变频器通讯故障梯形图程序：；Network 1: \"内部数据\".\"变频器读取失败1\" 常开触点 → P_TRIG(PBox) 上升沿检测(存储位\"内部数据\".\"变频器通讯故障脉冲1\") → 置位线圈(S) 置位 \"内部数据\".\"变频器通讯故障标志\"；Network 2: \"内部数据\".\"变频器读取成功1\" 常开触点 → P_TRIG(PBox) 上升沿检测(存储位\"内部数据\".\"变频器通讯故障脉冲2\") → 复位线圈(R) 复位 \"内部数据\".\"变频器通讯故障标志\"；所有变量均为Global DB访问(symbolic)；主块FC_MainControl(FC)，无辅助FB"
+                  ]
+                ],
+                "purpose": "普通组合逻辑、条件判断、计算、转换和无状态控制",
+                "required_capabilities": [
+                  "fc_shell",
+                  "multi_contact_or_pbox_scoil",
+                  "network_title",
+                  "network_comment",
+                  "topology.parallel",
+                  "topology.merge"
+                ],
+                "selected_knowledge_ids": [
+                  "shell.fc_block.v17",
+                  "topology.contact_or_pbox_scoil.v17",
+                  "network_text.title_comment.v17"
+                ],
+                "split_reason": null,
+                "status": "planned",
+                "title": "组合条件与业务动作",
+                "topology": {
+                  "description": "Alternative conditions merge before one action.",
+                  "kind": "parallel_merge"
+                },
+                "uncovered_capabilities": [],
+                "variables": [
+                  "condition_1",
+                  "condition_2",
+                  "condition_3",
+                  "condition_4",
+                  "condition_5",
+                  "result"
+                ],
+                "verified_version": null
+              },
+              {
+                "artifact_id": null,
+                "artifact_version": null,
+                "block_name": "FC_MainControl",
+                "comment": "主FC直接调用FB_StateControl，并使用DB_StateControl作为其独立背景DB。",
+                "compile_result": null,
+                "compiled_at": null,
+                "depends_on": [
+                  "state_control"
+                ],
+                "import_result": null,
+                "imported_at": null,
+                "instruction_chain": [
+                  "enable call",
+                  "call FB_StateControl with DB_StateControl",
+                  "map outputs"
+                ],
+                "instructions": [
+                  "Call"
+                ],
+                "knowledge_ids": [
+                  "call.fb_global_instance.v17",
+                  "network_text.title_comment.v17",
+                  "topology.series_contact_coil.v17"
+                ],
+                "main_branch": [
+                  "CALL FB_StateControl, DB_StateControl"
+                ],
+                "network_key": "call_state_control",
+                "parallel_branches": [],
+                "purpose": "从主FC调度跨扫描状态逻辑",
+                "required_capabilities": [
+                  "fb_call",
+                  "global_instance_db",
+                  "parameter_binding",
+                  "network_title",
+                  "network_comment",
+                  "topology.series"
+                ],
+                "selected_knowledge_ids": [
+                  "call.fb_global_instance.v17",
+                  "network_text.title_comment.v17",
+                  "topology.series_contact_coil.v17"
+                ],
+                "split_reason": "FB调用依赖辅助FB及其背景DB先创建",
+                "status": "planned",
+                "title": "调用辅助状态控制FB",
+                "topology": {
+                  "description": "Power flow enables the FB call bound to its global instance DB.",
+                  "kind": "series"
+                },
+                "uncovered_capabilities": [],
+                "variables": [
+                  "FB_StateControl",
+                  "DB_StateControl"
+                ],
+                "verified_version": null
+              }
+            ],
+            "plan_id": "ladplan_af120a66d6ae64ee",
+            "replaced_by": null,
+            "requirements": {
+              "chars": 435,
+              "sha256": "5ff1ed93711a98171c64a07a3535713ba021c557994cb1f7abb21e568c05d6d7"
+            },
+            "status": "active",
+            "step_status": {
+              "artifact_creation": "planned",
+              "network_generation": "planned",
+              "planning": "planned"
+            },
+            "target_device": "PLC_1",
+            "updated_at": "2026-07-30T23:06:43.170517Z",
+            "verification_history": []
+          }
+        },
+        "message": "completed",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "draft_lad_generation_plan",
+        "success": true
+      },
+      "result_chars": 8772,
+      "stage": "draft_lad_generation_plan",
+      "started_at": "2026-07-31T07:06:43.167517+08:00",
+      "success": true,
+      "tool": "draft_lad_generation_plan"
+    },
+    {
+      "arguments": {
+        "conversation_id": "vfd_comm_fault_session",
+        "planning": {
+          "auxiliary_fbs": [],
+          "block_dependency_order": [
+            "FC_MainControl"
+          ],
+          "instance_dbs": [],
+          "interface_plan": {
+            "FC_MainControl": {
+              "Constant": [],
+              "InOut": [],
+              "Input": [],
+              "Output": [],
+              "Return": [
+                "Ret_Val:Void"
+              ],
+              "Temp": []
+            }
+          },
+          "main_fc": {
+            "block_name": "FC_MainControl",
+            "block_type": "FC",
+            "interface": {
+              "Constant": [],
+              "InOut": [],
+              "Input": [],
+              "Output": [],
+              "Return": [
+                "Ret_Val:Void"
+              ],
+              "Temp": []
+            },
+            "logic_scope": [
+              "变频器读取失败上升沿置位",
+              "变频器读取成功上升沿复位",
+              "TON接通延时3分钟",
+              "定时器Q驱动报警线圈"
+            ],
+            "responsibility": "组织全部变频器通讯故障逻辑，所有变量通过Global DB访问"
+          },
+          "main_fc_reason": "所有逻辑为组合逻辑和定时器，状态存储在Global DB中，无跨扫描Static需求，无需辅助FB",
+          "networks": [
+            {
+              "block_name": "FC_MainControl",
+              "comment": "检测\"内部数据\".\"变频器读取失败1\"上升沿，置位\"内部数据\".\"变频器通讯故障标志\"",
+              "depends_on": [],
+              "instruction_chain": [
+                "contact",
+                "pbox",
+                "set_coil"
+              ],
+              "instructions": [
+                "Contact",
+                "PBox",
+                "SCoil"
+              ],
+              "main_branch": [
+                "\"内部数据\".\"变频器读取失败1\"",
+                "PBox",
+                "SCoil"
+              ],
+              "network_key": "nw_pbox_fail_set",
+              "parallel_branches": [],
+              "purpose": "上升沿检测并置位故障标志",
+              "required_capabilities": [
+                "contact",
+                "edge.rising",
+                "edge.memory_bit",
+                "set_coil",
+                "topology.series"
+              ],
+              "selected_knowledge_ids": [
+                "instruction.pbox_edge_memory.v17",
+                "topology.series_contact_coil.v17"
+              ],
+              "split_reason": null,
+              "title": "变频器读取失败上升沿置位",
+              "topology": {
+                "description": "单触点经PBox上升沿检测到SCoil置位线圈",
+                "kind": "series"
+              },
+              "variables": [
+                "\"内部数据\".\"变频器读取失败1\"",
+                "\"内部数据\".\"变频器通讯故障脉冲1\"",
+                "\"内部数据\".\"变频器通讯故障标志\""
+              ]
+            },
+            {
+              "block_name": "FC_MainControl",
+              "comment": "检测\"内部数据\".\"变频器读取成功1\"上升沿，复位\"内部数据\".\"变频器通讯故障标志\"",
+              "depends_on": [],
+              "instruction_chain": [
+                "contact",
+                "pbox",
+                "reset_coil"
+              ],
+              "instructions": [
+                "Contact",
+                "PBox",
+                "RCoil"
+              ],
+              "main_branch": [
+                "\"内部数据\".\"变频器读取成功1\"",
+                "PBox",
+                "RCoil"
+              ],
+              "network_key": "nw_pbox_success_reset",
+              "parallel_branches": [],
+              "purpose": "上升沿检测并复位故障标志",
+              "required_capabilities": [
+                "contact",
+                "edge.rising",
+                "edge.memory_bit",
+                "reset_coil",
+                "topology.series"
+              ],
+              "selected_knowledge_ids": [
+                "instruction.pbox_edge_memory.v17",
+                "topology.series_contact_coil.v17"
+              ],
+              "split_reason": null,
+              "title": "变频器读取成功上升沿复位",
+              "topology": {
+                "description": "单触点经PBox上升沿检测到RCoil复位线圈",
+                "kind": "series"
+              },
+              "variables": [
+                "\"内部数据\".\"变频器读取成功1\"",
+                "\"内部数据\".\"变频器通讯故障脉冲2\"",
+                "\"内部数据\".\"变频器通讯故障标志\""
+              ]
+            },
+            {
+              "block_name": "FC_MainControl",
+              "comment": "\"内部数据\".\"变频器通讯故障标志\"持续接通时TON计时，PT为T#3m，3分钟后Q输出",
+              "depends_on": [],
+              "instruction_chain": [
+                "contact",
+                "ton"
+              ],
+              "instructions": [
+                "Contact",
+                "TON"
+              ],
+              "main_branch": [
+                "\"内部数据\".\"变频器通讯故障标志\"",
+                "TON(PT:=T#3m)"
+              ],
+              "network_key": "nw_ton_delay",
+              "parallel_branches": [],
+              "purpose": "TON接通延时3分钟判定",
+              "required_capabilities": [
+                "contact",
+                "ton",
+                "global_timer_instance",
+                "typed_time_constant",
+                "topology.series"
+              ],
+              "selected_knowledge_ids": [
+                "instruction.ton_global_instance.v17",
+                "topology.series_contact_coil.v17"
+              ],
+              "split_reason": "TON功能框独立占用一个Network，Q输出在下个Network作为触点",
+              "title": "通讯故障延时判定",
+              "topology": {
+                "description": "触点驱动TON功能框，全局IEC_TIMER实例，TypedConstant PT",
+                "kind": "series"
+              },
+              "variables": [
+                "\"内部数据\".\"变频器通讯故障标志\"",
+                "\"内部数据\".\"变频器通讯延时定时器\"",
+                "T#3m"
+              ]
+            },
+            {
+              "block_name": "FC_MainControl",
+              "comment": "\"内部数据\".\"变频器通讯延时定时器\".Q接通时驱动\"曲线数据\".\"变频器通讯故障\"线圈",
+              "depends_on": [],
+              "instruction_chain": [
+                "contact",
+                "coil"
+              ],
+              "instructions": [
+                "Contact",
+                "Coil"
+              ],
+              "main_branch": [
+                "\"内部数据\".\"变频器通讯延时定时器\".Q",
+                "Coil"
+              ],
+              "network_key": "nw_q_to_alarm",
+              "parallel_branches": [],
+              "purpose": "定时器Q输出驱动报警线圈",
+              "required_capabilities": [
+                "contact",
+                "coil",
+                "nested_db_member",
+                "topology.series"
+              ],
+              "selected_knowledge_ids": [
+                "access.multilevel_db_member.v17",
+                "topology.series_contact_coil.v17"
+              ],
+              "split_reason": "定时器Q成员访问需独立Network",
+              "title": "通讯故障报警输出",
+              "topology": {
+                "description": "多层DB成员Q触点驱动普通线圈",
+                "kind": "series"
+              },
+              "variables": [
+                "\"内部数据\".\"变频器通讯延时定时器\".Q",
+                "\"曲线数据\".\"变频器通讯故障\""
+              ]
+            }
+          ]
+        },
+        "requirements": {
+          "chars": 379,
+          "sha256": "a83e8cefc1fecd64b2f0cfbc56304d56504649ed3bf1d6e5706daa2eb904afeb"
+        },
+        "target_device": "PLC_1"
+      },
+      "arguments_sha256": "372900627c0cccaef0a792ac6bf4d73204efd65c4a0bc5646fb72d292970e06d",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 133.772,
+      "index": 12,
+      "result": {
+        "code": "OK",
+        "data": {
+          "plan": {
+            "artifacts": {},
+            "auxiliary_fbs": [],
+            "block_dependency_order": [
+              "FC_MainControl"
+            ],
+            "closed_at": null,
+            "conversation_id": "vfd_comm_fault_session",
+            "created_at": "2026-07-30T23:07:11.539261Z",
+            "current_block": "FC_MainControl",
+            "current_network": "nw_pbox_fail_set",
+            "instance_dbs": [],
+            "interface_change_log": [],
+            "interface_plan": {
+              "FC_MainControl": {
+                "Constant": [],
+                "InOut": [],
+                "Input": [],
+                "Output": [],
+                "Return": [
+                  "Ret_Val:Void"
+                ],
+                "Temp": []
+              }
+            },
+            "knowledge_snapshot": {
+              "captured_at": "2026-07-30T23:07:11.540262Z",
+              "catalog_sha256": "164f44bdb65aef319aa11dc4a920247c3c63f4c00c37bb59dac6253aa53ba372",
+              "items": {
+                "access.multilevel_db_member.v17": "7bb93dcc3cddda2a4538e37aa476594caa3177dcee936110e9dce48b7b8f4f0d",
+                "instruction.pbox_edge_memory.v17": "29dd29af38ff3f1c0abccd1e9807fbae064a8c7756243d2020fb3913fb869d6f",
+                "instruction.ton_global_instance.v17": "dfabf2a025f96ec4305190e66851d6f7fe296e9801e5fc4ee5d2741d0d94f754",
+                "topology.series_contact_coil.v17": "27c1fcfc7ca1dc8422820c953fd43c94366d923cd46ad2c450a4b583409ee124"
+              }
+            },
+            "main_fc": {
+              "artifact_id": null,
+              "artifact_version": null,
+              "block_name": "FC_MainControl",
+              "block_type": "FC",
+              "compile_result": null,
+              "compiled_at": null,
+              "import_result": null,
+              "imported_at": null,
+              "interface": {
+                "Constant": [],
+                "InOut": [],
+                "Input": [],
+                "Output": [],
+                "Return": [
+                  "Ret_Val:Void"
+                ],
+                "Temp": []
+              },
+              "logic_scope": [
+                "变频器读取失败上升沿置位",
+                "变频器读取成功上升沿复位",
+                "TON接通延时3分钟",
+                "定时器Q驱动报警线圈"
+              ],
+              "responsibility": "组织全部变频器通讯故障逻辑，所有变量通过Global DB访问",
+              "status": "planned",
+              "verified_version": null
+            },
+            "main_fc_reason": "所有逻辑为组合逻辑和定时器，状态存储在Global DB中，无跨扫描Static需求，无需辅助FB",
+            "networks": [
+              {
+                "artifact_id": null,
+                "artifact_version": null,
+                "block_name": "FC_MainControl",
+                "comment": "检测\"内部数据\".\"变频器读取失败1\"上升沿，置位\"内部数据\".\"变频器通讯故障标志\"",
+                "compile_result": null,
+                "compiled_at": null,
+                "depends_on": [],
+                "import_result": null,
+                "imported_at": null,
+                "instruction_chain": [
+                  "contact",
+                  "pbox",
+                  "set_coil"
+                ],
+                "instructions": [
+                  "Contact",
+                  "PBox",
+                  "SCoil"
+                ],
+                "knowledge_ids": [
+                  "instruction.pbox_edge_memory.v17",
+                  "topology.series_contact_coil.v17"
+                ],
+                "main_branch": [
+                  "\"内部数据\".\"变频器读取失败1\"",
+                  "PBox",
+                  "SCoil"
+                ],
+                "network_key": "nw_pbox_fail_set",
+                "parallel_branches": [],
+                "purpose": "上升沿检测并置位故障标志",
+                "required_capabilities": [
+                  "contact",
+                  "edge.rising",
+                  "edge.memory_bit",
+                  "set_coil",
+                  "topology.series"
+                ],
+                "selected_knowledge_ids": [
+                  "instruction.pbox_edge_memory.v17",
+                  "topology.series_contact_coil.v17"
+                ],
+                "split_reason": null,
+                "status": "planned",
+                "title": "变频器读取失败上升沿置位",
+                "topology": {
+                  "description": "单触点经PBox上升沿检测到SCoil置位线圈",
+                  "kind": "series"
+                },
+                "uncovered_capabilities": [],
+                "variables": [
+                  "\"内部数据\".\"变频器读取失败1\"",
+                  "\"内部数据\".\"变频器通讯故障脉冲1\"",
+                  "\"内部数据\".\"变频器通讯故障标志\""
+                ],
+                "verified_version": null
+              },
+              {
+                "artifact_id": null,
+                "artifact_version": null,
+                "block_name": "FC_MainControl",
+                "comment": "检测\"内部数据\".\"变频器读取成功1\"上升沿，复位\"内部数据\".\"变频器通讯故障标志\"",
+                "compile_result": null,
+                "compiled_at": null,
+                "depends_on": [],
+                "import_result": null,
+                "imported_at": null,
+                "instruction_chain": [
+                  "contact",
+                  "pbox",
+                  "reset_coil"
+                ],
+                "instructions": [
+                  "Contact",
+                  "PBox",
+                  "RCoil"
+                ],
+                "knowledge_ids": [
+                  "instruction.pbox_edge_memory.v17",
+                  "topology.series_contact_coil.v17"
+                ],
+                "main_branch": [
+                  "\"内部数据\".\"变频器读取成功1\"",
+                  "PBox",
+                  "RCoil"
+                ],
+                "network_key": "nw_pbox_success_reset",
+                "parallel_branches": [],
+                "purpose": "上升沿检测并复位故障标志",
+                "required_capabilities": [
+                  "contact",
+                  "edge.rising",
+                  "edge.memory_bit",
+                  "reset_coil",
+                  "topology.series"
+                ],
+                "selected_knowledge_ids": [
+                  "instruction.pbox_edge_memory.v17",
+                  "topology.series_contact_coil.v17"
+                ],
+                "split_reason": null,
+                "status": "planned",
+                "title": "变频器读取成功上升沿复位",
+                "topology": {
+                  "description": "单触点经PBox上升沿检测到RCoil复位线圈",
+                  "kind": "series"
+                },
+                "uncovered_capabilities": [],
+                "variables": [
+                  "\"内部数据\".\"变频器读取成功1\"",
+                  "\"内部数据\".\"变频器通讯故障脉冲2\"",
+                  "\"内部数据\".\"变频器通讯故障标志\""
+                ],
+                "verified_version": null
+              },
+              {
+                "artifact_id": null,
+                "artifact_version": null,
+                "block_name": "FC_MainControl",
+                "comment": "\"内部数据\".\"变频器通讯故障标志\"持续接通时TON计时，PT为T#3m，3分钟后Q输出",
+                "compile_result": null,
+                "compiled_at": null,
+                "depends_on": [],
+                "import_result": null,
+                "imported_at": null,
+                "instruction_chain": [
+                  "contact",
+                  "ton"
+                ],
+                "instructions": [
+                  "Contact",
+                  "TON"
+                ],
+                "knowledge_ids": [
+                  "instruction.ton_global_instance.v17",
+                  "topology.series_contact_coil.v17"
+                ],
+                "main_branch": [
+                  "\"内部数据\".\"变频器通讯故障标志\"",
+                  "TON(PT:=T#3m)"
+                ],
+                "network_key": "nw_ton_delay",
+                "parallel_branches": [],
+                "purpose": "TON接通延时3分钟判定",
+                "required_capabilities": [
+                  "contact",
+                  "ton",
+                  "global_timer_instance",
+                  "typed_time_constant",
+                  "topology.series"
+                ],
+                "selected_knowledge_ids": [
+                  "instruction.ton_global_instance.v17",
+                  "topology.series_contact_coil.v17"
+                ],
+                "split_reason": "TON功能框独立占用一个Network，Q输出在下个Network作为触点",
+                "status": "planned",
+                "title": "通讯故障延时判定",
+                "topology": {
+                  "description": "触点驱动TON功能框，全局IEC_TIMER实例，TypedConstant PT",
+                  "kind": "series"
+                },
+                "uncovered_capabilities": [],
+                "variables": [
+                  "\"内部数据\".\"变频器通讯故障标志\"",
+                  "\"内部数据\".\"变频器通讯延时定时器\"",
+                  "T#3m"
+                ],
+                "verified_version": null
+              },
+              {
+                "artifact_id": null,
+                "artifact_version": null,
+                "block_name": "FC_MainControl",
+                "comment": "\"内部数据\".\"变频器通讯延时定时器\".Q接通时驱动\"曲线数据\".\"变频器通讯故障\"线圈",
+                "compile_result": null,
+                "compiled_at": null,
+                "depends_on": [],
+                "import_result": null,
+                "imported_at": null,
+                "instruction_chain": [
+                  "contact",
+                  "coil"
+                ],
+                "instructions": [
+                  "Contact",
+                  "Coil"
+                ],
+                "knowledge_ids": [
+                  "access.multilevel_db_member.v17",
+                  "topology.series_contact_coil.v17"
+                ],
+                "main_branch": [
+                  "\"内部数据\".\"变频器通讯延时定时器\".Q",
+                  "Coil"
+                ],
+                "network_key": "nw_q_to_alarm",
+                "parallel_branches": [],
+                "purpose": "定时器Q输出驱动报警线圈",
+                "required_capabilities": [
+                  "contact",
+                  "coil",
+                  "nested_db_member",
+                  "topology.series"
+                ],
+                "selected_knowledge_ids": [
+                  "access.multilevel_db_member.v17",
+                  "topology.series_contact_coil.v17"
+                ],
+                "split_reason": "定时器Q成员访问需独立Network",
+                "status": "planned",
+                "title": "通讯故障报警输出",
+                "topology": {
+                  "description": "多层DB成员Q触点驱动普通线圈",
+                  "kind": "series"
+                },
+                "uncovered_capabilities": [],
+                "variables": [
+                  "\"内部数据\".\"变频器通讯延时定时器\".Q",
+                  "\"曲线数据\".\"变频器通讯故障\""
+                ],
+                "verified_version": null
+              }
+            ],
+            "plan_id": "ladplan_ec5905a8eaa1c683",
+            "replaced_by": null,
+            "requirements": {
+              "chars": 379,
+              "sha256": "a83e8cefc1fecd64b2f0cfbc56304d56504649ed3bf1d6e5706daa2eb904afeb"
+            },
+            "status": "active",
+            "step_status": {
+              "artifact_creation": "planned",
+              "network_generation": "planned",
+              "planning": "planned"
+            },
+            "target_device": "PLC_1",
+            "updated_at": "2026-07-30T23:07:11.608955Z",
+            "verification_history": []
+          }
+        },
+        "message": "completed",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "save_lad_generation_plan",
+        "success": true
+      },
+      "result_chars": 7793,
+      "stage": "save_lad_generation_plan",
+      "started_at": "2026-07-31T07:07:11.536258+08:00",
+      "success": true,
+      "tool": "save_lad_generation_plan"
+    },
+    {
+      "arguments": {
+        "block_name": "FC_MainControl",
+        "block_type": "FC",
+        "conversation_id": "vfd_comm_fault_session",
+        "device_name": "PLC_1",
+        "plan_id": "ladplan_ec5905a8eaa1c683"
+      },
+      "arguments_sha256": "b9d82943f708665b4b964bd60ae529f347d3327e43125c71efba1dfe36a0a1a1",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 127.452,
+      "index": 13,
+      "result": {
+        "code": "OK",
+        "data": {
+          "artifact": {
+            "affected_networks": [],
+            "artifact_id": "xml_8d1140f38142f654d479bf92",
+            "block_name": "FC_MainControl",
+            "block_type": "FC",
+            "change_source": "create_block_framework",
+            "conversation_id": "vfd_comm_fault_session",
+            "created_at": "2026-07-30T23:07:17.086961Z",
+            "current_version": 1,
+            "device_name": "PLC_1",
+            "expires_at": "2026-08-01T23:07:17.086961Z",
+            "last_compile": null,
+            "last_import": null,
+            "last_validation": {
+              "errors": [],
+              "summary": {
+                "bytes": 668,
+                "root": "Document"
+              },
+              "valid": true,
+              "warnings": []
+            },
+            "network_states": {},
+            "plan_id": "ladplan_ec5905a8eaa1c683",
+            "status": "artifact_created",
+            "updated_at": "2026-07-30T23:07:17.086961Z",
+            "verified_versions": {}
+          }
+        },
+        "message": "completed",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "create_lad_block_artifact",
+        "success": true
+      },
+      "result_chars": 1034,
+      "stage": "create_lad_block_artifact",
+      "started_at": "2026-07-31T07:07:17.072630+08:00",
+      "success": true,
+      "tool": "create_lad_block_artifact"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_8d1140f38142f654d479bf92",
+        "compile_unit_xml": {
+          "chars": 2612,
+          "sha256": "049de7d1e17913c46054a286a3e5727fbe12bb097a0dfff1740276943f90e9c0"
+        },
+        "expected_version": 1,
+        "network_key": "nw_pbox_fail_set"
+      },
+      "arguments_sha256": "2efe9e9cac1d7fad5808e79f5f686a604f5dab0d0abedf166a94d90e584bc007",
+      "code": "PATCH_PRECONDITION_FAILED",
+      "duplicate_of": null,
+      "duration_ms": 76.144,
+      "index": 14,
+      "result": {
+        "code": "PATCH_PRECONDITION_FAILED",
+        "data": {},
+        "message": "compile_unit_xml must contain one complete CompileUnit",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "artifact",
+        "success": false
+      },
+      "result_chars": 336,
+      "stage": "artifact",
+      "started_at": "2026-07-31T07:07:39.457196+08:00",
+      "success": false,
+      "tool": "append_network_and_prepare_import"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_8d1140f38142f654d479bf92",
+        "compile_unit_xml": {
+          "chars": 2600,
+          "sha256": "c0885605c2d2d5f97895168f1236e9853285698b6ea4571e8b507928208b9cad"
+        },
+        "expected_version": 1,
+        "network_key": "nw_pbox_fail_set"
+      },
+      "arguments_sha256": "521a8c6aca6edd136e5191fcf1b2ba537fb356bf139598dc05aba473063843b2",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 177.737,
+      "index": 15,
+      "result": {
+        "code": "OK",
+        "data": {
+          "artifact_id": "xml_8d1140f38142f654d479bf92",
+          "block_name": "FC_MainControl",
+          "device_name": "PLC_1",
+          "network_key": "nw_pbox_fail_set",
+          "network_status": "import_pending",
+          "next": {
+            "action": "resume_network",
+            "artifact_id": "xml_8d1140f38142f654d479bf92",
+            "block_name": "FC_MainControl",
+            "device_name": "PLC_1",
+            "network_key": "nw_pbox_fail_set",
+            "network_status": "import_pending",
+            "plan_id": "ladplan_ec5905a8eaa1c683",
+            "version": 2
+          },
+          "plan_id": "ladplan_ec5905a8eaa1c683",
+          "version": 2
+        },
+        "message": "completed",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "append_network_and_prepare_import",
+        "success": true
+      },
+      "result_chars": 839,
+      "stage": "append_network_and_prepare_import",
+      "started_at": "2026-07-31T07:07:49.717804+08:00",
+      "success": true,
+      "tool": "append_network_and_prepare_import"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_8d1140f38142f654d479bf92",
+        "device_name": "PLC_1",
+        "network_key": "nw_pbox_fail_set"
+      },
+      "arguments_sha256": "bf84c036dcccc0b98ff4e594f6fcd9a07e756784475f10c47bbbd5126a05e3f4",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 5225.632,
+      "index": 16,
+      "result": {
+        "code": "OK",
+        "data": {
+          "artifact_id": "xml_8d1140f38142f654d479bf92",
+          "block_name": "FC_MainControl",
+          "compile": {
+            "artifact_id": "xml_8d1140f38142f654d479bf92",
+            "block_name": "FC_MainControl",
+            "code": "OK",
+            "device_name": "PLC_1",
+            "error_count": 0,
+            "messages": [
+              {
+                "description": "",
+                "messages": [
+                  {
+                    "description": "",
+                    "messages": [
+                      {
+                        "description": "Block was successfully compiled.",
+                        "messages": [],
+                        "path": "FC_MainControl (FC1)",
+                        "severity": "success"
+                      }
+                    ],
+                    "path": "Program blocks",
+                    "severity": "success"
+                  }
+                ],
+                "path": "PLC_1",
+                "severity": "success"
+              },
+              {
+                "description": "Compiling finished (errors: 0; warnings: 0)",
+                "messages": [],
+                "path": "",
+                "severity": "success"
+              }
+            ],
+            "network_key": "nw_pbox_fail_set",
+            "recorded_at": "2026-07-30T23:07:58.874827Z",
+            "scope": "block",
+            "stage": "tia_compile",
+            "state": "Success",
+            "success": true,
+            "target_name": "FC_MainControl",
+            "version": 2,
+            "warning_count": 0
+          },
+          "device_name": "PLC_1",
+          "final_block_compile": null,
+          "final_plc_compile": null,
+          "import": {
+            "artifact_id": "xml_8d1140f38142f654d479bf92",
+            "block_name": "FC_MainControl",
+            "block_type": "FC",
+            "code": "OK",
+            "device_name": "PLC_1",
+            "message": "TIA import completed",
+            "messages": [],
+            "network_key": "nw_pbox_fail_set",
+            "plan_id": "ladplan_ec5905a8eaa1c683",
+            "recorded_at": "2026-07-30T23:07:56.161587Z",
+            "stage": "tia_import",
+            "success": true,
+            "target": {
+              "device_name": "PLC_1",
+              "project": "VFD_CommFault"
+            },
+            "version": 2
+          },
+          "network_key": "nw_pbox_fail_set",
+          "next": {
+            "action": "generate_network",
+            "artifact_id": "xml_8d1140f38142f654d479bf92",
+            "block_name": "FC_MainControl",
+            "device_name": "PLC_1",
+            "network_key": "nw_pbox_success_reset",
+            "network_status": "planned",
+            "plan_id": "ladplan_ec5905a8eaa1c683",
+            "version": 2
+          },
+          "plan_id": "ladplan_ec5905a8eaa1c683",
+          "version": 2
+        },
+        "message": "Artifact import and required compilation completed",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "workflow_verified",
+        "success": true
+      },
+      "result_chars": 2275,
+      "stage": "workflow_verified",
+      "started_at": "2026-07-31T07:07:53.768412+08:00",
+      "success": true,
+      "tool": "import_and_compile_artifact"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_8d1140f38142f654d479bf92",
+        "compile_unit_xml": {
+          "chars": 2600,
+          "sha256": "f7b6abd9da40cd94e2043d098b5d5244a75c00720fe66bdd107b2f3aa9af2066"
+        },
+        "expected_version": 2,
+        "network_key": "nw_pbox_success_reset"
+      },
+      "arguments_sha256": "0aec7436bb0a67ceed7cfe3fc68e01db8f695b3067129203c43b69283dc6d2f8",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 227.259,
+      "index": 17,
+      "result": {
+        "code": "OK",
+        "data": {
+          "artifact_id": "xml_8d1140f38142f654d479bf92",
+          "block_name": "FC_MainControl",
+          "device_name": "PLC_1",
+          "network_key": "nw_pbox_success_reset",
+          "network_status": "import_pending",
+          "next": {
+            "action": "resume_network",
+            "artifact_id": "xml_8d1140f38142f654d479bf92",
+            "block_name": "FC_MainControl",
+            "device_name": "PLC_1",
+            "network_key": "nw_pbox_success_reset",
+            "network_status": "import_pending",
+            "plan_id": "ladplan_ec5905a8eaa1c683",
+            "version": 3
+          },
+          "plan_id": "ladplan_ec5905a8eaa1c683",
+          "version": 3
+        },
+        "message": "completed",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "append_network_and_prepare_import",
+        "success": true
+      },
+      "result_chars": 849,
+      "stage": "append_network_and_prepare_import",
+      "started_at": "2026-07-31T07:08:11.064160+08:00",
+      "success": true,
+      "tool": "append_network_and_prepare_import"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_8d1140f38142f654d479bf92",
+        "device_name": "PLC_1",
+        "network_key": "nw_pbox_success_reset"
+      },
+      "arguments_sha256": "0e57e7a285abf7ad309ed16cee8524faf9da8daced0027bdbf071fec200d1849",
+      "code": null,
+      "duplicate_of": null,
+      "duration_ms": null,
+      "index": 18,
+      "result": {},
+      "result_chars": 2,
+      "stage": null,
+      "started_at": "2026-07-31T07:08:14.765026+08:00",
+      "success": true,
+      "tool": "import_and_compile_artifact"
+    }
+  ],
+  "duplicate_calls": [
+    {
+      "arguments": {},
+      "arguments_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "code": null,
+      "duplicate_of": 1,
+      "duration_ms": 4.005,
+      "index": 4,
+      "result": {},
+      "result_chars": 2,
+      "stage": null,
+      "started_at": "2026-07-31T07:04:03.799294+08:00",
+      "success": false,
+      "tool": "refresh_tia_context"
+    }
+  ],
+  "failures": [
+    {
+      "arguments": {},
+      "arguments_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "code": null,
+      "duplicate_of": null,
+      "duration_ms": 6.511,
+      "index": 1,
+      "result": {},
+      "result_chars": 2,
+      "stage": null,
+      "started_at": "2026-07-31T07:03:19.267753+08:00",
+      "success": false,
+      "tool": "refresh_tia_context"
+    },
+    {
+      "arguments": {},
+      "arguments_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "code": null,
+      "duplicate_of": 1,
+      "duration_ms": 4.005,
+      "index": 4,
+      "result": {},
+      "result_chars": 2,
+      "stage": null,
+      "started_at": "2026-07-31T07:04:03.799294+08:00",
+      "success": false,
+      "tool": "refresh_tia_context"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_8d1140f38142f654d479bf92",
+        "compile_unit_xml": {
+          "chars": 2612,
+          "sha256": "049de7d1e17913c46054a286a3e5727fbe12bb097a0dfff1740276943f90e9c0"
+        },
+        "expected_version": 1,
+        "network_key": "nw_pbox_fail_set"
+      },
+      "arguments_sha256": "2efe9e9cac1d7fad5808e79f5f686a604f5dab0d0abedf166a94d90e584bc007",
+      "code": "PATCH_PRECONDITION_FAILED",
+      "duplicate_of": null,
+      "duration_ms": 76.144,
+      "index": 14,
+      "result": {
+        "code": "PATCH_PRECONDITION_FAILED",
+        "data": {},
+        "message": "compile_unit_xml must contain one complete CompileUnit",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "artifact",
+        "success": false
+      },
+      "result_chars": 336,
+      "stage": "artifact",
+      "started_at": "2026-07-31T07:07:39.457196+08:00",
+      "success": false,
+      "tool": "append_network_and_prepare_import"
+    }
+  ],
+  "longest_calls": [
+    {
+      "arguments": {
+        "overwrite": false,
+        "project_name": "VFD_CommFault"
+      },
+      "arguments_sha256": "5d23599add1200d778df390bcbf47241ef4c736792438d50e497e6598c36a7d7",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 23276.473,
+      "index": 5,
+      "result": {
+        "code": "OK",
+        "data": {
+          "text": "✅ TIA 项目已创建\n  项目名称：VFD_CommFault\n  项目路径：E:\\PlcProject\\Code\\PLC\\SCDW\\data\\generated\\VFD_CommFault\n  TIA UI：有界面\n会话已就绪，可继续添加设备和软件配置。"
+        },
+        "message": "✅ TIA 项目已创建",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "init_tia_project",
+        "success": true
+      },
+      "result_chars": 448,
+      "stage": "init_tia_project",
+      "started_at": "2026-07-31T07:04:12.644999+08:00",
+      "success": true,
+      "tool": "init_tia_project"
+    },
+    {
+      "arguments": {
+        "device_name": "PLC_1",
+        "order_number": "OrderNumber:6ES7 214-1BG40-0XB0/V4.5"
+      },
+      "arguments_sha256": "8389d314205807da5dcd0ff2fac4742af32fd4895520a3864caad0c4fc4355b1",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 10659.168,
+      "index": 6,
+      "result": {
+        "code": "OK",
+        "data": {
+          "text": "✅ 已添加 PLC 设备\n  名称：PLC_1\n  订货号：OrderNumber:6ES7 214-1BG40-0XB0/V4.5"
+        },
+        "message": "✅ 已添加 PLC 设备",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "add_plc_to_project",
+        "success": true
+      },
+      "result_chars": 363,
+      "stage": "add_plc_to_project",
+      "started_at": "2026-07-31T07:04:39.695779+08:00",
+      "success": true,
+      "tool": "add_plc_to_project"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_8d1140f38142f654d479bf92",
+        "device_name": "PLC_1",
+        "network_key": "nw_pbox_fail_set"
+      },
+      "arguments_sha256": "bf84c036dcccc0b98ff4e594f6fcd9a07e756784475f10c47bbbd5126a05e3f4",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 5225.632,
+      "index": 16,
+      "result": {
+        "code": "OK",
+        "data": {
+          "artifact_id": "xml_8d1140f38142f654d479bf92",
+          "block_name": "FC_MainControl",
+          "compile": {
+            "artifact_id": "xml_8d1140f38142f654d479bf92",
+            "block_name": "FC_MainControl",
+            "code": "OK",
+            "device_name": "PLC_1",
+            "error_count": 0,
+            "messages": [
+              {
+                "description": "",
+                "messages": [
+                  {
+                    "description": "",
+                    "messages": [
+                      {
+                        "description": "Block was successfully compiled.",
+                        "messages": [],
+                        "path": "FC_MainControl (FC1)",
+                        "severity": "success"
+                      }
+                    ],
+                    "path": "Program blocks",
+                    "severity": "success"
+                  }
+                ],
+                "path": "PLC_1",
+                "severity": "success"
+              },
+              {
+                "description": "Compiling finished (errors: 0; warnings: 0)",
+                "messages": [],
+                "path": "",
+                "severity": "success"
+              }
+            ],
+            "network_key": "nw_pbox_fail_set",
+            "recorded_at": "2026-07-30T23:07:58.874827Z",
+            "scope": "block",
+            "stage": "tia_compile",
+            "state": "Success",
+            "success": true,
+            "target_name": "FC_MainControl",
+            "version": 2,
+            "warning_count": 0
+          },
+          "device_name": "PLC_1",
+          "final_block_compile": null,
+          "final_plc_compile": null,
+          "import": {
+            "artifact_id": "xml_8d1140f38142f654d479bf92",
+            "block_name": "FC_MainControl",
+            "block_type": "FC",
+            "code": "OK",
+            "device_name": "PLC_1",
+            "message": "TIA import completed",
+            "messages": [],
+            "network_key": "nw_pbox_fail_set",
+            "plan_id": "ladplan_ec5905a8eaa1c683",
+            "recorded_at": "2026-07-30T23:07:56.161587Z",
+            "stage": "tia_import",
+            "success": true,
+            "target": {
+              "device_name": "PLC_1",
+              "project": "VFD_CommFault"
+            },
+            "version": 2
+          },
+          "network_key": "nw_pbox_fail_set",
+          "next": {
+            "action": "generate_network",
+            "artifact_id": "xml_8d1140f38142f654d479bf92",
+            "block_name": "FC_MainControl",
+            "device_name": "PLC_1",
+            "network_key": "nw_pbox_success_reset",
+            "network_status": "planned",
+            "plan_id": "ladplan_ec5905a8eaa1c683",
+            "version": 2
+          },
+          "plan_id": "ladplan_ec5905a8eaa1c683",
+          "version": 2
+        },
+        "message": "Artifact import and required compilation completed",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "workflow_verified",
+        "success": true
+      },
+      "result_chars": 2275,
+      "stage": "workflow_verified",
+      "started_at": "2026-07-31T07:07:53.768412+08:00",
+      "success": true,
+      "tool": "import_and_compile_artifact"
+    },
+    {
+      "arguments": {
+        "address_mode": "symbolic",
+        "db_name": "内部数据",
+        "db_number": 2,
+        "device_name": "PLC_1",
+        "variables_json": [
+          {
+            "comment": "变频器1读取失败指示",
+            "data_type": "Bool",
+            "name": "变频器读取失败1"
+          },
+          {
+            "comment": "变频器1读取成功指示",
+            "data_type": "Bool",
+            "name": "变频器读取成功1"
+          },
+          {
+            "comment": "P_TRIG上升沿存储位1",
+            "data_type": "Bool",
+            "name": "变频器通讯故障脉冲1"
+          },
+          {
+            "comment": "P_TRIG上升沿存储位2",
+            "data_type": "Bool",
+            "name": "变频器通讯故障脉冲2"
+          },
+          {
+            "comment": "变频器通讯故障状态标志",
+            "data_type": "Bool",
+            "name": "变频器通讯故障标志"
+          },
+          {
+            "comment": "TON接通延时定时器变量",
+            "data_type": "IEC_TIMER",
+            "name": "变频器通讯延时定时器"
+          }
+        ]
+      },
+      "arguments_sha256": "cd021c06a693ee94f24edb5383001f2779f2723186aa0162e4157dcf3606484c",
+      "code": "GLOBAL_DB_CREATED",
+      "duplicate_of": null,
+      "duration_ms": 3052.404,
+      "index": 7,
+      "result": {
+        "code": "GLOBAL_DB_CREATED",
+        "data": {
+          "db_name": "内部数据",
+          "db_number": 2,
+          "device_name": "PLC_1",
+          "optimized_access": true,
+          "variable_mappings": [
+            {
+              "requested_address": null,
+              "requested_name": "变频器读取失败1",
+              "tia_actual_address": null,
+              "tia_actual_name": "变频器读取失败1"
+            },
+            {
+              "requested_address": null,
+              "requested_name": "变频器读取成功1",
+              "tia_actual_address": null,
+              "tia_actual_name": "变频器读取成功1"
+            },
+            {
+              "requested_address": null,
+              "requested_name": "变频器通讯故障脉冲1",
+              "tia_actual_address": null,
+              "tia_actual_name": "变频器通讯故障脉冲1"
+            },
+            {
+              "requested_address": null,
+              "requested_name": "变频器通讯故障脉冲2",
+              "tia_actual_address": null,
+              "tia_actual_name": "变频器通讯故障脉冲2"
+            },
+            {
+              "requested_address": null,
+              "requested_name": "变频器通讯故障标志",
+              "tia_actual_address": null,
+              "tia_actual_name": "变频器通讯故障标志"
+            },
+            {
+              "requested_address": null,
+              "requested_name": "变频器通讯延时定时器",
+              "tia_actual_address": null,
+              "tia_actual_name": "变频器通讯延时定时器"
+            }
+          ]
+        },
+        "db_name": "内部数据",
+        "db_number": 2,
+        "device_name": "PLC_1",
+        "message": "completed",
+        "needs_user_action": false,
+        "optimized_access": true,
+        "retryable": false,
+        "stage": "create_global_db",
+        "success": true,
+        "variable_mappings": [
+          {
+            "requested_address": null,
+            "requested_name": "变频器读取失败1",
+            "tia_actual_address": null,
+            "tia_actual_name": "变频器读取失败1"
+          },
+          {
+            "requested_address": null,
+            "requested_name": "变频器读取成功1",
+            "tia_actual_address": null,
+            "tia_actual_name": "变频器读取成功1"
+          },
+          {
+            "requested_address": null,
+            "requested_name": "变频器通讯故障脉冲1",
+            "tia_actual_address": null,
+            "tia_actual_name": "变频器通讯故障脉冲1"
+          },
+          {
+            "requested_address": null,
+            "requested_name": "变频器通讯故障脉冲2",
+            "tia_actual_address": null,
+            "tia_actual_name": "变频器通讯故障脉冲2"
+          },
+          {
+            "requested_address": null,
+            "requested_name": "变频器通讯故障标志",
+            "tia_actual_address": null,
+            "tia_actual_name": "变频器通讯故障标志"
+          },
+          {
+            "requested_address": null,
+            "requested_name": "变频器通讯延时定时器",
+            "tia_actual_address": null,
+            "tia_actual_name": "变频器通讯延时定时器"
+          }
+        ]
+      },
+      "result_chars": 2119,
+      "stage": "create_global_db",
+      "started_at": "2026-07-31T07:05:00.080210+08:00",
+      "success": true,
+      "tool": "create_global_db"
+    },
+    {
+      "arguments": {
+        "address_mode": "symbolic",
+        "db_name": "曲线数据",
+        "db_number": 1,
+        "device_name": "PLC_1",
+        "variables_json": [
+          {
+            "comment": "持续3分钟以上变频器通讯异常报警",
+            "data_type": "Bool",
+            "name": "变频器通讯故障"
+          }
+        ]
+      },
+      "arguments_sha256": "041b653a2ab2d3bff74e8f2aa516fe3186e61024bf53bf31721f591c46e97211",
+      "code": "GLOBAL_DB_CREATED",
+      "duplicate_of": null,
+      "duration_ms": 597.597,
+      "index": 8,
+      "result": {
+        "code": "GLOBAL_DB_CREATED",
+        "data": {
+          "db_name": "曲线数据",
+          "db_number": 1,
+          "device_name": "PLC_1",
+          "optimized_access": true,
+          "variable_mappings": [
+            {
+              "requested_address": null,
+              "requested_name": "变频器通讯故障",
+              "tia_actual_address": null,
+              "tia_actual_name": "变频器通讯故障"
+            }
+          ]
+        },
+        "db_name": "曲线数据",
+        "db_number": 1,
+        "device_name": "PLC_1",
+        "message": "completed",
+        "needs_user_action": false,
+        "optimized_access": true,
+        "retryable": false,
+        "stage": "create_global_db",
+        "success": true,
+        "variable_mappings": [
+          {
+            "requested_address": null,
+            "requested_name": "变频器通讯故障",
+            "tia_actual_address": null,
+            "tia_actual_name": "变频器通讯故障"
+          }
+        ]
+      },
+      "result_chars": 787,
+      "stage": "create_global_db",
+      "started_at": "2026-07-31T07:05:03.135611+08:00",
+      "success": true,
+      "tool": "create_global_db"
+    },
+    {
+      "arguments": {},
+      "arguments_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 341.414,
+      "index": 2,
+      "result": {
+        "code": "OK",
+        "data": {
+          "text": "[]"
+        },
+        "message": "[]",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "list_tia_processes",
+        "success": true
+      },
+      "result_chars": 285,
+      "stage": "list_tia_processes",
+      "started_at": "2026-07-31T07:03:32.429704+08:00",
+      "success": true,
+      "tool": "list_tia_processes"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_8d1140f38142f654d479bf92",
+        "compile_unit_xml": {
+          "chars": 2600,
+          "sha256": "f7b6abd9da40cd94e2043d098b5d5244a75c00720fe66bdd107b2f3aa9af2066"
+        },
+        "expected_version": 2,
+        "network_key": "nw_pbox_success_reset"
+      },
+      "arguments_sha256": "0aec7436bb0a67ceed7cfe3fc68e01db8f695b3067129203c43b69283dc6d2f8",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 227.259,
+      "index": 17,
+      "result": {
+        "code": "OK",
+        "data": {
+          "artifact_id": "xml_8d1140f38142f654d479bf92",
+          "block_name": "FC_MainControl",
+          "device_name": "PLC_1",
+          "network_key": "nw_pbox_success_reset",
+          "network_status": "import_pending",
+          "next": {
+            "action": "resume_network",
+            "artifact_id": "xml_8d1140f38142f654d479bf92",
+            "block_name": "FC_MainControl",
+            "device_name": "PLC_1",
+            "network_key": "nw_pbox_success_reset",
+            "network_status": "import_pending",
+            "plan_id": "ladplan_ec5905a8eaa1c683",
+            "version": 3
+          },
+          "plan_id": "ladplan_ec5905a8eaa1c683",
+          "version": 3
+        },
+        "message": "completed",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "append_network_and_prepare_import",
+        "success": true
+      },
+      "result_chars": 849,
+      "stage": "append_network_and_prepare_import",
+      "started_at": "2026-07-31T07:08:11.064160+08:00",
+      "success": true,
+      "tool": "append_network_and_prepare_import"
+    },
+    {
+      "arguments": {
+        "artifact_id": "xml_8d1140f38142f654d479bf92",
+        "compile_unit_xml": {
+          "chars": 2600,
+          "sha256": "c0885605c2d2d5f97895168f1236e9853285698b6ea4571e8b507928208b9cad"
+        },
+        "expected_version": 1,
+        "network_key": "nw_pbox_fail_set"
+      },
+      "arguments_sha256": "521a8c6aca6edd136e5191fcf1b2ba537fb356bf139598dc05aba473063843b2",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 177.737,
+      "index": 15,
+      "result": {
+        "code": "OK",
+        "data": {
+          "artifact_id": "xml_8d1140f38142f654d479bf92",
+          "block_name": "FC_MainControl",
+          "device_name": "PLC_1",
+          "network_key": "nw_pbox_fail_set",
+          "network_status": "import_pending",
+          "next": {
+            "action": "resume_network",
+            "artifact_id": "xml_8d1140f38142f654d479bf92",
+            "block_name": "FC_MainControl",
+            "device_name": "PLC_1",
+            "network_key": "nw_pbox_fail_set",
+            "network_status": "import_pending",
+            "plan_id": "ladplan_ec5905a8eaa1c683",
+            "version": 2
+          },
+          "plan_id": "ladplan_ec5905a8eaa1c683",
+          "version": 2
+        },
+        "message": "completed",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "append_network_and_prepare_import",
+        "success": true
+      },
+      "result_chars": 839,
+      "stage": "append_network_and_prepare_import",
+      "started_at": "2026-07-31T07:07:49.717804+08:00",
+      "success": true,
+      "tool": "append_network_and_prepare_import"
+    },
+    {
+      "arguments": {
+        "conversation_id": "vfd_comm_fault_session",
+        "planning": {
+          "auxiliary_fbs": [],
+          "block_dependency_order": [
+            "FC_MainControl"
+          ],
+          "instance_dbs": [],
+          "interface_plan": {
+            "FC_MainControl": {
+              "Constant": [],
+              "InOut": [],
+              "Input": [],
+              "Output": [],
+              "Return": [
+                "Ret_Val:Void"
+              ],
+              "Temp": []
+            }
+          },
+          "main_fc": {
+            "block_name": "FC_MainControl",
+            "block_type": "FC",
+            "interface": {
+              "Constant": [],
+              "InOut": [],
+              "Input": [],
+              "Output": [],
+              "Return": [
+                "Ret_Val:Void"
+              ],
+              "Temp": []
+            },
+            "logic_scope": [
+              "变频器读取失败上升沿置位",
+              "变频器读取成功上升沿复位",
+              "TON接通延时3分钟",
+              "定时器Q驱动报警线圈"
+            ],
+            "responsibility": "组织全部变频器通讯故障逻辑，所有变量通过Global DB访问"
+          },
+          "main_fc_reason": "所有逻辑为组合逻辑和定时器，状态存储在Global DB中，无跨扫描Static需求，无需辅助FB",
+          "networks": [
+            {
+              "block_name": "FC_MainControl",
+              "comment": "检测\"内部数据\".\"变频器读取失败1\"上升沿，置位\"内部数据\".\"变频器通讯故障标志\"",
+              "depends_on": [],
+              "instruction_chain": [
+                "contact",
+                "pbox",
+                "set_coil"
+              ],
+              "instructions": [
+                "Contact",
+                "PBox",
+                "SCoil"
+              ],
+              "main_branch": [
+                "\"内部数据\".\"变频器读取失败1\"",
+                "PBox",
+                "SCoil"
+              ],
+              "network_key": "nw_pbox_fail_set",
+              "parallel_branches": [],
+              "purpose": "上升沿检测并置位故障标志",
+              "required_capabilities": [
+                "contact",
+                "edge.rising",
+                "edge.memory_bit",
+                "set_coil",
+                "topology.series"
+              ],
+              "selected_knowledge_ids": [
+                "instruction.pbox_edge_memory.v17",
+                "topology.series_contact_coil.v17"
+              ],
+              "split_reason": null,
+              "title": "变频器读取失败上升沿置位",
+              "topology": {
+                "description": "单触点经PBox上升沿检测到SCoil置位线圈",
+                "kind": "series"
+              },
+              "variables": [
+                "\"内部数据\".\"变频器读取失败1\"",
+                "\"内部数据\".\"变频器通讯故障脉冲1\"",
+                "\"内部数据\".\"变频器通讯故障标志\""
+              ]
+            },
+            {
+              "block_name": "FC_MainControl",
+              "comment": "检测\"内部数据\".\"变频器读取成功1\"上升沿，复位\"内部数据\".\"变频器通讯故障标志\"",
+              "depends_on": [],
+              "instruction_chain": [
+                "contact",
+                "pbox",
+                "reset_coil"
+              ],
+              "instructions": [
+                "Contact",
+                "PBox",
+                "RCoil"
+              ],
+              "main_branch": [
+                "\"内部数据\".\"变频器读取成功1\"",
+                "PBox",
+                "RCoil"
+              ],
+              "network_key": "nw_pbox_success_reset",
+              "parallel_branches": [],
+              "purpose": "上升沿检测并复位故障标志",
+              "required_capabilities": [
+                "contact",
+                "edge.rising",
+                "edge.memory_bit",
+                "reset_coil",
+                "topology.series"
+              ],
+              "selected_knowledge_ids": [
+                "instruction.pbox_edge_memory.v17",
+                "topology.series_contact_coil.v17"
+              ],
+              "split_reason": null,
+              "title": "变频器读取成功上升沿复位",
+              "topology": {
+                "description": "单触点经PBox上升沿检测到RCoil复位线圈",
+                "kind": "series"
+              },
+              "variables": [
+                "\"内部数据\".\"变频器读取成功1\"",
+                "\"内部数据\".\"变频器通讯故障脉冲2\"",
+                "\"内部数据\".\"变频器通讯故障标志\""
+              ]
+            },
+            {
+              "block_name": "FC_MainControl",
+              "comment": "\"内部数据\".\"变频器通讯故障标志\"持续接通时TON计时，PT为T#3m，3分钟后Q输出",
+              "depends_on": [],
+              "instruction_chain": [
+                "contact",
+                "ton"
+              ],
+              "instructions": [
+                "Contact",
+                "TON"
+              ],
+              "main_branch": [
+                "\"内部数据\".\"变频器通讯故障标志\"",
+                "TON(PT:=T#3m)"
+              ],
+              "network_key": "nw_ton_delay",
+              "parallel_branches": [],
+              "purpose": "TON接通延时3分钟判定",
+              "required_capabilities": [
+                "contact",
+                "ton",
+                "global_timer_instance",
+                "typed_time_constant",
+                "topology.series"
+              ],
+              "selected_knowledge_ids": [
+                "instruction.ton_global_instance.v17",
+                "topology.series_contact_coil.v17"
+              ],
+              "split_reason": "TON功能框独立占用一个Network，Q输出在下个Network作为触点",
+              "title": "通讯故障延时判定",
+              "topology": {
+                "description": "触点驱动TON功能框，全局IEC_TIMER实例，TypedConstant PT",
+                "kind": "series"
+              },
+              "variables": [
+                "\"内部数据\".\"变频器通讯故障标志\"",
+                "\"内部数据\".\"变频器通讯延时定时器\"",
+                "T#3m"
+              ]
+            },
+            {
+              "block_name": "FC_MainControl",
+              "comment": "\"内部数据\".\"变频器通讯延时定时器\".Q接通时驱动\"曲线数据\".\"变频器通讯故障\"线圈",
+              "depends_on": [],
+              "instruction_chain": [
+                "contact",
+                "coil"
+              ],
+              "instructions": [
+                "Contact",
+                "Coil"
+              ],
+              "main_branch": [
+                "\"内部数据\".\"变频器通讯延时定时器\".Q",
+                "Coil"
+              ],
+              "network_key": "nw_q_to_alarm",
+              "parallel_branches": [],
+              "purpose": "定时器Q输出驱动报警线圈",
+              "required_capabilities": [
+                "contact",
+                "coil",
+                "nested_db_member",
+                "topology.series"
+              ],
+              "selected_knowledge_ids": [
+                "access.multilevel_db_member.v17",
+                "topology.series_contact_coil.v17"
+              ],
+              "split_reason": "定时器Q成员访问需独立Network",
+              "title": "通讯故障报警输出",
+              "topology": {
+                "description": "多层DB成员Q触点驱动普通线圈",
+                "kind": "series"
+              },
+              "variables": [
+                "\"内部数据\".\"变频器通讯延时定时器\".Q",
+                "\"曲线数据\".\"变频器通讯故障\""
+              ]
+            }
+          ]
+        },
+        "requirements": {
+          "chars": 379,
+          "sha256": "a83e8cefc1fecd64b2f0cfbc56304d56504649ed3bf1d6e5706daa2eb904afeb"
+        },
+        "target_device": "PLC_1"
+      },
+      "arguments_sha256": "372900627c0cccaef0a792ac6bf4d73204efd65c4a0bc5646fb72d292970e06d",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 133.772,
+      "index": 12,
+      "result": {
+        "code": "OK",
+        "data": {
+          "plan": {
+            "artifacts": {},
+            "auxiliary_fbs": [],
+            "block_dependency_order": [
+              "FC_MainControl"
+            ],
+            "closed_at": null,
+            "conversation_id": "vfd_comm_fault_session",
+            "created_at": "2026-07-30T23:07:11.539261Z",
+            "current_block": "FC_MainControl",
+            "current_network": "nw_pbox_fail_set",
+            "instance_dbs": [],
+            "interface_change_log": [],
+            "interface_plan": {
+              "FC_MainControl": {
+                "Constant": [],
+                "InOut": [],
+                "Input": [],
+                "Output": [],
+                "Return": [
+                  "Ret_Val:Void"
+                ],
+                "Temp": []
+              }
+            },
+            "knowledge_snapshot": {
+              "captured_at": "2026-07-30T23:07:11.540262Z",
+              "catalog_sha256": "164f44bdb65aef319aa11dc4a920247c3c63f4c00c37bb59dac6253aa53ba372",
+              "items": {
+                "access.multilevel_db_member.v17": "7bb93dcc3cddda2a4538e37aa476594caa3177dcee936110e9dce48b7b8f4f0d",
+                "instruction.pbox_edge_memory.v17": "29dd29af38ff3f1c0abccd1e9807fbae064a8c7756243d2020fb3913fb869d6f",
+                "instruction.ton_global_instance.v17": "dfabf2a025f96ec4305190e66851d6f7fe296e9801e5fc4ee5d2741d0d94f754",
+                "topology.series_contact_coil.v17": "27c1fcfc7ca1dc8422820c953fd43c94366d923cd46ad2c450a4b583409ee124"
+              }
+            },
+            "main_fc": {
+              "artifact_id": null,
+              "artifact_version": null,
+              "block_name": "FC_MainControl",
+              "block_type": "FC",
+              "compile_result": null,
+              "compiled_at": null,
+              "import_result": null,
+              "imported_at": null,
+              "interface": {
+                "Constant": [],
+                "InOut": [],
+                "Input": [],
+                "Output": [],
+                "Return": [
+                  "Ret_Val:Void"
+                ],
+                "Temp": []
+              },
+              "logic_scope": [
+                "变频器读取失败上升沿置位",
+                "变频器读取成功上升沿复位",
+                "TON接通延时3分钟",
+                "定时器Q驱动报警线圈"
+              ],
+              "responsibility": "组织全部变频器通讯故障逻辑，所有变量通过Global DB访问",
+              "status": "planned",
+              "verified_version": null
+            },
+            "main_fc_reason": "所有逻辑为组合逻辑和定时器，状态存储在Global DB中，无跨扫描Static需求，无需辅助FB",
+            "networks": [
+              {
+                "artifact_id": null,
+                "artifact_version": null,
+                "block_name": "FC_MainControl",
+                "comment": "检测\"内部数据\".\"变频器读取失败1\"上升沿，置位\"内部数据\".\"变频器通讯故障标志\"",
+                "compile_result": null,
+                "compiled_at": null,
+                "depends_on": [],
+                "import_result": null,
+                "imported_at": null,
+                "instruction_chain": [
+                  "contact",
+                  "pbox",
+                  "set_coil"
+                ],
+                "instructions": [
+                  "Contact",
+                  "PBox",
+                  "SCoil"
+                ],
+                "knowledge_ids": [
+                  "instruction.pbox_edge_memory.v17",
+                  "topology.series_contact_coil.v17"
+                ],
+                "main_branch": [
+                  "\"内部数据\".\"变频器读取失败1\"",
+                  "PBox",
+                  "SCoil"
+                ],
+                "network_key": "nw_pbox_fail_set",
+                "parallel_branches": [],
+                "purpose": "上升沿检测并置位故障标志",
+                "required_capabilities": [
+                  "contact",
+                  "edge.rising",
+                  "edge.memory_bit",
+                  "set_coil",
+                  "topology.series"
+                ],
+                "selected_knowledge_ids": [
+                  "instruction.pbox_edge_memory.v17",
+                  "topology.series_contact_coil.v17"
+                ],
+                "split_reason": null,
+                "status": "planned",
+                "title": "变频器读取失败上升沿置位",
+                "topology": {
+                  "description": "单触点经PBox上升沿检测到SCoil置位线圈",
+                  "kind": "series"
+                },
+                "uncovered_capabilities": [],
+                "variables": [
+                  "\"内部数据\".\"变频器读取失败1\"",
+                  "\"内部数据\".\"变频器通讯故障脉冲1\"",
+                  "\"内部数据\".\"变频器通讯故障标志\""
+                ],
+                "verified_version": null
+              },
+              {
+                "artifact_id": null,
+                "artifact_version": null,
+                "block_name": "FC_MainControl",
+                "comment": "检测\"内部数据\".\"变频器读取成功1\"上升沿，复位\"内部数据\".\"变频器通讯故障标志\"",
+                "compile_result": null,
+                "compiled_at": null,
+                "depends_on": [],
+                "import_result": null,
+                "imported_at": null,
+                "instruction_chain": [
+                  "contact",
+                  "pbox",
+                  "reset_coil"
+                ],
+                "instructions": [
+                  "Contact",
+                  "PBox",
+                  "RCoil"
+                ],
+                "knowledge_ids": [
+                  "instruction.pbox_edge_memory.v17",
+                  "topology.series_contact_coil.v17"
+                ],
+                "main_branch": [
+                  "\"内部数据\".\"变频器读取成功1\"",
+                  "PBox",
+                  "RCoil"
+                ],
+                "network_key": "nw_pbox_success_reset",
+                "parallel_branches": [],
+                "purpose": "上升沿检测并复位故障标志",
+                "required_capabilities": [
+                  "contact",
+                  "edge.rising",
+                  "edge.memory_bit",
+                  "reset_coil",
+                  "topology.series"
+                ],
+                "selected_knowledge_ids": [
+                  "instruction.pbox_edge_memory.v17",
+                  "topology.series_contact_coil.v17"
+                ],
+                "split_reason": null,
+                "status": "planned",
+                "title": "变频器读取成功上升沿复位",
+                "topology": {
+                  "description": "单触点经PBox上升沿检测到RCoil复位线圈",
+                  "kind": "series"
+                },
+                "uncovered_capabilities": [],
+                "variables": [
+                  "\"内部数据\".\"变频器读取成功1\"",
+                  "\"内部数据\".\"变频器通讯故障脉冲2\"",
+                  "\"内部数据\".\"变频器通讯故障标志\""
+                ],
+                "verified_version": null
+              },
+              {
+                "artifact_id": null,
+                "artifact_version": null,
+                "block_name": "FC_MainControl",
+                "comment": "\"内部数据\".\"变频器通讯故障标志\"持续接通时TON计时，PT为T#3m，3分钟后Q输出",
+                "compile_result": null,
+                "compiled_at": null,
+                "depends_on": [],
+                "import_result": null,
+                "imported_at": null,
+                "instruction_chain": [
+                  "contact",
+                  "ton"
+                ],
+                "instructions": [
+                  "Contact",
+                  "TON"
+                ],
+                "knowledge_ids": [
+                  "instruction.ton_global_instance.v17",
+                  "topology.series_contact_coil.v17"
+                ],
+                "main_branch": [
+                  "\"内部数据\".\"变频器通讯故障标志\"",
+                  "TON(PT:=T#3m)"
+                ],
+                "network_key": "nw_ton_delay",
+                "parallel_branches": [],
+                "purpose": "TON接通延时3分钟判定",
+                "required_capabilities": [
+                  "contact",
+                  "ton",
+                  "global_timer_instance",
+                  "typed_time_constant",
+                  "topology.series"
+                ],
+                "selected_knowledge_ids": [
+                  "instruction.ton_global_instance.v17",
+                  "topology.series_contact_coil.v17"
+                ],
+                "split_reason": "TON功能框独立占用一个Network，Q输出在下个Network作为触点",
+                "status": "planned",
+                "title": "通讯故障延时判定",
+                "topology": {
+                  "description": "触点驱动TON功能框，全局IEC_TIMER实例，TypedConstant PT",
+                  "kind": "series"
+                },
+                "uncovered_capabilities": [],
+                "variables": [
+                  "\"内部数据\".\"变频器通讯故障标志\"",
+                  "\"内部数据\".\"变频器通讯延时定时器\"",
+                  "T#3m"
+                ],
+                "verified_version": null
+              },
+              {
+                "artifact_id": null,
+                "artifact_version": null,
+                "block_name": "FC_MainControl",
+                "comment": "\"内部数据\".\"变频器通讯延时定时器\".Q接通时驱动\"曲线数据\".\"变频器通讯故障\"线圈",
+                "compile_result": null,
+                "compiled_at": null,
+                "depends_on": [],
+                "import_result": null,
+                "imported_at": null,
+                "instruction_chain": [
+                  "contact",
+                  "coil"
+                ],
+                "instructions": [
+                  "Contact",
+                  "Coil"
+                ],
+                "knowledge_ids": [
+                  "access.multilevel_db_member.v17",
+                  "topology.series_contact_coil.v17"
+                ],
+                "main_branch": [
+                  "\"内部数据\".\"变频器通讯延时定时器\".Q",
+                  "Coil"
+                ],
+                "network_key": "nw_q_to_alarm",
+                "parallel_branches": [],
+                "purpose": "定时器Q输出驱动报警线圈",
+                "required_capabilities": [
+                  "contact",
+                  "coil",
+                  "nested_db_member",
+                  "topology.series"
+                ],
+                "selected_knowledge_ids": [
+                  "access.multilevel_db_member.v17",
+                  "topology.series_contact_coil.v17"
+                ],
+                "split_reason": "定时器Q成员访问需独立Network",
+                "status": "planned",
+                "title": "通讯故障报警输出",
+                "topology": {
+                  "description": "多层DB成员Q触点驱动普通线圈",
+                  "kind": "series"
+                },
+                "uncovered_capabilities": [],
+                "variables": [
+                  "\"内部数据\".\"变频器通讯延时定时器\".Q",
+                  "\"曲线数据\".\"变频器通讯故障\""
+                ],
+                "verified_version": null
+              }
+            ],
+            "plan_id": "ladplan_ec5905a8eaa1c683",
+            "replaced_by": null,
+            "requirements": {
+              "chars": 379,
+              "sha256": "a83e8cefc1fecd64b2f0cfbc56304d56504649ed3bf1d6e5706daa2eb904afeb"
+            },
+            "status": "active",
+            "step_status": {
+              "artifact_creation": "planned",
+              "network_generation": "planned",
+              "planning": "planned"
+            },
+            "target_device": "PLC_1",
+            "updated_at": "2026-07-30T23:07:11.608955Z",
+            "verification_history": []
+          }
+        },
+        "message": "completed",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "save_lad_generation_plan",
+        "success": true
+      },
+      "result_chars": 7793,
+      "stage": "save_lad_generation_plan",
+      "started_at": "2026-07-31T07:07:11.536258+08:00",
+      "success": true,
+      "tool": "save_lad_generation_plan"
+    },
+    {
+      "arguments": {
+        "block_name": "FC_MainControl",
+        "block_type": "FC",
+        "conversation_id": "vfd_comm_fault_session",
+        "device_name": "PLC_1",
+        "plan_id": "ladplan_ec5905a8eaa1c683"
+      },
+      "arguments_sha256": "b9d82943f708665b4b964bd60ae529f347d3327e43125c71efba1dfe36a0a1a1",
+      "code": "OK",
+      "duplicate_of": null,
+      "duration_ms": 127.452,
+      "index": 13,
+      "result": {
+        "code": "OK",
+        "data": {
+          "artifact": {
+            "affected_networks": [],
+            "artifact_id": "xml_8d1140f38142f654d479bf92",
+            "block_name": "FC_MainControl",
+            "block_type": "FC",
+            "change_source": "create_block_framework",
+            "conversation_id": "vfd_comm_fault_session",
+            "created_at": "2026-07-30T23:07:17.086961Z",
+            "current_version": 1,
+            "device_name": "PLC_1",
+            "expires_at": "2026-08-01T23:07:17.086961Z",
+            "last_compile": null,
+            "last_import": null,
+            "last_validation": {
+              "errors": [],
+              "summary": {
+                "bytes": 668,
+                "root": "Document"
+              },
+              "valid": true,
+              "warnings": []
+            },
+            "network_states": {},
+            "plan_id": "ladplan_ec5905a8eaa1c683",
+            "status": "artifact_created",
+            "updated_at": "2026-07-30T23:07:17.086961Z",
+            "verified_versions": {}
+          }
+        },
+        "message": "completed",
+        "needs_user_action": false,
+        "retryable": false,
+        "stage": "create_lad_block_artifact",
+        "success": true
+      },
+      "result_chars": 1034,
+      "stage": "create_lad_block_artifact",
+      "started_at": "2026-07-31T07:07:17.072630+08:00",
+      "success": true,
+      "tool": "create_lad_block_artifact"
+    }
+  ],
+  "run_id": "20260731_070255_630_637dd9",
+  "schema_version": 1,
+  "summary": {
+    "artifact_reads": 0,
+    "artifact_writes": 4,
+    "catalog_reads": 1,
+    "duplicate_calls": 1,
+    "failed_calls": 3,
+    "knowledge_body_reads": 1,
+    "knowledge_calls": 2,
+    "plan_calls": 2,
+    "run_duration_ms": 347820.455,
+    "tia_compiles": 2,
+    "tia_imports": 2,
+    "tool_duration_ms": 43967.613,
+    "total_tool_calls": 18
+  },
+  "termination": {
+    "event": "turn_failed",
+    "exception": "",
+    "recovery_available": false,
+    "success": false
+  },
+  "turns": [
+    {
+      "query": {
+        "chars": 570,
+        "sha256": "af0b61946614ee6ae792f8e18e3c1acc126d24a86eaff2d9ffead17136a6b8f9"
+      },
+      "started_at": "2026-07-31T07:03:19.266726+08:00"
+    },
+    {
+      "query": "可以",
+      "started_at": "2026-07-31T07:04:03.798295+08:00"
+    }
+  ],
+  "user_continuations": [
+    "可以"
+  ]
+}

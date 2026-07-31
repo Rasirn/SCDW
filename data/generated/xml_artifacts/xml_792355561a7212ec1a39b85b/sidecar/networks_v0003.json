@@ -1,0 +1,13 @@
+{
+  "networks": [
+    {
+      "network_key": "nw_fan_run_interlock",
+      "sha256": "af74f6dfaa113b0e69295d097ab74069cbba4594927b5ad25c7055cba69b562c"
+    },
+    {
+      "network_key": "nw_fan_auto_output",
+      "sha256": "e1e54c5da2e963702f5d86e11c90aca4de0ad5cb0eb6f3b4eaf606949cce05e6"
+    }
+  ],
+  "version": 3
+}

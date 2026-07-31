@@ -1,0 +1,9 @@
+{
+  "networks": [
+    {
+      "network_key": "nw1_fan_output",
+      "sha256": "45103bcd22de369fd72c292e514d4e0700fe9b3837f721a14bad682884c6d4b0"
+    }
+  ],
+  "version": 2
+}

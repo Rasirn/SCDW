@@ -14,15 +14,40 @@ from typing import Any
 from scdw.common.paths import LAD_GENERATION_PLANS_DIR
 from scdw.rag import KnowledgeLibrary
 
+from .capabilities import LadCapabilityCatalog
 from .models import GENERATION_STATES, KnowledgeGapError, LadGenerationPlan, PlanValidationError
 from .planner import LadPlanner
+from .semantics import blueprint_tree_lines, network_semantic_sha256, plan_semantic_sha256
 
 
 _PLAN_ID = re.compile(r"^ladplan_[a-f0-9]{16,64}$")
+_NUMBERED_NETWORK = re.compile(r"程序段\s*(\d+)\s*[：:]")
+_COUNTED_NETWORK = re.compile(r"(?:共包含|包含|共)\s*([一二三四五六七八九十\d]+)\s*个?程序段")
+_CHINESE_COUNTS = {"一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9, "十": 10}
 
 
 def _stamp() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _workflow_event(operation: str, **data: Any) -> dict[str, Any]:
+    return {
+        "operation_id": "op_" + secrets.token_hex(8),
+        "operation": operation,
+        "recorded_at": data.pop("recorded_at", None) or _stamp(),
+        **data,
+    }
+
+
+def _explicit_network_count(requirements: str) -> int | None:
+    labels = [int(value) for value in _NUMBERED_NETWORK.findall(requirements)]
+    if labels:
+        return max(labels)
+    match = _COUNTED_NETWORK.search(requirements)
+    if not match:
+        return None
+    value = match.group(1)
+    return int(value) if value.isdigit() else _CHINESE_COUNTS.get(value)
 
 
 class LadPlanService:
@@ -68,10 +93,10 @@ class LadPlanService:
             item_id for network in plan.networks for item_id in network.selected_knowledge_ids
         ))
         library = KnowledgeLibrary.instance()
-        all_ids = [str(item["id"]) for item in library.catalog()["items"]]
-        items = library.get_many(all_ids) if all_ids else []
+        catalog_items = list(library.catalog()["items"])
+        items = library.get_many(selected) if selected else []
         catalog_text = json.dumps(
-            [item["metadata"] for item in items], ensure_ascii=False, sort_keys=True, separators=(",", ":")
+            catalog_items, ensure_ascii=False, sort_keys=True, separators=(",", ":")
         )
         summary = {
             "captured_at": _stamp(),
@@ -81,14 +106,17 @@ class LadPlanService:
                 for item in items if item["id"] in selected
             },
         }
+        body_by_id = {item["id"]: item for item in items}
         value = {**summary, "items": [
             {
-                "id": item["id"],
-                "metadata": item["metadata"],
-                "content": item["content"],
-                "content_sha256": hashlib.sha256(item["content"].encode("utf-8")).hexdigest(),
+                "id": metadata["id"],
+                "metadata": metadata,
+                **({
+                    "content": body_by_id[metadata["id"]]["content"],
+                    "content_sha256": hashlib.sha256(body_by_id[metadata["id"]]["content"].encode("utf-8")).hexdigest(),
+                } if metadata["id"] in body_by_id else {}),
             }
-            for item in items
+            for metadata in catalog_items
         ]}
         self._atomic(self._snapshot_path(plan.plan_id), json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2) + "\n")
         plan.knowledge_snapshot = summary
@@ -103,6 +131,7 @@ class LadPlanService:
             "parallel_merge": ["topology.parallel", "topology.merge"],
         }
         issues: list[dict[str, Any]] = []
+        from scdw.xml_workspace.knowledge_networks import RENDERABLE_KINDS
         for network in plan.networks:
             selected = list(dict.fromkeys(network.selected_knowledge_ids))
             network.selected_knowledge_ids = selected
@@ -112,6 +141,18 @@ class LadPlanService:
                 network.uncovered_capabilities = [f"knowledge_id:{item_id}" for item_id in unknown]
                 issues.append({"network_key": network.network_key, "code": "UNKNOWN_KNOWLEDGE_ID", "message": f"unknown knowledge IDs: {', '.join(unknown)}", "uncovered_capabilities": network.uncovered_capabilities})
                 continue
+            missing_renderers = [
+                item_id for item_id in selected
+                if entries[item_id].get("generation_mode") == "knowledge_renderer_required"
+                and str((entries[item_id].get("renderer") or {}).get("kind", "")) not in RENDERABLE_KINDS
+            ]
+            if missing_renderers:
+                issues.append({
+                    "network_key": network.network_key,
+                    "code": "KNOWLEDGE_RENDERER_MISSING",
+                    "message": "selected knowledge items require unavailable renderers: " + ", ".join(missing_renderers),
+                    "uncovered_capabilities": [f"renderer:{item_id}" for item_id in missing_renderers],
+                })
             provided = {
                 str(capability)
                 for item_id in selected
@@ -131,6 +172,108 @@ class LadPlanService:
                 issues.append({"network_key": network.network_key, "code": "INVALID_PARALLEL_BRANCHES", "message": "parallel topology requires at least two explicit parallel_branches", "uncovered_capabilities": ["topology.parallel_branches"]})
         return issues
 
+    def _collect_blueprint_issues(self, plan: LadGenerationPlan) -> list[dict[str, Any]]:
+        catalog = LadCapabilityCatalog.instance()
+        issues: list[dict[str, Any]] = []
+        from scdw.xml_workspace.knowledge_networks import RENDERABLE_KINDS
+        for network in plan.networks:
+            if network.blueprint is None:
+                issues.append({
+                    "network_key": network.network_key,
+                    "code": "BLUEPRINT_TREE_MISSING",
+                    "message": "Network has no structured LAD blueprint tree",
+                    "uncovered_capabilities": ["blueprint.tree"],
+                })
+                continue
+            for issue in catalog.validate_node(network.blueprint):
+                issues.append({"network_key": network.network_key, **issue})
+            renderer_id = network.renderer_id
+            if not renderer_id:
+                issues.append({
+                    "network_key": network.network_key,
+                    "code": "KNOWLEDGE_RENDERER_MISSING",
+                    "message": "frozen Network has no deterministic renderer",
+                    "uncovered_capabilities": ["renderer:network"],
+                })
+            elif renderer_id not in RENDERABLE_KINDS:
+                issues.append({
+                    "network_key": network.network_key,
+                    "code": "KNOWLEDGE_RENDERER_MISSING",
+                    "message": f"frozen Network renderer is unavailable: {renderer_id}",
+                    "uncovered_capabilities": [f"renderer:{renderer_id}"],
+                })
+            selected = set(network.selected_knowledge_ids)
+
+            def inspect(node) -> None:
+                missing = sorted(set(node.knowledge_ids) - selected)
+                if missing:
+                    issues.append({
+                        "network_key": network.network_key,
+                        "code": "BLUEPRINT_KNOWLEDGE_NOT_SELECTED",
+                        "message": f"blueprint node {node.node_id} uses unselected knowledge: {', '.join(missing)}",
+                        "uncovered_capabilities": [f"knowledge_id:{item}" for item in missing],
+                    })
+                for child in node.children:
+                    inspect(child)
+
+            inspect(network.blueprint)
+        return issues
+
+    def _freeze_blueprint(self, plan: LadGenerationPlan) -> LadGenerationPlan:
+        issues = [*self._collect_knowledge_issues(plan), *self._collect_blueprint_issues(plan)]
+        if issues:
+            plan.uncovered_capabilities = sorted({
+                item for issue in issues for item in issue.get("uncovered_capabilities", [])
+            })
+            raise PlanValidationError(issues)
+        catalog = LadCapabilityCatalog.instance().compact()
+        plan.capability_catalog_sha256 = catalog["catalog_sha256"]
+        plan.uncovered_capabilities = []
+        for network in plan.networks:
+            network.frozen_semantic_sha256 = network_semantic_sha256(network)
+        plan.blueprint_sha256 = plan_semantic_sha256(plan)
+        plan.blueprint_status = "approved_for_generation"
+        plan.frozen_at = _stamp()
+        plan.step_status["planning"] = "planned"
+        return plan
+
+    def _require_frozen_blueprint(self, plan: LadGenerationPlan) -> None:
+        if plan.blueprint_status != "approved_for_generation" or not plan.blueprint_sha256:
+            raise KnowledgeGapError(
+                "LAD blueprint must pass preflight and be frozen before XML generation",
+                uncovered=["blueprint.approved_for_generation"],
+            )
+        current = plan_semantic_sha256(plan)
+        if current != plan.blueprint_sha256:
+            raise KnowledgeGapError(
+                "frozen LAD blueprint semantics changed; return it to needs_revision and freeze again",
+                uncovered=["blueprint.semantic_fingerprint"],
+            )
+        changed = [
+            item.network_key for item in plan.networks
+            if item.frozen_semantic_sha256 != network_semantic_sha256(item)
+        ]
+        if changed:
+            raise KnowledgeGapError(
+                "Network semantics differ from the frozen blueprint: " + ", ".join(changed),
+                uncovered=[f"frozen_network:{item}" for item in changed],
+            )
+
+    def freeze_blueprint(self, plan_id: str) -> LadGenerationPlan:
+        with self._lock:
+            plan = self.get(plan_id)
+            self._require_active(plan)
+            self._freeze_blueprint(plan)
+            plan.verification_history.append(_workflow_event(
+                "freeze_blueprint", blueprint_sha256=plan.blueprint_sha256,
+                capability_catalog_sha256=plan.capability_catalog_sha256,
+            ))
+            return self.save(plan)
+
+    @staticmethod
+    def render_blueprint_tree(plan: LadGenerationPlan) -> list[str]:
+        return blueprint_tree_lines(plan)
+
     def _validate_knowledge_coverage(self, plan: LadGenerationPlan) -> None:
         issues = self._collect_knowledge_issues(plan)
         if issues:
@@ -139,6 +282,8 @@ class LadPlanService:
     def save(self, plan: LadGenerationPlan) -> LadGenerationPlan:
         plan.validate()
         self._validate_knowledge_coverage(plan)
+        if plan.blueprint_status == "approved_for_generation":
+            self._require_frozen_blueprint(plan)
         plan.updated_at = _stamp()
         if not plan.created_at:
             plan.created_at = plan.updated_at
@@ -161,7 +306,7 @@ class LadPlanService:
     def _save_new_active(self, plan: LadGenerationPlan) -> LadGenerationPlan:
         with self._lock:
             plan.validate()
-            self._validate_knowledge_coverage(plan)
+            self._freeze_blueprint(plan)
             self._write_knowledge_snapshot(plan)
             self._replace_active_plans(plan)
             return self.save(plan)
@@ -185,6 +330,12 @@ class LadPlanService:
             "interface_change_log": [],
             "verification_history": [],
             "knowledge_snapshot": {},
+            "blueprint_schema_version": 1,
+            "blueprint_status": "draft",
+            "capability_catalog_sha256": "",
+            "blueprint_sha256": None,
+            "frozen_at": None,
+            "uncovered_capabilities": [],
             "status": "active",
             "replaced_by": None,
             "closed_at": None,
@@ -192,11 +343,17 @@ class LadPlanService:
             "updated_at": stamp,
         }
         plan = LadGenerationPlan.from_dict(value)
+        detected_count = _explicit_network_count(requirements)
+        if detected_count is not None:
+            plan.requested_network_count = detected_count
+        plan.planned_network_count = sum(1 for item in plan.networks if item.block_name == plan.main_fc.block_name)
+        if not plan.instruction_pipeline:
+            plan.instruction_pipeline = [item.network_key for item in plan.networks]
         if plan.current_block is None and plan.block_dependency_order:
             plan.current_block = plan.block_dependency_order[0]
         if plan.current_network is None and plan.networks:
             plan.current_network = plan.networks[0].network_key
-        issues = self._collect_knowledge_issues(plan)
+        issues = [*self._collect_knowledge_issues(plan), *self._collect_blueprint_issues(plan)]
         if issues:
             raise PlanValidationError(issues)
         return self._save_new_active(plan)
@@ -318,13 +475,16 @@ class LadPlanService:
             self._require_active(plan)
             network = self._network(plan, network_key)
             network.status = "needs_revision"
+            plan.blueprint_status = "needs_revision"
+            plan.blueprint_sha256 = None
+            plan.frozen_at = None
+            network.frozen_semantic_sha256 = None
             plan.step_status["planning"] = "needs_revision"
-            plan.verification_history.append({
-                "operation": "semantic_change_requires_replan",
-                "network_key": network_key,
-                "reason": reason,
-                "recorded_at": _stamp(),
-            })
+            plan.verification_history.append(_workflow_event(
+                "semantic_change_requires_replan",
+                network_key=network_key,
+                reason=reason,
+            ))
             return self.save(plan)
 
     def revise_network_plan(self, plan_id: str, network_key: str, revision: dict[str, Any], reason: str) -> LadGenerationPlan:
@@ -332,6 +492,7 @@ class LadPlanService:
         allowed = {
             "title", "comment", "purpose", "main_branch", "parallel_branches", "instructions", "variables",
             "required_capabilities", "selected_knowledge_ids", "instruction_chain", "topology", "depends_on", "split_reason",
+            "blueprint", "renderer_id",
         }
         unexpected = sorted(set(revision) - allowed)
         if unexpected:
@@ -342,20 +503,26 @@ class LadPlanService:
             plan = self.get(plan_id)
             self._require_active(plan)
             network = self._network(plan, network_key)
+            plan.blueprint_status = "needs_revision"
+            plan.blueprint_sha256 = None
+            plan.frozen_at = None
+            network.frozen_semantic_sha256 = None
             for name, value in revision.items():
+                if name == "blueprint" and isinstance(value, dict):
+                    from .models import BlueprintNode
+                    value = BlueprintNode.from_dict(value)
                 setattr(network, name, value)
             network.status = "needs_revision"
             network.import_result = None
             network.compile_result = None
             network.verified_version = None
-            plan.step_status["planning"] = "planned"
-            plan.verification_history.append({
-                "operation": "revise_network_plan",
-                "network_key": network_key,
-                "reason": reason,
-                "changed_fields": sorted(revision),
-                "recorded_at": _stamp(),
-            })
+            self._freeze_blueprint(plan)
+            plan.verification_history.append(_workflow_event(
+                "revise_network_plan",
+                network_key=network_key,
+                reason=reason,
+                changed_fields=sorted(revision),
+            ))
             return self.save(plan)
 
     def record_import_result(self, plan_id: str, block_name: str, artifact_id: str, version: int, result: dict[str, Any], network_key: str | None = None) -> LadGenerationPlan:
@@ -376,7 +543,7 @@ class LadPlanService:
                 network.artifact_id, network.artifact_version = artifact_id, version
                 network.imported_at = result.get("recorded_at")
                 network.import_result = result
-            plan.verification_history.append({"operation": "import", **result})
+            plan.verification_history.append(_workflow_event("import", **result))
             return self.save(plan)
 
     def record_compile_result(self, plan_id: str, result: dict[str, Any], *, block_name: str | None = None, artifact_id: str | None = None, version: int | None = None, network_key: str | None = None) -> LadGenerationPlan:
@@ -407,8 +574,50 @@ class LadPlanService:
                         block.verified_version = version
             else:
                 plan.step_status["plc_compile"] = status
-            plan.verification_history.append({"operation": "compile", "artifact_id": artifact_id, "version": version, "network_key": network_key, **result})
+            event_data = {"artifact_id": artifact_id, "version": version, "network_key": network_key, **result}
+            plan.verification_history.append(_workflow_event("compile", **event_data))
             return self.save(plan)
+
+    def stop_repeated_diagnostic(self, plan_id: str, network_key: str, result: dict[str, Any]) -> bool:
+        """Stop repeated expression guesses without unfreezing LAD semantics."""
+        fingerprint_source = {
+            "stage": result.get("stage"),
+            "code": result.get("code"),
+            "messages": result.get("messages", []),
+        }
+        fingerprint = hashlib.sha256(
+            json.dumps(fingerprint_source, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")
+        ).hexdigest()
+        with self._lock:
+            plan = self.get(plan_id)
+            self._require_active(plan)
+            attempts = []
+            for event in reversed(plan.verification_history):
+                if event.get("network_key") != network_key or event.get("operation") not in {"import", "compile"}:
+                    continue
+                if event.get("success") is True:
+                    break
+                candidate = hashlib.sha256(json.dumps({
+                    "stage": event.get("stage"), "code": event.get("code"), "messages": event.get("messages", []),
+                }, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")).hexdigest()
+                if candidate != fingerprint:
+                    break
+                attempts.append(event)
+            if len(attempts) < 2:
+                return False
+            network = self._network(plan, network_key)
+            # This is still an XML-expression failure. The reviewed design
+            # remains frozen and must not be revised merely to escape a TIA
+            # diagnostic.
+            network.status = "import_failed" if result.get("stage") == "tia_import" else "compile_failed"
+            plan.verification_history.append(_workflow_event(
+                "repeated_diagnostic_breaker", network_key=network_key,
+                diagnostic_fingerprint=fingerprint, attempts=len(attempts),
+                blueprint_sha256=plan.blueprint_sha256,
+            ))
+            self._advance_cursor(plan)
+            self.save(plan)
+            return True
 
     def record_instance_db_result(self, plan_id: str, fb_name: str, instance_db_name: str, result: dict[str, Any]) -> LadGenerationPlan:
         with self._lock:
@@ -420,7 +629,7 @@ class LadPlanService:
             target.status = "imported" if result.get("success") else "import_failed"
             target.created_at = result.get("recorded_at")
             target.create_result = result
-            plan.verification_history.append({"operation": "create_instance_db", **result})
+            plan.verification_history.append(_workflow_event("create_instance_db", **result))
             return self.save(plan)
 
     def validate_instance_db_order(self, plan_id: str, fb_name: str, instance_db_name: str) -> LadGenerationPlan:
@@ -438,6 +647,7 @@ class LadPlanService:
     def validate_network_generation_order(self, plan_id: str, block_name: str, network_key: str) -> None:
         plan = self.get(plan_id)
         self._require_active(plan)
+        self._require_frozen_blueprint(plan)
         self._validate_knowledge_coverage(plan)
         network = self._network(plan, network_key)
         if network.block_name != block_name:
@@ -527,6 +737,7 @@ class LadPlanService:
     def validate_artifact_order(self, plan_id: str, block_name: str) -> None:
         plan = self.get(plan_id)
         self._require_active(plan)
+        self._require_frozen_blueprint(plan)
         self._validate_knowledge_coverage(plan)
         self._validate_artifact_order(plan, block_name)
 
@@ -550,12 +761,12 @@ class LadPlanService:
         with self._lock:
             plan = self.get(plan_id)
             self._require_active(plan)
-            plan.interface_change_log.append({
-                "recorded_at": _stamp(),
-                "block_name": block_name,
-                "affected_networks": affected_networks,
-                "description": description,
-            })
+            plan.interface_change_log.append(_workflow_event(
+                "interface_change",
+                block_name=block_name,
+                affected_networks=affected_networks,
+                description=description,
+            ))
             for network_key in affected_networks:
                 network = self._network(plan, network_key)
                 network.status = "needs_revision"
@@ -595,7 +806,7 @@ class LadPlanService:
                         network.artifact_version = metadata.current_version
             self._advance_cursor(plan)
             if repairs:
-                plan.verification_history.append({"operation": "reconcile", "recorded_at": _stamp(), "repairs": repairs})
+                plan.verification_history.append(_workflow_event("reconcile", repairs=repairs))
                 plan = self.save(plan)
             return plan, repairs
 

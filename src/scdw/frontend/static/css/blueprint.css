@@ -1,0 +1,38 @@
+.lad-blueprint {
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface-raised);
+}
+
+.lad-blueprint-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.lad-blueprint-head span {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 11px;
+}
+
+.lad-blueprint pre {
+  max-height: 420px;
+  overflow: auto;
+  margin: 10px 0 6px;
+  padding: 10px;
+  background: var(--color-code-bg);
+  border-radius: 7px;
+  white-space: pre;
+  line-height: 1.5;
+}
+
+.lad-blueprint small {
+  color: var(--color-text-secondary);
+  font-family: monospace;
+}

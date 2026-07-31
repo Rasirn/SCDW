@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+from pathlib import Path
 
 import pytest
 from mcp.server.fastmcp import FastMCP
@@ -184,3 +185,102 @@ def test_tia_imports_reviewed_contact_or_pbox_scoil_renderer(temporary_tia_proje
     )
     version = rendered["version"]
     _invoke(mcp, "import_and_compile_artifact", artifact["artifact_id"], device, version, plan.networks[0].network_key, True)
+
+
+def test_latest_failed_fan_gas_case_runs_from_frozen_blueprint(temporary_tia_project, tmp_path):
+    """Replay 20260731_080953 through the production blueprint renderer and real TIA."""
+    session, _, _ = temporary_tia_project
+    device = "SCDW_FANGAS_PLC"
+    order_number = os.getenv("SCDW_TEST_CPU", "OrderNumber:6ES7 214-1BG40-0XB0/V4.4")
+    session.add_plc(order_number, device, device)
+
+    tags = [
+        TagSpec("风机运行", "Bool", "%Q4.4"),
+        TagSpec("烧嘴电源", "Bool", "%Q4.6"),
+        TagSpec("风机控制", "Int", "%QW44"),
+    ]
+    session.run_plc_operation(
+        "seed_fan_gas_symbols",
+        device,
+        lambda _project, plc: (
+            create_tag_table_with_tags(plc, "SCDW_FANGAS_TAGS", tags),
+            create_global_db(
+                plc,
+                str(tmp_path),
+                "信号数据",
+                3,
+                [
+                    DBVariable("风机运行按", "Bool"),
+                    DBVariable("风机故障反馈", "Bool"),
+                    DBVariable("风机手动", "Bool"),
+                    DBVariable("风机自动输出", "Real"),
+                    DBVariable("风机手动频率", "Real"),
+                    DBVariable("风机控制输出", "Real"),
+                    DBVariable("风压测量值", "Real"),
+                ],
+            ),
+            create_global_db(
+                plc,
+                str(tmp_path),
+                "内部数据",
+                4,
+                [DBVariable("风机控制输出值", "Real"), DBVariable("风压过渡", "Int")],
+            ),
+        ),
+    )
+
+    requirement = (
+        Path(__file__).parents[2] / "fixtures" / "latest_failed_fan_gas.txt"
+    ).read_text(encoding="utf-8").strip()
+    plans = LadPlanService(tmp_path / "plans")
+    artifacts = XmlArtifactService(tmp_path / "artifacts")
+    plan = plans.create_from_requirements(
+        requirement,
+        conversation_id="tia-latest-failure-regression",
+        target_device=device,
+        main_fc_name="风机燃气_蓝图回归",
+    )
+    assert plan.blueprint_status == "approved_for_generation"
+    assert plan.requested_network_count == plan.planned_network_count == 3
+
+    mcp = FastMCP("tia-latest-failure-blueprint")
+    register_xml_artifact_tools(mcp, session, artifacts, plans)
+    register_lad_runtime_tools(mcp, session, artifacts, plans)
+    artifact = _invoke(
+        mcp,
+        "create_lad_block_artifact",
+        plan.plan_id,
+        plan.main_fc.block_name,
+        "FC",
+        None,
+        device,
+        "tia-latest-failure-regression",
+    )["artifact"]
+
+    version = 1
+    for network in plan.networks:
+        rendered = _invoke(
+            mcp,
+            "write_lad_network_from_blueprint",
+            artifact["artifact_id"],
+            version,
+            network.network_key,
+            False,
+        )
+        version = rendered["version"]
+        verified = _invoke(
+            mcp,
+            "import_and_compile_artifact",
+            artifact["artifact_id"],
+            device,
+            version,
+            network.network_key,
+            True,
+        )
+        assert verified["compile"]["success"] is True
+
+    _invoke(mcp, "save_verified_project", device, plan.plan_id)
+    finished = plans.get(plan.plan_id)
+    assert all(network.status == "verified" for network in finished.networks)
+    assert finished.main_fc.status == "verified"
+    assert finished.step_status["plc_compile"] == "verified"

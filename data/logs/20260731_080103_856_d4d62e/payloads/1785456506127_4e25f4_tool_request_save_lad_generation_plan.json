@@ -1,0 +1,319 @@
+{
+  "conversation_id": "fan_gas_control_conv_001",
+  "target_device": "PLC_1",
+  "requirements": "风机燃气梯形图程序，包含风机输出、风机输出计算和燃气烧嘴电源三个逻辑组（因TIA表达限制拆分为6个Network逐一生成）。具体：\n(1)风机运行联锁：常开触点(信号数据.风机运行按)与常闭触点(信号数据.风机故障反馈)串联→线圈(风机运行)\n(2)风机自动输出：常闭触点(信号数据.风机手动)+MOVE(风机自动输出→风机控制输出)\n(3)风机手动输出：常开触点(信号数据.风机手动)+MUL(风机手动频率*2.0→风机控制输出)\n(4)风机停止清零：常闭触点(风机运行按)+MOVE(0.0→风机控制输出)\n(5)风机输出计算链：Div(风机控制输出/100.0)→Mul(*27648.0)→Convert(RealToInt)→Move(→QW44)\n(6)燃气烧嘴电源：GE(Real)风压测量值>=1.2→线圈(烧嘴电源)",
+  "planning": {
+    "main_fc": {
+      "block_name": "FC_FanGasControl",
+      "block_type": "FC",
+      "responsibility": "组织风机燃气全部无状态组合逻辑",
+      "logic_scope": [
+        "风机运行联锁",
+        "风机自动输出",
+        "风机手动输出",
+        "风机停止清零",
+        "风机输出计算链",
+        "燃气烧嘴电源"
+      ],
+      "interface": {
+        "Input": [],
+        "Output": [],
+        "InOut": [],
+        "Temp": [],
+        "Constant": [],
+        "Return": [
+          "Ret_Val:Void"
+        ]
+      }
+    },
+    "main_fc_reason": "主块选择FC，所有逻辑均无跨扫描Static状态；仅使用全局DB变量和I/O，无需FB",
+    "auxiliary_fbs": [],
+    "instance_dbs": [],
+    "block_dependency_order": [
+      "FC_FanGasControl"
+    ],
+    "interface_plan": {
+      "FC_FanGasControl": {
+        "Input": [],
+        "Output": [],
+        "InOut": [],
+        "Temp": [],
+        "Constant": [],
+        "Return": [
+          "Ret_Val:Void"
+        ]
+      }
+    },
+    "networks": [
+      {
+        "network_key": "nw_fan_run_interlock",
+        "block_name": "FC_FanGasControl",
+        "title": "风机运行联锁",
+        "comment": "风机运行按接通且风机故障反馈未动作时，驱动风机运行线圈",
+        "purpose": "串联触点驱动线圈实现风机运行联锁",
+        "main_branch": [
+          "常开触点(信号数据.风机运行按)",
+          "常闭触点(信号数据.风机故障反馈)",
+          "线圈(风机运行)"
+        ],
+        "parallel_branches": [],
+        "instructions": [
+          "Contact(NO)",
+          "Contact(NC)",
+          "Coil"
+        ],
+        "variables": [
+          "信号数据.风机运行按",
+          "信号数据.风机故障反馈",
+          "风机运行"
+        ],
+        "required_capabilities": [
+          "contact",
+          "coil",
+          "series_flow",
+          "topology.series"
+        ],
+        "selected_knowledge_ids": [
+          "topology.series_contact_coil.v17",
+          "network_text.title_comment.v17"
+        ],
+        "instruction_chain": [
+          "Contact(NO)→Contact(NC)→Coil"
+        ],
+        "topology": {
+          "kind": "series",
+          "description": "常开与常闭触点串联驱动线圈"
+        },
+        "depends_on": [],
+        "split_reason": null
+      },
+      {
+        "network_key": "nw_fan_auto_output",
+        "block_name": "FC_FanGasControl",
+        "title": "风机自动输出",
+        "comment": "风机手动为FALSE时MOVE将风机自动输出值赋给风机控制输出",
+        "purpose": "自动模式下风机频率输出",
+        "main_branch": [
+          "常闭触点(信号数据.风机手动)",
+          "MOVE(信号数据.风机自动输出→信号数据.风机控制输出)"
+        ],
+        "parallel_branches": [],
+        "instructions": [
+          "Contact(NC)",
+          "MOVE"
+        ],
+        "variables": [
+          "信号数据.风机手动",
+          "信号数据.风机自动输出",
+          "信号数据.风机控制输出"
+        ],
+        "required_capabilities": [
+          "contact",
+          "move",
+          "series_flow",
+          "topology.series"
+        ],
+        "selected_knowledge_ids": [
+          "topology.series_contact_coil.v17",
+          "instruction.move.v17",
+          "network_text.title_comment.v17"
+        ],
+        "instruction_chain": [
+          "|/|→MOVE"
+        ],
+        "topology": {
+          "kind": "series",
+          "description": "常闭触点串联MOVE功能框"
+        },
+        "depends_on": [],
+        "split_reason": "程序段1拆分：自动/手动分支输出同一目标DBD138，TIA LAD不支持不同功能框并联输出同一变量"
+      },
+      {
+        "network_key": "nw_fan_manual_output",
+        "block_name": "FC_FanGasControl",
+        "title": "风机手动输出",
+        "comment": "风机手动为TRUE时MUL将风机手动频率乘以2.0赋给风机控制输出",
+        "purpose": "手动模式下风机频率输出",
+        "main_branch": [
+          "常开触点(信号数据.风机手动)",
+          "MUL(信号数据.风机手动频率*2.0→信号数据.风机控制输出)"
+        ],
+        "parallel_branches": [],
+        "instructions": [
+          "Contact(NO)",
+          "MUL"
+        ],
+        "variables": [
+          "信号数据.风机手动",
+          "信号数据.风机手动频率",
+          "信号数据.风机控制输出"
+        ],
+        "required_capabilities": [
+          "contact",
+          "mul",
+          "series_flow",
+          "topology.series"
+        ],
+        "selected_knowledge_ids": [
+          "topology.series_contact_coil.v17",
+          "instruction.math_cascade.v17",
+          "network_text.title_comment.v17"
+        ],
+        "instruction_chain": [
+          "| |→MUL"
+        ],
+        "topology": {
+          "kind": "series",
+          "description": "常开触点串联MUL功能框"
+        },
+        "depends_on": [
+          "nw_fan_auto_output"
+        ],
+        "split_reason": "程序段1拆分：自动/手动分支输出同一目标DBD138，TIA LAD不支持不同功能框并联输出同一变量"
+      },
+      {
+        "network_key": "nw_fan_stop_clear",
+        "block_name": "FC_FanGasControl",
+        "title": "风机停止清零",
+        "comment": "风机运行按断开时MOVE 0.0写入风机控制输出实现停机清零",
+        "purpose": "风机停止时控制输出清零",
+        "main_branch": [
+          "常闭触点(信号数据.风机运行按)",
+          "MOVE(0.0→信号数据.风机控制输出)"
+        ],
+        "parallel_branches": [],
+        "instructions": [
+          "Contact(NC)",
+          "MOVE"
+        ],
+        "variables": [
+          "信号数据.风机运行按",
+          "信号数据.风机控制输出"
+        ],
+        "required_capabilities": [
+          "contact",
+          "move",
+          "series_flow",
+          "topology.series"
+        ],
+        "selected_knowledge_ids": [
+          "topology.series_contact_coil.v17",
+          "instruction.move.v17",
+          "network_text.title_comment.v17"
+        ],
+        "instruction_chain": [
+          "|/|→MOVE(0.0)"
+        ],
+        "topology": {
+          "kind": "series",
+          "description": "常闭触点串联MOVE写入常量0.0"
+        },
+        "depends_on": [
+          "nw_fan_manual_output"
+        ],
+        "split_reason": "程序段2拆分：清零逻辑与计算链功能不同且有数据依赖"
+      },
+      {
+        "network_key": "nw_fan_output_calc",
+        "block_name": "FC_FanGasControl",
+        "title": "风机输出计算链",
+        "comment": "Div(风机控制输出/100.0)→Mul(*27648.0)→Convert(RealToInt)→Move(→QW44)，实现频率百分比到模拟量0~27648转换",
+        "purpose": "风机频率百分比到模拟量输出值的比例转换",
+        "main_branch": [
+          "Div(信号数据.风机控制输出/100.0)",
+          "Mul(*27648.0→内部数据.风机控制输出值)",
+          "Convert(RealToInt:内部数据.风机控制输出值→内部数据.风压过渡)",
+          "MOVE(内部数据.风压过渡→风机控制)"
+        ],
+        "parallel_branches": [],
+        "instructions": [
+          "Div",
+          "Mul",
+          "Convert",
+          "MOVE"
+        ],
+        "variables": [
+          "信号数据.风机控制输出",
+          "内部数据.风机控制输出值",
+          "内部数据.风压过渡",
+          "风机控制"
+        ],
+        "required_capabilities": [
+          "div",
+          "mul",
+          "convert",
+          "move",
+          "cascade",
+          "topology.series"
+        ],
+        "selected_knowledge_ids": [
+          "instruction.math_cascade.v17",
+          "instruction.convert_divide.v17",
+          "instruction.move.v17",
+          "network_text.title_comment.v17"
+        ],
+        "instruction_chain": [
+          "Div→Mul→Convert→Move"
+        ],
+        "topology": {
+          "kind": "series",
+          "description": "功能框级联：Div→Mul→Convert→Move"
+        },
+        "depends_on": [
+          "nw_fan_stop_clear"
+        ],
+        "split_reason": "程序段2拆分：清零逻辑与计算链功能不同且有数据依赖"
+      },
+      {
+        "network_key": "nw_gas_burner",
+        "block_name": "FC_FanGasControl",
+        "title": "燃气开启、烧嘴电源",
+        "comment": "风压测量值大于等于1.2时接通烧嘴电源线圈",
+        "purpose": "风压条件控制烧嘴电源",
+        "main_branch": [
+          "GE(Real)比较(信号数据.风压测量值>=1.2)",
+          "线圈(烧嘴电源)"
+        ],
+        "parallel_branches": [],
+        "instructions": [
+          "Ge(Real)",
+          "Coil"
+        ],
+        "variables": [
+          "信号数据.风压测量值",
+          "烧嘴电源"
+        ],
+        "required_capabilities": [
+          "compare.ge",
+          "coil",
+          "topology.series"
+        ],
+        "selected_knowledge_ids": [
+          "instruction.compare_ge_real_coil.v17",
+          "network_text.title_comment.v17"
+        ],
+        "instruction_chain": [
+          "GE(Real)≥1.2→Coil"
+        ],
+        "topology": {
+          "kind": "series",
+          "description": "REAL大于等于比较驱动线圈"
+        },
+        "depends_on": [
+          "nw_fan_output_calc"
+        ],
+        "split_reason": null
+      }
+    ],
+    "planned_network_count": 6,
+    "requested_network_count": 6,
+    "instruction_pipeline": [
+      "nw_fan_run_interlock",
+      "nw_fan_auto_output",
+      "nw_fan_manual_output",
+      "nw_fan_stop_clear",
+      "nw_fan_output_calc",
+      "nw_gas_burner"
+    ]
+  }
+}

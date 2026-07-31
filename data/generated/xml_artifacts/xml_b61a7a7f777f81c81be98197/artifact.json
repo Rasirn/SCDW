@@ -1,0 +1,28 @@
+{
+  "affected_networks": [],
+  "artifact_id": "xml_b61a7a7f777f81c81be98197",
+  "block_name": "FC_VFD_CommFault",
+  "block_type": "FC",
+  "change_source": "create_block_framework",
+  "conversation_id": "vfd_comm_fault_001",
+  "created_at": "2026-07-30T23:11:27.908780Z",
+  "current_version": 1,
+  "device_name": "PLC_1",
+  "expires_at": "2026-08-01T23:11:27.908780Z",
+  "last_compile": null,
+  "last_import": null,
+  "last_validation": {
+    "errors": [],
+    "summary": {
+      "bytes": 670,
+      "root": "Document"
+    },
+    "valid": true,
+    "warnings": []
+  },
+  "network_states": {},
+  "plan_id": "ladplan_5784b4a133530fbc",
+  "status": "artifact_created",
+  "updated_at": "2026-07-30T23:11:27.908780Z",
+  "verified_versions": {}
+}

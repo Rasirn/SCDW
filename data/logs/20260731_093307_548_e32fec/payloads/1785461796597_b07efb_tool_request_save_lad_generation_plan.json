@@ -1,0 +1,174 @@
+{
+  "planning": {
+    "main_fc": {
+      "block_name": "FC_FanGasControl",
+      "block_type": "FC",
+      "responsibility": "风机燃气组合逻辑控制",
+      "logic_scope": [
+        "风机输出",
+        "风机输出计算",
+        "燃气开启"
+      ],
+      "interface": {
+        "Input": [],
+        "Output": [],
+        "InOut": [],
+        "Temp": [],
+        "Constant": [],
+        "Return": [
+          "Ret_Val:Void"
+        ]
+      }
+    },
+    "main_fc_reason": "纯组合逻辑，无需跨扫描记忆，使用FC。",
+    "auxiliary_fbs": [],
+    "instance_dbs": [],
+    "interface_plan": {
+      "FC_FanGasControl": {
+        "Input": [],
+        "Output": [],
+        "InOut": [],
+        "Temp": [],
+        "Constant": [],
+        "Return": [
+          "Ret_Val:Void"
+        ]
+      }
+    },
+    "networks": [
+      {
+        "network_key": "requested_network_1",
+        "block_name": "FC_FanGasControl",
+        "title": "风机输出",
+        "comment": "风机运行按常开+风机故障反馈常闭→风机运行线圈",
+        "purpose": "实现风机运行输出",
+        "main_branch": [
+          "运行许可"
+        ],
+        "parallel_branches": [],
+        "instructions": [
+          "contact_no",
+          "contact_nc",
+          "coil"
+        ],
+        "variables": [
+          "信号数据.风机运行按",
+          "信号数据.风机故障反馈",
+          "风机运行"
+        ],
+        "required_capabilities": [
+          "logic.contact_no",
+          "logic.contact_nc",
+          "output.coil",
+          "topology.series"
+        ],
+        "selected_knowledge_ids": [
+          "topology.series_contact_coil.v17"
+        ],
+        "instruction_chain": [
+          "run_condition",
+          "coil"
+        ],
+        "topology": {
+          "kind": "series",
+          "description": "触点串联驱动线圈"
+        },
+        "depends_on": [],
+        "split_reason": null,
+        "renderer_id": "blueprint_network_v17",
+        "blueprint": {
+          "node_id": "n1_root",
+          "kind": "series",
+          "label": "风机运行输出",
+          "capability_id": "topology.series",
+          "operands": {},
+          "attributes": {},
+          "knowledge_ids": [
+            "topology.series_contact_coil.v17"
+          ],
+          "renderer_id": "blueprint_network_v17",
+          "children": [
+            {
+              "node_id": "n1_run_no",
+              "kind": "contact",
+              "label": "风机运行按",
+              "capability_id": "logic.contact_no",
+              "operands": {
+                "operand": {
+                  "data_type": "Bool",
+                  "kind": "variable",
+                  "path": [
+                    "信号数据",
+                    "风机运行按"
+                  ],
+                  "scope": "GlobalVariable"
+                }
+              },
+              "attributes": {},
+              "knowledge_ids": [
+                "topology.series_contact_coil.v17"
+              ],
+              "renderer_id": "blueprint_network_v17",
+              "children": []
+            },
+            {
+              "node_id": "n1_fault_nc",
+              "kind": "contact",
+              "label": "风机故障反馈",
+              "capability_id": "logic.contact_nc",
+              "operands": {
+                "operand": {
+                  "data_type": "Bool",
+                  "kind": "variable",
+                  "path": [
+                    "信号数据",
+                    "风机故障反馈"
+                  ],
+                  "scope": "GlobalVariable"
+                }
+              },
+              "attributes": {},
+              "knowledge_ids": [
+                "topology.series_contact_coil.v17"
+              ],
+              "renderer_id": "blueprint_network_v17",
+              "children": []
+            },
+            {
+              "node_id": "n1_run_coil",
+              "kind": "coil",
+              "label": "风机运行",
+              "capability_id": "output.coil",
+              "operands": {
+                "operand": {
+                  "data_type": "Bool",
+                  "kind": "variable",
+                  "path": [
+                    "风机运行"
+                  ],
+                  "scope": "GlobalVariable"
+                }
+              },
+              "attributes": {},
+              "knowledge_ids": [
+                "topology.series_contact_coil.v17"
+              ],
+              "renderer_id": "blueprint_network_v17",
+              "children": []
+            }
+          ]
+        }
+      }
+    ],
+    "instruction_pipeline": [
+      "requested_network_1"
+    ],
+    "planned_network_count": 1,
+    "block_dependency_order": [
+      "FC_FanGasControl"
+    ]
+  },
+  "requirements": "测试：风机运行控制单Network。",
+  "conversation_id": "fan_gas_combustion_001",
+  "target_device": "PLC_1"
+}

@@ -1,0 +1,9 @@
+{
+  "networks": [
+    {
+      "network_key": "vfd_comm_fault_main",
+      "sha256": "e86fd53b2a9e51ad3741e89e65e34cbf63abd2a2f9e779740f4dae37c6f9acba"
+    }
+  ],
+  "version": 4
+}

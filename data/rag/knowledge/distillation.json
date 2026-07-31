@@ -24,6 +24,7 @@
         "access.typed_time_constant.v17",
         "guide.timer_counter_instance_rules.v17",
         "instruction.pbox_edge_memory.v17",
+        "instruction.pbox_set_reset_ton_coil.v17",
         "instruction.ton_global_instance.v17",
         "topology.parallel_set_reset.v17"
       ]

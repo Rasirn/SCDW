@@ -45,6 +45,7 @@ def require_state_transition(current: str, target: str) -> None:
 
 PLAN_STATES = {"active", "replaced", "closed"}
 TOPOLOGY_KINDS = {"series", "parallel", "fan_out", "merge", "parallel_merge"}
+BLUEPRINT_STATES = {"draft", "needs_revision", "approved_for_generation"}
 
 
 class KnowledgeGapError(ValueError):
@@ -105,6 +106,40 @@ class InstanceDbPlan:
 
 
 @dataclass
+class BlueprintNode:
+    """One persisted node in the reviewed LAD tree.
+
+    Container nodes (series/parallel/branch) own children. Leaf nodes own a
+    capability and explicit operands. XML details such as UIds and port
+    spelling deliberately do not belong here.
+    """
+
+    node_id: str
+    kind: str
+    label: str
+    capability_id: str | None = None
+    operands: dict[str, Any] = field(default_factory=dict)
+    attributes: dict[str, Any] = field(default_factory=dict)
+    knowledge_ids: list[str] = field(default_factory=list)
+    renderer_id: str | None = None
+    children: list["BlueprintNode"] = field(default_factory=list)
+
+    @classmethod
+    def from_dict(cls, value: dict[str, Any]) -> "BlueprintNode":
+        data = dict(value)
+        data["children"] = [cls.from_dict(item) for item in data.get("children", [])]
+        data.setdefault("capability_id", None)
+        data.setdefault("operands", {})
+        data.setdefault("attributes", {})
+        data.setdefault("knowledge_ids", [])
+        data.setdefault("renderer_id", None)
+        return cls(**data)
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
 class NetworkPlan:
     network_key: str
     block_name: str
@@ -123,6 +158,9 @@ class NetworkPlan:
     topology: dict[str, Any] = field(default_factory=dict)
     depends_on: list[str] = field(default_factory=list)
     split_reason: str | None = None
+    blueprint: BlueprintNode | None = None
+    renderer_id: str | None = None
+    frozen_semantic_sha256: str | None = None
     status: str = "planned"
     artifact_id: str | None = None
     artifact_version: int | None = None
@@ -146,6 +184,15 @@ class LadGenerationPlan:
     block_dependency_order: list[str]
     interface_plan: dict[str, Any]
     networks: list[NetworkPlan]
+    requested_network_count: int | None = None
+    planned_network_count: int = 0
+    instruction_pipeline: list[str] = field(default_factory=list)
+    blueprint_schema_version: int = 1
+    blueprint_status: str = "draft"
+    capability_catalog_sha256: str = ""
+    blueprint_sha256: str | None = None
+    frozen_at: str | None = None
+    uncovered_capabilities: list[str] = field(default_factory=list)
     current_block: str | None = None
     current_network: str | None = None
     step_status: dict[str, str] = field(default_factory=dict)
@@ -178,17 +225,35 @@ class LadGenerationPlan:
             item.setdefault("uncovered_capabilities", [])
             item.setdefault("instruction_chain", list(item.get("instructions") or []))
             item.setdefault("topology", {})
+            blueprint = item.get("blueprint")
+            item["blueprint"] = BlueprintNode.from_dict(blueprint) if isinstance(blueprint, dict) else None
+            item.setdefault("renderer_id", None)
+            item.setdefault("frozen_semantic_sha256", None)
             networks.append(NetworkPlan(**item))
         data["networks"] = networks
         data.setdefault("status", "active")
         data.setdefault("replaced_by", None)
         data.setdefault("closed_at", None)
         data.setdefault("knowledge_snapshot", {})
+        data.setdefault("requested_network_count", None)
+        data.setdefault(
+            "planned_network_count",
+            sum(1 for item in networks if item.block_name == data["main_fc"].block_name),
+        )
+        data.setdefault("instruction_pipeline", [item.network_key for item in networks])
+        data.setdefault("blueprint_schema_version", 0 if not any(item.blueprint for item in networks) else 1)
+        data.setdefault("blueprint_status", "draft")
+        data.setdefault("capability_catalog_sha256", "")
+        data.setdefault("blueprint_sha256", None)
+        data.setdefault("frozen_at", None)
+        data.setdefault("uncovered_capabilities", [])
         return cls(**data)
 
     def validate(self) -> None:
         if self.status not in PLAN_STATES:
             raise ValueError(f"unsupported plan status: {self.status}")
+        if self.blueprint_status not in BLUEPRINT_STATES:
+            raise ValueError(f"unsupported blueprint status: {self.blueprint_status}")
         if self.main_fc.block_type != "FC":
             raise ValueError("main_fc must remain an FC")
         if any(block.block_type != "FB" for block in self.auxiliary_fbs):
@@ -197,6 +262,19 @@ class LadGenerationPlan:
             raise ValueError("unsupported block status")
         if any(db.status not in GENERATION_STATES for db in self.instance_dbs):
             raise ValueError("unsupported instance DB status")
+        main_network_count = sum(1 for item in self.networks if item.block_name == self.main_fc.block_name)
+        if self.planned_network_count != main_network_count:
+            raise ValueError(
+                f"planned_network_count must equal main FC Network count: "
+                f"{self.planned_network_count} != {main_network_count}"
+            )
+        if self.requested_network_count is not None and self.requested_network_count != self.planned_network_count:
+            raise ValueError(
+                "explicit requested_network_count is a hard constraint; "
+                f"requested {self.requested_network_count}, planned {self.planned_network_count}"
+            )
+        if self.instruction_pipeline != [item.network_key for item in self.networks]:
+            raise ValueError("instruction_pipeline must list every Network once in generation order")
         keys: set[str] = set()
         block_names = {self.main_fc.block_name, *(block.block_name for block in self.auxiliary_fbs)}
         for network in self.networks:
@@ -237,6 +315,12 @@ class LadGenerationPlan:
                 raise ValueError(f"Network {network.network_key} references an unknown block")
             if network.status not in GENERATION_STATES:
                 raise ValueError(f"unsupported Network status: {network.status}")
+            if self.blueprint_schema_version >= 1 and network.blueprint is None:
+                raise KnowledgeGapError(
+                    f"Network {network.network_key} requires a structured LAD blueprint tree",
+                    network_key=network.network_key,
+                    uncovered=["blueprint.tree"],
+                )
             keys.add(network.network_key)
         for status in self.step_status.values():
             if status not in GENERATION_STATES:

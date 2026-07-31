@@ -16,10 +16,10 @@ class Chat:
         self.messages.append({"role": "user", "content": query})
 
     async def _tia_context_prompt(self) -> str | None:
-        """获取本轮临时 TIA 摘要；失败不影响普通对话。"""
+        """Read the cached TIA summary without rescanning on every user turn."""
         for client in self.clients.values():
             try:
-                result = await client.call_tool("refresh_tia_context", {})
+                result = await client.call_tool("get_tia_context", {})
                 texts = [item.text for item in getattr(result, "content", []) if hasattr(item, "text")]
                 if texts:
                     return "当前 TIA 状态（仅本轮有效）：\n" + "\n".join(texts)

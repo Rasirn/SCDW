@@ -87,6 +87,52 @@ def test_explicit_scan_dependency_can_split_networks(planner):
 
 
 @pytest.mark.unit
+def test_explicit_numbered_networks_are_a_hard_boundary(planner):
+    plan = make_plan(
+        planner,
+        "程序共包含三个程序段。程序段1：风机输出。程序段2：风机输出计算。程序段3：REAL大于等于1.2时驱动烧嘴电源。",
+    )
+    main = [item for item in plan.networks if item.block_name == plan.main_fc.block_name]
+    assert plan.requested_network_count == plan.planned_network_count == len(main) == 3
+    assert plan.instruction_pipeline == [item.network_key for item in plan.networks]
+    assert all(item.split_reason == "用户明确指定程序段边界（硬约束）" for item in main)
+    assert "instruction.compare_ge_real_coil.v17" in main[-1].selected_knowledge_ids
+
+
+@pytest.mark.unit
+def test_llm_plan_cannot_override_explicit_network_count(tmp_path, planner):
+    requirement = "程序共包含三个程序段。程序段1：输出A。程序段2：输出B。程序段3：输出C。"
+    value = planner.plan(requirement, conversation_id="hard-count", target_device="PLC").to_dict()
+    planning = {key: item for key, item in value.items() if key not in {
+        "plan_id", "conversation_id", "target_device", "requirements", "created_at", "updated_at",
+    }}
+    extra = dict(planning["networks"][-1])
+    extra["network_key"] = "illegal_extra_network"
+    extra["title"] = "额外程序段"
+    planning["networks"].append(extra)
+    planning["planned_network_count"] = 4
+    planning["instruction_pipeline"].append("illegal_extra_network")
+    with pytest.raises(ValueError, match="hard constraint"):
+        LadPlanService(tmp_path / "plans").create_from_planning(
+            planning, requirements=requirement, conversation_id="hard-count", target_device="PLC",
+        )
+
+
+@pytest.mark.unit
+def test_latest_vfd_case_uses_global_state_in_fc_and_composite_renderer(planner):
+    plan = make_plan(
+        planner,
+        "变频器读取失败1上升沿由PBox检测并使用存储变量，置位通讯故障标志；读取成功1上升沿复位故障标志；"
+        "故障标志接入TON，定时器变量使用内部数据.通讯延时定时器，PT=T#3m；TON.Q驱动通讯故障线圈。",
+    )
+    assert plan.auxiliary_fbs == [] and plan.instance_dbs == []
+    assert len(plan.networks) == 1
+    network = plan.networks[0]
+    assert "instruction.pbox_set_reset_ton_coil.v17" in network.selected_knowledge_ids
+    assert "pbox_set_reset_ton_coil" in network.required_capabilities
+
+
+@pytest.mark.unit
 def test_every_planned_network_has_title_comment_and_knowledge_ids(planner):
     plan = make_plan(planner, "入口允许时输出；TON延时并记忆报警")
     assert plan.networks

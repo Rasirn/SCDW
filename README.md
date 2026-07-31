@@ -59,6 +59,7 @@ DEEPSEEK_MODEL=deepseek-chat
 | MCP Client 工具列表 | `uv run python mcp_client.py` |
 | Web 服务 | `uv run uvicorn scdw.frontend.app:app --app-dir src --host 127.0.0.1 --port 17788` |
 | 桌面 UI | `uv run scdw-gui` |
+| 最近三案离线回放 | `.\.venv\Scripts\python.exe scripts\run_latest_case_regression.py --limit 3` |
 
 根目录脚本保留为兼容入口；安装项目后也可使用 `scdw-cli`、`scdw-mcp`、`scdw-mcp-client` 和 `scdw-gui`。
 
@@ -74,7 +75,8 @@ DEEPSEEK_MODEL=deepseek-chat
 - 未安装 TIA Portal/pythonnet 时，调用 Openness 功能会失败；这是预期限制。
 - 未安装 UI 可选依赖时，不要启动 Web/桌面入口。
 - MCP Client 的 prompts/resources 历史接口尚未完整实现，CLI 补全相关功能可能不可用。
-- LAD XML 应按 `get_plc_knowledge_catalog` → `get_plc_knowledge_items` 读取参考知识，并最终执行 `compile_check`；不应直接用于生产控制逻辑。
+- LAD 生成按 `get_lad_capability_catalog` → 完整蓝图预检与冻结 → `write_lad_network_from_blueprint` 逐 Network 翻译 → `import_and_compile_artifact` 执行；XML 阶段不再修改控制语义。
+- 离线回放只验证日志解析、Plan、知识覆盖与 Renderer 预检；输出中的 `tia_verified=false` 不能替代 TIA Portal V17 真实导入编译。
 
 详细开发流程见 [开发指南](docs/开发指南.md)，当前调用关系见 [当前代码基线](docs/当前代码基线.md)。
 # 已打开 TIA 的连接

@@ -1,0 +1,19 @@
+{
+  "artifact_id": "xml_792355561a7212ec1a39b85b",
+  "block_name": "FC_FanGasControl",
+  "block_type": "FC",
+  "code": "OK",
+  "device_name": "PLC_1",
+  "message": "TIA import completed",
+  "messages": [],
+  "network_key": "nw_fan_run_interlock",
+  "plan_id": "ladplan_ee2b56232082a15d",
+  "recorded_at": "2026-07-31T00:08:56.570315Z",
+  "stage": "tia_import",
+  "success": true,
+  "target": {
+    "device_name": "PLC_1",
+    "project": "FanGas_Control"
+  },
+  "version": 2
+}

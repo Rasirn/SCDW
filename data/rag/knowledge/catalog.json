@@ -1090,6 +1090,101 @@
       }
     },
     {
+      "id": "instruction.pbox_set_reset_ton_coil.v17",
+      "title": "PBox置复位、TON延时与报警线圈",
+      "description": "从TIA V17报警样本蒸馏的完整四支路子图：失败上升沿置位、成功上升沿复位、故障标志驱动全局TON、TON.Q驱动普通线圈。",
+      "role": "instruction_pattern",
+      "status": "golden",
+      "intent": [
+        "通讯故障",
+        "PBox上升沿",
+        "置位复位",
+        "TON延时报警"
+      ],
+      "not_for": [
+        "RBox下降沿",
+        "省略PBox.bit",
+        "局部或Static定时器实例",
+        "改变置位复位语义"
+      ],
+      "provides": [
+        "pbox_set_reset_ton_coil",
+        "pbox",
+        "edge.rising",
+        "edge.memory_bit",
+        "set_coil",
+        "reset_coil",
+        "ton",
+        "global_timer_instance",
+        "coil",
+        "nested_db_member",
+        "typed_time_constant",
+        "topology.parallel"
+      ],
+      "requires": [
+        "两个PBox bit变量均为Bool",
+        "TON实例为IEC_Timer",
+        "PT为Time常量"
+      ],
+      "replace": [
+        "失败与成功变量路径",
+        "两个边沿存储路径",
+        "故障标志路径",
+        "TON实例路径",
+        "PT",
+        "报警输出路径",
+        "UId"
+      ],
+      "preserve": [
+        "Part Name=PBox",
+        "PBox in/bit/out",
+        "TON Version=1.0",
+        "TON IN/PT端口",
+        "全局Instance",
+        "四支路Powerrail",
+        "Access-Part-Wire完整子图"
+      ],
+      "topology": [
+        "independent_powerrail_branches",
+        "series"
+      ],
+      "tia_version": "V17",
+      "content_type": "xml_fragment",
+      "content_path": "instructions/pbox_set_reset_ton_coil.xml",
+      "source_refs": [
+        "data/rag/raw/application/报警.xml"
+      ],
+      "generation_mode": "knowledge_renderer_required",
+      "renderer": {
+        "kind": "pbox_set_reset_ton_coil",
+        "bindings": [
+          "failure_input",
+          "failure_memory",
+          "recovery_input",
+          "recovery_memory",
+          "fault_flag",
+          "timer_instance",
+          "preset_time",
+          "output"
+        ]
+      },
+      "contains": {
+        "parts": [
+          "Contact",
+          "PBox",
+          "SCoil",
+          "RCoil",
+          "TON",
+          "Coil"
+        ],
+        "calls": [],
+        "access_scopes": [
+          "GlobalVariable",
+          "TypedConstant"
+        ]
+      }
+    },
+    {
       "id": "instruction.tonr_trend_state.v17",
       "title": "TONR保持计时与趋势状态链",
       "description": "TIA V17导出的TONR完整Network，包含R/IN/PT/ET、全局实例、运算、比较和状态线圈。",
@@ -1281,6 +1376,14 @@
         "data/rag/raw/generated_case/compare_ge_real_coil_v17.compile.json"
       ],
       "generation_mode": "knowledge_renderer_required",
+      "renderer": {
+        "kind": "compare_ge_real_coil",
+        "bindings": [
+          "compare_input",
+          "compare_constant",
+          "output"
+        ]
+      },
       "contains": {
         "parts": [
           "Ge",

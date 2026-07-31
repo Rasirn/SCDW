@@ -105,6 +105,18 @@ def register_lad_runtime_tools(mcp, session, artifact_service: XmlArtifactServic
             and metadata.network_states.get(network_key) in {"imported", "compiling", "verified"}
         ):
             return output({**previous, "code": "ALREADY_IMPORTED", "message": "Identical Artifact version is already imported; TIA import was not repeated", "idempotent": True})
+        if (
+            previous.get("success") is False
+            and previous.get("version") == used
+            and previous.get("device_name") == device_name
+            and previous.get("network_key") == network_key
+        ):
+            return output({
+                **previous,
+                "code": "UNCHANGED_FAILED_VERSION",
+                "message": "This unchanged Artifact version already failed with the same TIA diagnostic; import was not repeated",
+                "idempotent": True,
+            })
         try:
             artifacts.set_workflow_state(artifact_id, "importing", network_key)
             if metadata.plan_id:
@@ -277,11 +289,37 @@ def register_lad_runtime_tools(mcp, session, artifact_service: XmlArtifactServic
 
         imported = json.loads(import_lad_xml(artifact_id, device_name, used))
         if not imported.get("success"):
-            return output({"success": False, "stage": "tia_import", "code": imported.get("code", "TIA_XML_IMPORT_FAILED"), "message": imported.get("message", "TIA import failed"), "artifact_id": artifact_id, "version": used, "network_key": selected_network, "import": imported, "next": plans.next_step(plan.plan_id)})
+            repeated = plans.stop_repeated_diagnostic(plan.plan_id, selected_network, imported)
+            return output({
+                "success": False, "stage": "tia_import",
+                "code": "REPEATED_TIA_DIAGNOSTIC" if repeated else imported.get("code", "TIA_XML_IMPORT_FAILED"),
+                "message": (
+                    "The same TIA import diagnostic occurred twice; approximate expression patching is stopped while the frozen blueprint remains unchanged."
+                    if repeated else imported.get("message", "TIA import failed")
+                ),
+                "artifact_id": artifact_id, "version": used, "network_key": selected_network,
+                "import": imported, "next": plans.next_step(plan.plan_id),
+                "retryable": not repeated, "needs_user_action": False,
+                "recommended_action": "repair_lad_xml_expression" if repeated else "repair_from_tia_diagnostic",
+                "fallback_arguments": {"artifact_id": artifact_id, "expected_version": used, "network_key": selected_network} if repeated else {},
+            })
 
         compiled = json.loads(compile_check(device_name, metadata.block_name, artifact_id, used, selected_network, plan.plan_id))
         if not compiled.get("success"):
-            return output({"success": False, "stage": "tia_compile", "code": compiled.get("code", "TIA_COMPILE_FAILED"), "message": "Network compile failed", "artifact_id": artifact_id, "version": used, "network_key": selected_network, "import": imported, "compile": compiled, "next": plans.next_step(plan.plan_id)})
+            repeated = plans.stop_repeated_diagnostic(plan.plan_id, selected_network, compiled)
+            return output({
+                "success": False, "stage": "tia_compile",
+                "code": "REPEATED_TIA_DIAGNOSTIC" if repeated else compiled.get("code", "TIA_COMPILE_FAILED"),
+                "message": (
+                    "The same TIA compile diagnostic occurred twice; approximate expression patching is stopped while the frozen blueprint remains unchanged."
+                    if repeated else "Network compile failed"
+                ),
+                "artifact_id": artifact_id, "version": used, "network_key": selected_network,
+                "import": imported, "compile": compiled, "next": plans.next_step(plan.plan_id),
+                "retryable": not repeated, "needs_user_action": False,
+                "recommended_action": "repair_lad_xml_expression" if repeated else "repair_from_tia_diagnostic",
+                "fallback_arguments": {"artifact_id": artifact_id, "expected_version": used, "network_key": selected_network} if repeated else {},
+            })
 
         final_block = None
         final_plc = None
