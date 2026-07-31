@@ -1,9 +1,0 @@
-{
-  "networks": [
-    {
-      "network_key": "nw_fault_alarm",
-      "sha256": "d3a2693aeaf36f4eb4568f77ee23c29f78de3cbba4d1002972443f3b02201036"
-    }
-  ],
-  "version": 4
-}

@@ -1,9 +1,0 @@
-{
-  "networks": [
-    {
-      "network_key": "nw_pbox_fail_set",
-      "sha256": "5a827634b2a3dc7bda6fc1c00cf96525bfbd23ce2d159b68f09a6150c722197b"
-    }
-  ],
-  "version": 2
-}

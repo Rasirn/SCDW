@@ -1,9 +1,0 @@
-{
-  "networks": [
-    {
-      "network_key": "nw_fan_run_interlock",
-      "sha256": "733d73f984788f2e883b742bddaa67ab32da0a0439c1fbdc03a84cea84774467"
-    }
-  ],
-  "version": 2
-}
